@@ -1,0 +1,179 @@
+@import url("https://fonts.googleapis.com/css2?family=Urbanist:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+
+body { overflow-x: hidden; } 
+h1 {font-size: 70px; line-height: 80px; font-weight: 800; font-family: "Urbanist", sans-serif; color: #fff; text-transform: uppercase;} 
+h2 { color: #fff; font-size: 50px; font-weight: 800;line-height: 60px; text-transform: uppercase; font-family: "Urbanist", sans-serif;} 
+h3 { font-size: 36px; font-weight: 600; line-height: normal; font-style: normal; font-variant: normal; font-family: "Urbanist", sans-serif; color: white; } 
+h4 { font-size: 25px; font-weight: normal; line-height: normal; font-style: normal; font-variant: normal; font-family: "Urbanist", sans-serif; color: #333; } 
+h5 { font-size: 16px; font-weight: normal; line-height: normal; font-style: normal; font-variant: normal; font-family: "Urbanist", sans-serif; color: #333; } 
+h6 { font-size: 14px; font-weight: 600; line-height: normal; font-style: normal; font-variant: normal; font-family: "Urbanist", sans-serif; color: white; } 
+p { font-size: 16px; font-weight: 400; line-height:24px; font-style: normal; font-variant: normal; font-family: "Urbanist", sans-serif; color: white; } 
+span { font-size: 14px; font-weight: normal; line-height: normal; font-style: normal; font-variant: normal; font-family: "Urbanist", sans-serif; color: white; } 
+li { font-size: 14px; font-weight: normal; line-height: normal; font-style: normal; font-variant: normal; font-family: "Urbanist", sans-serif; color: #333; } 
+a { font-size: 1.2vw; font-weight: normal; line-height: normal; font-style: normal; font-variant: normal; font-family: "Urbanist", sans-serif; color: #333; text-decoration: none; transition: all 0.3s ease 0s; cursor: pointer; }
+
+/* Header */
+header{position: absolute; width: 100%; z-index: 999;}
+
+header .topbar {background-color: #00000066; padding: 10px 0px;}
+header .topbar-contact {display: flex; gap: 20px; align-items: center;}
+header span a {font-size: 14px; color: #fff;}
+header .separator {color: #fff;}
+header .topbar-social {gap: 0.5rem;}
+header .topbar-social a {display: flex; justify-content: center; align-items: center; width: 28px; height: 28px; border-radius: 50%; background: #fff; transition: .5s;}
+header .topbar-social a svg{color:#000; transition: .5s;}
+header .topbar-social a:hover {background-color: black;}
+header .topbar-social a:hover svg{color: #fff !important;}
+
+header .navbar {padding-top: 1rem; padding-bottom: 1rem; background-color: #ffffff;}
+header .navbar .container{display: block;}
+header .navbar-menu {display: flex; justify-content: center;}
+header .menu-list {display: flex; list-style: none; padding: 0; margin: 0; gap: 40px;}
+header .menu-link {color: #000; font-weight: 400; transition: .5s; position: relative; padding-bottom: 8px;}
+header .menu-link::after {content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background-color: #000000; transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease-out;}
+header .menu-link:hover::after {transform: scaleX(1);}
+header .menu-link:hover {color: #000000;}
+header .menu-link.active::after {transform: scaleX(1);}
+header .menu-link.active {color: #000000;}
+header .navbar-actions {display: flex; align-items: center; gap: 1rem; justify-content: flex-end;}
+header .navbar-actions button {display: flex; justify-content: center; border:none; align-items: center; width: 50px; height: 50px; background: #f0f0f0; border-radius: 50%; transition: .5s; color:#000;}
+header .navbar-actions button:hover {background: #000; color: #fff !important;}
+header .designBtn {padding: 13px 39px; background: #000000; color: white; border-radius: 50px; font-weight: 600; font-size: 16px; transition: .5s; border: solid 2px black;}
+header .designBtn:hover {background: white; color: black; border: 2px solid #000; transform: none !important;}
+
+/* Footer */
+.site-footer {background-image: url(/public/Images/footer-background.png); background-size: cover; background-repeat: no-repeat; padding-top: 70px; padding-bottom: 30px; margin-top:90px;}
+.f-newsletter {padding-bottom: 40px;border-bottom: 1px solid #FFFFFF4D; margin-bottom:40px;}
+.f-newsletter h3 {color: white; margin-bottom: 10px; text-transform: uppercase; font-weight: 800; font-size: 32px;}
+.f-newsletter p {color: #fff; font-size: 16px; margin: 0;}
+.f-newsletter input {padding: 13px 20px; border: none;border-radius: 30px; background-color: #ffffff; color: #000; font-size: 16px; outline:none; font-family: "Urbanist", sans-serif;}
+.f-newsletter input::placeholder{color: #000 !important; font-size: 16px !important; font-weight: 400;}
+.f-newsletter button {padding: 10px 15px; background-color: #ffffff; color: #000000; font-weight: 600; border: none; border-radius: 30px; cursor: pointer; transition: .5s; border: solid 2px white;}
+.f-newsletter button:hover {background-color: black; color: white; border: solid 2px white;}  
+.footer-main-content h4{color: #fff; font-size: 18px; font-weight: 600; margin-bottom: 30px !important; margin-top: 20px;}
+.footer-main-content .f-logo p{margin-top: 20px; padding-right: 70px;}
+.footer-main-content .f-social { display: flex; gap: 10px;}
+.footer-main-content .f-social a{ width: 35px; height: 35px; border-radius: 50%;background-color: #FFFFFF4D; display: flex; justify-content: center; align-items: center; color: black; transition: .5s;}
+.footer-main-content .f-social a i{font-size: 20px;}
+.footer-main-content .f-social a:hover {background-color: white !important;}
+.footer-main-content ul {display: grid; gap: 15px; padding: 0px; margin: 0px; list-style: none;}
+.footer-main-content a {color: white; font-size: 16px; transition: .5s; font-weight: 400;}
+.f-copyright {border-top: 1px solid #fff; padding-top: 40px; margin-top: 50px;text-align: center;}
+.f-copyrigh p {font-size: 16px;color: #fff; margin: 0;}
+
+/* Home Page */
+.home-banner {background-size: cover; background-repeat: no-repeat; height: 730px; padding-top: 110px; display: flex; align-items: center;}
+.banner-content h1 {margin-bottom: 10px; color: white;}
+.banner-content p {font-size: 18px; margin-bottom: 20px; color: #fff; line-height: 28px;}
+.designBtn {display: inline-block; padding: 14px 30px; background-color: #ffffff; color: #000000; font-weight: 600; border-radius: 30px; transition: .5s; font-size: 16px; border: solid 2px white;}
+.designBtn:hover {background-color: black; color: white; transform: translateY(-5px); border: solid 2px white;}
+
+/* About Section */
+.home-about {background: #000; padding-top: 10px;}
+.home-about .row{align-items: center;}
+.home-about h2{margin-bottom: 20px;}
+.home-about p{color: #fff; font-size: 18px; line-height: 28px; margin-bottom: 40px;}
+
+/* Steps Section section */
+.steps-wrapper {text-align: center; padding-top: 70px;}
+.steps-wrapper h2 {margin-bottom: 40px; color: #000;}
+.steps-wrapper .steps-row {justify-content: center; gap: 30px; margin-top: 80px;}
+.steps-wrapper .step {background: #F5F5F5; width: 23% !important; padding: 20px 40px; border-radius: 20px; position: relative; text-align: center; transition: .5s;}
+.steps-wrapper .step:hover {transform: translateY(-8px);}
+.steps-wrapper .step-icon { margin-top: -70px;}
+.steps-wrapper .step h3 {font-size: 20px;font-weight: 800;margin-bottom: 15px; color: #000; margin-top: 30px; }
+.steps-wrapper .step p {font-size: 16px; color: #000; line-height: 28px;}
+
+/* Trending Styles section */
+.trending-wrapper {padding-top: 70px; text-align: center; background: #F5F5F5; margin-top: 70px; padding-bottom: 70px;}
+.trending-wrapper h2 {color: #000; margin-bottom: 40px;}
+.trending-wrapper .trending-swiper {padding: 0px 20px;}
+.trending-wrapper .trending-card {text-align: center;}
+.trending-wrapper .trending-card img{width: 100%; height: 380px; object-fit: cover;}
+.trending-wrapper .trending-card h3 {font-size: 20px; font-weight: 600; margin-top: 20px; color: #000;}
+.trending-wrapper .swiper-button-next, .trending-wrapper .swiper-button-prev {transition:.5s; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; width: 55px; height: 55px;}
+.trending-wrapper .swiper-button-next{right: 30px !important;}
+.trending-wrapper .swiper-button-prev{left: 30px !important;}
+.trending-wrapper .swiper-button-next svg, .trending-wrapper .swiper-button-prev svg {width: 20px !important; height: 20px !important; color: #000;}
+.trending-wrapper .swiper-button-next:hover, .trending-wrapper .swiper-button-prev:hover{background: #000 !important;}
+.trending-wrapper .swiper-button-next:hover svg, .trending-wrapper .swiper-button-prev:hover svg{color: #fff !important;}
+
+/* Gallery section */
+.gallery-wrapper {text-align: center; padding-top: 70px;}
+.gallery-wrapper h2{color: #000; margin-bottom: 40px;}
+.gallery-wrapper .synced-gallery {display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; padding: 0 20px; justify-content: center;}
+.gallery-wrapper .synced-img-box{position: relative; transition: .5s; cursor: pointer;}
+.gallery-wrapper .synced-img-box img {width: 100%; height: 360px; object-fit: cover; object-position: top;}
+.gallery-wrapper .designBtn{background: #000; color: #fff; margin-top: 50px;}
+.gallery-wrapper .designBtn:hover{border: 2px solid #000 !important; background: transparent !important; color: #000 !important;}
+.gallery-wrapper .img-overlay {position: absolute; inset: 0; background: rgb(0 0 0 / 65%); opacity: 0; color: #fff; font-size: 50px; font-weight: 600; display: flex; align-items: center; justify-content: center; transition: .5s;}
+.gallery-wrapper .synced-img-box:hover .img-overlay {opacity: 1;}
+.gallery-wrapper .modal-overlay {position: fixed; inset: 0; background: rgb(0 0 0 / 88%); display: flex; justify-content: center; align-items: center; z-index: 999;}
+
+.gallery-wrapper .modal-content {position: relative;max-width: 90%;}
+.gallery-wrapper .modal-image {width: 100%; max-height: 90vh; object-fit: contain;}
+.gallery-wrapper .close-modal {position: absolute;top: -10px; right: 0px; transition: .5s; background: white; border: none; font-size: 20px; cursor: pointer; padding: 8px 14px; border-radius: 50%;}
+.gallery-wrapper .close-modal:hover {background: #ddd;}
+
+/* About Page */
+.about-page footer{margin-top: 0px !important;}
+/* Inner Banner section */
+.inner-banner{background-size: cover; background-repeat: no-repeat; height: 730px; padding-top: 110px; display: flex; align-items: center;}
+.inner-banner .row{justify-content: center;}
+
+/* About Info section */
+.about-info{padding-top: 70px;}
+.about-info .row{align-items: center;}
+.about-info .col-md-6:nth-child(2){padding-left: 40px;}
+.about-info h2{color: #000; margin-bottom: 30px;}
+.about-info p{color: #757575;}
+.about-info a{background: #000; color: #fff; margin-top: 40px;}
+.about-info a:hover{border-color: #000 !important; background: transparent; color: #000 !important;}
+
+/* Why Choose Us Section */
+.about-choose{margin-top: 70px; background: #F5F5F5;}
+.about-choose h2{color: #000; margin-bottom: 20px;}
+.about-choose p{color: #757575;}
+.about-choose .col-md-6:nth-child(1){padding-left: 110px; padding-right: 40px; padding-top: 80px;}
+.about-choose .col-md-6:nth-child(2){padding-right: 0px;}
+.about-choose .col-md-6:nth-child(2) img{width: 100%;}
+.about-choose ul{display: flex; list-style: none; flex-wrap: wrap; padding: 0px; margin: 0px; gap: 40px; margin-top: 30px !important;}
+.about-choose ul li{display: flex; gap: 20px; align-items: center;}
+.about-choose ul li h4{font-size: 18px; font-weight: 600; color: #000; margin-bottom: 5px;}
+.about-choose ul li p{color: #757575; font-size: 14px; margin-bottom: 0px;}
+
+/* Contact Us Page */
+.contact-page .inner-banner .col-md-9{width: 82% !important;}
+.contact-page footer{margin-top: 0px !important;}
+
+/* Contact Form Section */
+.contact-wrapper {padding-top: 70px;}
+.contact-wrapper h2{color: #000; margin-bottom: 15px;}
+.contact-wrapper p {color: #000; max-width: 960px; margin: 0 auto 40px;}
+.contact-wrapper .input-row {display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;}
+.contact-wrapper .input-row input {padding: 15px 20px; border-radius: 45px;border: none; outline: none; background:#F5F5F5; color: #757575; font-size: 14px;}
+.contact-wrapper .input-row input::placeholder, .input-row textarea::placeholder {color: #757575; font-size: 14px;}
+.contact-wrapper .contact-form textarea {width: 100%;height: 150px; padding: 15px 20px; border-radius: 18px; border: none; background: #F5F5F5; resize: none; font-size: 14px; outline: none; color: #757575;}
+.contact-wrapper .designBtn{background: #000; color: #fff; margin-top: 40px; padding: 14px 40px !important;}
+.contact-wrapper .designBtn:hover{border-color: #000 !important; background: transparent; color: #000 !important;}
+
+/* Contact Info Section */
+.contact-page .steps-wrapper{background: #F5F5F5; margin-top: 70px; padding-bottom: 70px;}
+.contact-page .steps-wrapper h2{margin-bottom: 15px;}
+.contact-page .steps-wrapper .info-content{color: #757575; max-width: 960px; margin: 0px auto; margin-bottom: 90px;}
+.contact-page .steps-wrapper .step{background: #fff !important; width: 28% !important;}
+.contact-page .steps-wrapper .step img{width: 90px !important;}
+.contact-page .steps-wrapper .step a, .contact-page .steps-wrapper .step p{color: #757575;}
+.contact-page .steps-wrapper .step a:hover{color: #000;}
+
+
+
+
+
+
+
+
+
+
