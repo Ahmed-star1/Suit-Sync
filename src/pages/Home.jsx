@@ -4,7 +4,7 @@ import Footer from "../components/footer";
 import HomeBanner from "../components/homeBanner";
 import HomeAbout from "../components/homeAbout";
 import HomeSteps from "../components/homeSteps";
-import HomeTrendingStyles from "../components/homeTrendingStyles";
+import ProductsCarousel from "../components/ProductsCarousel";
 import HomeGallery from "../components/homeGallery";
 
 const Home = () => {
@@ -15,7 +15,7 @@ const Home = () => {
       <HomeBanner />
       <HomeAbout />
       <HomeSteps />
-      <HomeTrendingStyles />
+      <ProductsCarousel />
       <HomeGallery />
 
       <Footer />

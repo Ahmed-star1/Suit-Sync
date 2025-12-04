@@ -11,7 +11,7 @@ const info = [
     icon: "/Images/EmailIcon.png",
     title: "EMAIL",
     desc: "info@suitsync.com",
-    linkType: "email",
+    linkType: "email"
   },
   {
     icon: "/Images/MapIcon.png",

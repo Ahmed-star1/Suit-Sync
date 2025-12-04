@@ -4,7 +4,7 @@ import { Instagram, Twitter, Facebook, Search } from "lucide-react";
 const nav_items = [
   { name: "Home", href: "/", key: "home" },
   { name: "About us", href: "/about-us", key: "about" },
-  { name: "Suits", href: "#suits", key: "suits" },
+  { name: "Suits", href: "/suits", key: "suits" },
   { name: "How it Works", href: "#howitworks", key: "howitworks" },
   { name: "Contact us", href: "/contact-us", key: "contact us" },
 ];
