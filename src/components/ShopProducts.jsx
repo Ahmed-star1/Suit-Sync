@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const ShopProducts = ({ selectedFilters }) => {
+  const navigate = useNavigate();
   const products = [
     { id: 1, name: "Blue Tuxedo Suit", buyPrice: "$300", rentPrice: "$50", img: "/Images/suit1.png", color: "Blue", category: "Suits", build: "Slim" },
     { id: 2, name: "Black Tuxedo Suit", buyPrice: "$250", rentPrice: "$45", img: "/Images/suit2.png", color: "Black", category: "Tuxedos", build: "Athletic" },
@@ -8,7 +10,6 @@ const ShopProducts = ({ selectedFilters }) => {
     { id: 4, name: "Black Tuxedo Suit", buyPrice: "$280", rentPrice: "$50", img: "/Images/suit4.png", color: "Black", category: "Suits", build: "Skinny" },
   ];
 
-  // FILTERING LOGIC
   const filteredProducts = products.filter((product) => {
     const matchBuild =
       selectedFilters["build-type"].length === 0 ||
@@ -22,10 +23,14 @@ const ShopProducts = ({ selectedFilters }) => {
       selectedFilters.color.length === 0 ||
       selectedFilters.color.includes(product.color);
 
-    const matchRentBuy = true; // Optional price filter you will add later
+    const matchRentBuy = true; 
 
     return matchBuild && matchCategory && matchColor && matchRentBuy;
   });
+
+  const handleProductClick = (productId) => {
+    navigate(`/suits/product/2${productId}`);
+  };
 
   return (
     <div className="products-grid">
@@ -33,7 +38,7 @@ const ShopProducts = ({ selectedFilters }) => {
         <p>No products found.</p>
       ) : (
         filteredProducts.map((product) => (
-          <div className="product-card" key={product.id}>
+          <div className="product-card" key={product.id} onClick={() => handleProductClick(product.id)} style={{ cursor: "pointer" }}>
             <img src={product.img} alt={product.name} />
             <div className="product-content">
               <h5>{product.name}</h5>

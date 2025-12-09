@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/header";
 import Footer from "../components/footer";
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -44,6 +46,10 @@ const CartPage = () => {
 
   const removeItem = (id) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleCheckout = () => {
+    navigate("/checkout");
   };
 
   const total = cartItems.reduce(
@@ -109,7 +115,7 @@ const CartPage = () => {
               <span>${total.toFixed(2)}</span>
             </div>
 
-            <button className="designBtn2">Proceed to Checkout</button>
+            <button className="designBtn2" onClick={handleCheckout}>Proceed to Checkout</button>
           </div>
         </div>
       </div>

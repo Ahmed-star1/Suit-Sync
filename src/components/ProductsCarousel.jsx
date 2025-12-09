@@ -1,10 +1,12 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
 const TrendingStyles = ({ type = "trending", data = [] }) => {
+  const navigate = useNavigate();
   const trendingStyles = [
     {
       title: "Black Tuxedo Suit",
@@ -47,6 +49,10 @@ const TrendingStyles = ({ type = "trending", data = [] }) => {
     },
   ];
 
+  const handleDetailpage = () => {
+    navigate("/suits/product/2");
+  };
+
   const displayData = data.length > 0 ? data : 
   type === "related" ? relatedProducts : trendingStyles;
 
@@ -73,7 +79,7 @@ const TrendingStyles = ({ type = "trending", data = [] }) => {
         >
           {displayData.map((item, index) => (
             <SwiperSlide key={index}>
-              <div className="trending-card">
+              <div className="trending-card" onClick={handleDetailpage} style={{ cursor: "pointer" }}>
                 <img src={item.image} alt={item.title} />
                 <h3>{item.title}</h3>
               </div>

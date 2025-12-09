@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
@@ -6,6 +7,7 @@ import "swiper/css/navigation";
 import SizeChartModal from "../components/SizeChartModal";
 
 const ProductDetail = ({ product }) => {
+  const navigate = useNavigate();
   const [tabState, setTabState] = useState(false);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(
@@ -16,6 +18,10 @@ const ProductDetail = ({ product }) => {
 
   const handleTabToggle = () => {
     setTabState(!tabState);
+  };
+
+  const handleAddToCart = () => {
+    navigate("/cart");
   };
 
   if (!product) {
@@ -120,7 +126,7 @@ const ProductDetail = ({ product }) => {
 
           <div className="product-actions">
             <button className="save-look-btn">SAVE LOOK</button>
-            <button className="add-to-cart-btn">ADD TO CART</button>
+            <button className="add-to-cart-btn" onClick={handleAddToCart}>ADD TO CART</button>
           </div>
 
           <div className="product-description-tab">

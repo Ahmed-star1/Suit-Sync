@@ -1,19 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Instagram, Twitter, Facebook, Search } from "lucide-react";
 
 const nav_items = [
   { name: "Home", href: "/", key: "home" },
   { name: "About us", href: "/about-us", key: "about" },
   { name: "Suits", href: "/suits", key: "suits" },
-  { name: "How it Works", href: "#howitworks", key: "howitworks" },
-  { name: "Contact us", href: "/contact-us", key: "contact us" },
+  { name: "How it Works", href: "#", key: "howitworks" },
+  { name: "Contact us", href: "/contact-us", key: "contact" },
 ];
 
 const Header = () => {
   const [activeLink, setActiveLink] = useState("home");
 
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    
+    const currentItem = nav_items.find(item => {
+      if (currentPath === "/" && item.href === "/") return true;
+      if (currentPath !== "/" && item.href !== "/") {
+        return currentPath.startsWith(item.href);
+      }
+      return false;
+    });
+    
+    if (currentItem) {
+      setActiveLink(currentItem.key);
+    }
+  }, []);
+
   const getLinkClassName = (key) => {
     return `menu-link ${activeLink === key ? "active" : ""}`;
+  };
+
+  const handleLinkClick = (key) => {
+    setActiveLink(key);
   };
 
   return (
@@ -52,12 +72,12 @@ const Header = () => {
         <div className="container">
           <div className="row align-items-center">
             <div className="col-md-2 h-logo">
-                <a href="/">
-                  <img
-                    src="/Images/suitsynclogo.svg"
-                    alt="SuitSync Logo"
-                  />
-                </a>
+              <a href="/" onClick={() => handleLinkClick("home")}>
+                <img
+                  src="/Images/suitsynclogo.svg"
+                  alt="SuitSync Logo"
+                />
+              </a>
             </div>
             <div className="col-md-7">
               <nav className="navbar-menu">
@@ -67,7 +87,7 @@ const Header = () => {
                       <a
                         href={item.href}
                         className={getLinkClassName(item.key)}
-                        onClick={() => setActiveLink(item.key)}
+                        onClick={() => handleLinkClick(item.key)}
                       >
                         {item.name}
                       </a>
@@ -80,10 +100,10 @@ const Header = () => {
             <div className="col-md-3">
               <div className="navbar-actions">
                 <button>
-                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <i className="fa-solid fa-magnifying-glass"></i>
                 </button>
                 <button>
-                  <i class="fa-solid fa-cart-shopping"></i>
+                  <i className="fa-solid fa-cart-shopping"></i>
                 </button>
                 <a href="#" className="designBtn">
                   Login

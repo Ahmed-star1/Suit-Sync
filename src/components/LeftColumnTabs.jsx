@@ -1,7 +1,14 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState } from "react";
+import { NavLink } from "react-router-dom";
+import LogoutModal from "../components/LogoutModal";
 
 const LeftColumnTabs = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleLogoutClick = () => {
+    setIsModalOpen(true); 
+  };
+
   return (
     <div className="left-column col-md-3">
       <ul className="sidebar-drawer">
@@ -11,41 +18,46 @@ const LeftColumnTabs = () => {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/account/my-events" className="sidebar-item" >
+          <NavLink to="/events" className="sidebar-item">
             <img src="/Images/events.png" /> My Events
           </NavLink>
         </li>
         <li>
-          <NavLink to="/account/measurement" className="sidebar-item">
+          <NavLink to="/measurement" className="sidebar-item">
             <img src="/Images/measurement.png" /> Measurement
           </NavLink>
         </li>
         <li>
-          <NavLink to="/account/look" className="sidebar-item">
+          <NavLink to="/event-look" className="sidebar-item">
             <img src="/Images/look.png" /> Look
           </NavLink>
         </li>
         <li>
-          <NavLink to="/account/my-orders" className="sidebar-item">
+          <NavLink to="/my-orders" className="sidebar-item">
             <img src="/Images/orders.png" /> My Orders
           </NavLink>
         </li>
         <li>
-          <NavLink to="/account/support" className="sidebar-item">
+          <NavLink to="/support" className="sidebar-item">
             <img src="/Images/support.png" /> Support
           </NavLink>
         </li>
         <li>
-          <NavLink to="/account/privacy-policy" className="sidebar-item">
+          <NavLink to="/privacy-policy" className="sidebar-item">
             <img src="/Images/policy.png" /> Privacy Policy
           </NavLink>
         </li>
         <li>
-          <NavLink to="/account/logout" className="sidebar-item">
+          <a className="sidebar-item" onClick={handleLogoutClick}>
             <img src="/Images/logout.png" /> Logout
-          </NavLink>
+          </a>
         </li>
       </ul>
+
+      <LogoutModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };

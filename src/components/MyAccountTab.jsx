@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { FaPlus, FaPen } from "react-icons/fa";
+import { FaPlus, FaPen, FaEye, FaEyeSlash } from "react-icons/fa";
 
 const MyAccountTab = () => {
   const userData = {
@@ -18,7 +18,6 @@ const MyAccountTab = () => {
 
   const fileInputRef = useRef(null);
 
-  // Handle image change
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -40,7 +39,7 @@ const MyAccountTab = () => {
   };
 
   return (
-    <div className="col-md-9 right-column">
+    <div className="col-md-9 right-column my-account">
       <div className="right-column-content">
         <h2>My Profile</h2>
         <form>
@@ -59,54 +58,17 @@ const MyAccountTab = () => {
                   className="image-container"
                   style={{ position: "relative" }}
                 >
-                  <img
-                    src={profileImage}
-                    alt="Profile"
-                    style={{
-                      width: "150px",
-                      height: "150px",
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                    }}
-                  />
+                  <img src={profileImage} alt="Profile" />
                   <button
                     type="button"
                     className="image-edit-btn"
                     onClick={handlePencilClick}
-                    style={{
-                      position: "absolute",
-                      bottom: "10px",
-                      right: "10px",
-                      background: "#fff",
-                      border: "1px solid #ccc",
-                      borderRadius: "50%",
-                      width: "36px",
-                      height: "36px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                    }}
                   >
                     <FaPen size={16} />
                   </button>
                 </div>
               ) : (
-                <div
-                  className="placeholder-box"
-                  onClick={handlePlusClick}
-                  style={{
-                    width: "150px",
-                    height: "150px",
-                    border: "2px dashed #ccc",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    backgroundColor: "#f8f9fa",
-                  }}
-                >
+                <div className="placeholder-box" onClick={handlePlusClick}>
                   <FaPlus />
                 </div>
               )}
@@ -122,6 +84,7 @@ const MyAccountTab = () => {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                   />
+                  <i class="fa-solid fa-pencil"></i>
                 </div>
 
                 <div className="input-group">
@@ -132,6 +95,7 @@ const MyAccountTab = () => {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                   />
+                  <i class="fa-solid fa-pencil"></i>
                 </div>
               </div>
 
@@ -144,24 +108,23 @@ const MyAccountTab = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
+                  <i class="fa-solid fa-pencil"></i>
                 </div>
 
-                <div className="input-group">
+                <div className="input-group password-field">
                   <label>Password</label>
-                  <div className="password-field">
-                    <input
-                      className="input"
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <span
-                      className="password-toggle"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? "Hide" : "Show"}
-                    </span>
-                  </div>
+                  <input
+                    className="input"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <span
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </span>
                 </div>
               </div>
             </div>
