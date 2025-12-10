@@ -21,6 +21,7 @@ import SupportPage from "./pages/SupportPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import CreateEventPage from "./pages/CreateEventPage";
 import AddEventMemberPage from "./pages/AddEventMemberPage";
+import EventsDetailPage from "./pages/EventsDetailPage";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -53,6 +54,7 @@ function App() {
       <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
       <Route path="/create-event" element={<CreateEventPage />} />
       <Route path="/add-event-member" element={<AddEventMemberPage />} />
+      <Route path="/event/:eventName" element={<EventsDetailPage />} />
 
     </Routes>
   );

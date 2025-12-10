@@ -195,12 +195,10 @@ const AddEventMember = () => {
                               alt={member.memberName}
                             />
                           </div>
-
                           <div className="member-center">
                             <h4>{member.memberName}</h4>
                             <p>{member.role}</p>
                           </div>
-
                           <div className="member-right">
                             <div className="dropdown-container">
                               <button

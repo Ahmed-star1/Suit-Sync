@@ -4,7 +4,7 @@ import Header from "../components/header";
 import Footer from "../components/footer";
 import LeftColumnTabs from "../components/LeftColumnTabs";
 import NoEventsTabBody from "../components/NoEvents";
-import ShowEvents from "../components/ShowEvents"; 
+import ShowEvents from "../components/ShowEvents";
 
 const EventsPage = () => {
   const [activeTab, setActiveTab] = useState("my-events");
@@ -17,7 +17,12 @@ const EventsPage = () => {
       eventAddress: "5678 Maple Avenue, New York, NY 10001, USA",
       eventImage: "/Images/suit1.png",
       members: [
-        { id: 1, name: "James Doe", role: "Groomsman 1", image: "/Images/suit2.png" },
+        {
+          id: 1,
+          name: "James Doe",
+          role: "Groomsman 1",
+          image: "/Images/suit2.png",
+        },
       ],
       eventLook: [
         { name: "Black Tuxedo Suit", image: "/Images/suit1.png" },
@@ -31,7 +36,12 @@ const EventsPage = () => {
       eventAddress: "1234 Elm Avenue, New York, NY 10002, USA",
       eventImage: "/Images/suit4.png",
       members: [
-        { id: 1, name: "John Doe", role: "Groomsman", image: "/Images/suit3.png" },
+        {
+          id: 1,
+          name: "John Doe",
+          role: "Groomsman",
+          image: "/Images/suit3.png",
+        },
       ],
       eventLook: [
         { name: "Blue Tuxedo", image: "/Images/suit3.png" },
@@ -48,7 +58,12 @@ const EventsPage = () => {
       eventAddress: "7890 Oak Avenue, New York, NY 10003, USA",
       eventImage: "/Images/suit2.png",
       members: [
-        { id: 1, name: "Steve Doe", role: "Groomsman", image: "/Images/suit1.png" },
+        {
+          id: 1,
+          name: "Steve Doe",
+          role: "Groomsman",
+          image: "/Images/suit1.png",
+        },
       ],
       eventLook: [
         { name: "Green Tuxedo", image: "/Images/suit3.png" },
@@ -68,7 +83,8 @@ const EventsPage = () => {
   }, [activeTab]);
 
   const handleEventSelection = (eventName) => {
-    const eventData = activeTab === "my-events" ? myEventsData : invitedEventsData;
+    const eventData =
+      activeTab === "my-events" ? myEventsData : invitedEventsData;
     const event = eventData.find((e) => e.eventName === eventName);
     setSelectedEvent(event);
   };
@@ -84,25 +100,29 @@ const EventsPage = () => {
               <div className="right-column-content">
                 <div className="tabs-design">
                   <div className="events-tabs">
-                    <button
+                    <div className="tabs">
+                      <button
                       className={activeTab === "my-events" ? "active" : ""}
                       onClick={() => {
                         setActiveTab("my-events");
-                        setSelectedEvent(myEventsData[0]); 
-                      }}
-                    >
-                      My Events
+                        setSelectedEvent(myEventsData[0]);
+                      }}>My Events
                     </button>
-
                     <button
                       className={activeTab === "invited-events" ? "active" : ""}
                       onClick={() => {
                         setActiveTab("invited-events");
                         setSelectedEvent(invitedEventsData[0]);
                       }}
-                    >
-                      Invited Events
-                    </button>
+                    >Invited Events</button>
+                    </div>
+                    <div className="more-button">
+                      {activeTab === "my-events" && myEventsData.length > 0 && (
+                      <a href="/create-event" className="add-more-events-btn">
+                        <i className="fa-solid fa-plus"></i> Add More Events
+                      </a>
+                    )}
+                    </div>
                   </div>
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -116,7 +136,7 @@ const EventsPage = () => {
                         myEventsData.length === 0 ? (
                           <NoEventsTabBody
                             bodyClass="my-events"
-                            title="You Haven’t Created Any Events Yet"
+                            title="You Haven't Created Any Events Yet"
                             description="Start by creating your first event to begin managing your bookings and invitations."
                             buttonText="Create an Event"
                             icon="/Images/calender.png"
@@ -127,40 +147,54 @@ const EventsPage = () => {
                               {myEventsData.map((event) => (
                                 <button
                                   key={event.eventName}
-                                  className={selectedEvent?.eventName === event.eventName ? "active" : ""}
-                                  onClick={() => handleEventSelection(event.eventName)}
+                                  className={
+                                    selectedEvent?.eventName === event.eventName
+                                      ? "active"
+                                      : ""
+                                  }
+                                  onClick={() =>
+                                    handleEventSelection(event.eventName)
+                                  }
                                 >
                                   {event.eventName}
                                 </button>
                               ))}
                             </div>
-                            {selectedEvent && <ShowEvents events={[selectedEvent]} />}
+                            {selectedEvent && (
+                              <ShowEvents events={[selectedEvent]} />
+                            )}
                           </>
                         )
+                      ) : invitedEventsData.length === 0 ? (
+                        <NoEventsTabBody
+                          bodyClass="invited-events"
+                          title="You Haven't Been Invited to Any Events Yet"
+                          description="You'll see events here when someone invites you."
+                          icon="/Images/calender.png"
+                        />
                       ) : (
-                        invitedEventsData.length === 0 ? (
-                          <NoEventsTabBody
-                            bodyClass="invited-events"
-                            title="You Haven't Been Invited to Any Events Yet"
-                            description="You'll see events here when someone invites you."
-                            icon="/Images/calender.png"
-                          />
-                        ) : (
-                          <>
-                            <div className="event-name-tabs">
-                              {invitedEventsData.map((event) => (
-                                <button
-                                  key={event.eventName}
-                                  className={selectedEvent?.eventName === event.eventName ? "active" : ""}
-                                  onClick={() => handleEventSelection(event.eventName)}
-                                >
-                                  {event.eventName}
-                                </button>
-                              ))}
-                            </div>
-                            {selectedEvent && <ShowEvents events={[selectedEvent]} />}
-                          </>
-                        )
+                        <>
+                          <div className="event-name-tabs">
+                            {invitedEventsData.map((event) => (
+                              <button
+                                key={event.eventName}
+                                className={
+                                  selectedEvent?.eventName === event.eventName
+                                    ? "active"
+                                    : ""
+                                }
+                                onClick={() =>
+                                  handleEventSelection(event.eventName)
+                                }
+                              >
+                                {event.eventName}
+                              </button>
+                            ))}
+                          </div>
+                          {selectedEvent && (
+                            <ShowEvents events={[selectedEvent]} />
+                          )}
+                        </>
                       )}
                     </motion.div>
                   </AnimatePresence>
