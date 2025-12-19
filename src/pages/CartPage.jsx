@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/header";
 import Footer from "../components/footer";
 
 const CartPage = () => {
+  useEffect(() => {
+    AOS.init({ duration: 1000, once: true });
+  }, []);
   const [cartItems, setCartItems] = useState([]);
   const navigate = useNavigate();
 
@@ -63,7 +68,7 @@ const CartPage = () => {
 
       <div className="container">
         <div className="cart-row row">
-          <div className="cart-left col-md-8">
+          <div className="cart-left col-md-8" data-aos="fade-right">
             <div className="cart-header">
               <h4>PRODUCT</h4>
               <h4>TOTAL</h4>
@@ -107,7 +112,7 @@ const CartPage = () => {
             ))}
           </div>
 
-          <div className="cart-right col-md-4">
+          <div className="cart-right col-md-4" data-aos="fade-left">
             <h4 className="cart-total-title">CART TOTALS</h4>
 
             <div className="cart-total-row">
@@ -115,7 +120,9 @@ const CartPage = () => {
               <span>${total.toFixed(2)}</span>
             </div>
 
-            <button className="designBtn2" onClick={handleCheckout}>Proceed to Checkout</button>
+            <button className="designBtn2" onClick={handleCheckout}>
+              Proceed to Checkout
+            </button>
           </div>
         </div>
       </div>

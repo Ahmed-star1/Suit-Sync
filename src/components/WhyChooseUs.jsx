@@ -5,7 +5,7 @@ const WhyChooseUs = () => {
     <section className="about-choose">
       <div className="container-fluid">
         <div className="row">
-          <div class="col-md-6">
+          <div class="col-md-6" data-aos="fade-right">
             <h2>Why Choose Us </h2>
             <p>
              This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text. Only for show. He who searches for meaning here will be sorely disappointed.
@@ -41,7 +41,7 @@ const WhyChooseUs = () => {
                </li>
            </ul>
           </div>
-          <div className="col-md-6">
+          <div className="col-md-6" data-aos="fade-left">
             <img src="/Images/choose.png" />
           </div>
         </div>

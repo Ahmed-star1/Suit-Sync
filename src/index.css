@@ -2,7 +2,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
 
-body { overflow-x: hidden; } 
+body { overflow-x: hidden !important; } 
 h1 {font-size: 70px; line-height: 80px; font-weight: 800; font-family: "Urbanist", sans-serif; color: #fff; text-transform: uppercase;} 
 h2 { color: #fff; font-size: 50px; font-weight: 800;line-height: 60px; text-transform: uppercase; font-family: "Urbanist", sans-serif;} 
 h3 { font-size: 36px; font-weight: 600; line-height: normal; font-style: normal; font-variant: normal; font-family: "Urbanist", sans-serif; color: white; } 
@@ -43,11 +43,21 @@ header .navbar-actions button:hover {background: #000; color: #fff !important;}
 header .designBtn {padding: 13px 39px; background: #000000; color: white; border-radius: 50px; font-weight: 600; font-size: 16px; transition: .5s; border: solid 2px black;}
 header .designBtn:hover {background: white; color: black; border: 2px solid #000; transform: none !important;}
 
+/* Search Modal */
+.search-modal{position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgb(0 0 0 / 83%); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999;}
+.search-modal-content{width: 1000px; background: #fff;border-radius: 20px; position: relative; padding: 60px 30px 30px 20px; gap: 20px; animation: fadeIn 0.35s ease; display: flex; flex-direction: column; justify-content: center; align-items: center;}
+.search-modal .close-modal{position: absolute; top: 12px; transition: .5s; right: 14px; background: #000; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 16px; font-weight: 900; cursor: pointer; border: 2px solid #000;}
+.close-modal:hover{background: transparent; color: #000;}
+.search-modal h2{color: #000;}
+.search-modal input{padding: 13px 20px; border: none; border-radius: 30px; background-color: #ffffff; color: #000; border: 2px solid #000; font-size: 16px; outline: none; font-family: "Urbanist", sans-serif; width: 50%;}
+.search-modal input::placeholder{color: #000;}
+.search-modal .designBtn{width: 50%;}
+
 /* Footer */
 .site-footer {background-image: url(/public/Images/footer-background.png); background-size: cover; background-repeat: no-repeat; padding-top: 70px; padding-bottom: 30px; margin-top:90px;}
 .f-newsletter {padding-bottom: 40px;border-bottom: 1px solid #FFFFFF4D; margin-bottom:40px;}
 .f-newsletter h3 {color: white; margin-bottom: 10px; text-transform: uppercase; font-weight: 800; font-size: 32px;}
-.f-newsletter p {color: #fff; font-size: 16px; margin: 0;}
+.f-newsletter p, footer a {color: #fff; font-size: 16px; margin: 0;}
 .f-newsletter input {padding: 13px 20px; border: none;border-radius: 30px; background-color: #ffffff; color: #000; font-size: 16px; outline:none; font-family: "Urbanist", sans-serif;}
 .f-newsletter input::placeholder{color: #000 !important; font-size: 16px !important; font-weight: 400;}
 .f-newsletter button {padding: 10px 15px; background-color: #ffffff; color: #000000; font-weight: 600; border: none; border-radius: 30px; cursor: pointer; transition: .5s; border: solid 2px white;}
@@ -179,7 +189,7 @@ header .designBtn:hover {background: white; color: black; border: 2px solid #000
 .shop-page .arrow-icon {font-size: 18px; transition: .5s;}
 .shop-page .arrow-icon.rotate {transform: rotate(180deg);}
 .shop-page .filter-options {padding-top: 20px;}
-.shop-page .filter-options label {margin-bottom: 10px; font-size: 16px; color: #000;font-weight: 500; display: flex; align-items: center;}
+.shop-page .filter-options label {margin-bottom: 10px; font-size: 16px; color: #000;font-weight: 500; display: flex; align-items: center; cursor: pointer;}
 .shop-page .filter-options input[type="checkbox"] {display: none;}
 .shop-page .filter-options input[type="checkbox"] + span {display: inline-block; width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; margin-right: 10px; position: relative; background: #F5F5F5; transition: .5s;}
 .shop-page .filter-options input[type="checkbox"]:checked + span::after {content: ""; position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; background: #000; border-radius: 50%;}
@@ -312,6 +322,7 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .checkout-page .summary-row span{color: #000; font-size: 18px; font-weight: 600;}
 
 /* Auth Pages */
+.auth-page{background: #F5F5F5;}
 .auth-page, .auth-page .auth-row{height: 100vh;}
 .left-image-column {background-size: cover; background-repeat: no-repeat; background-position: top; position: relative; padding: 40px 50px;}
 .left-image-column .image-text{height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: start;}
@@ -327,9 +338,9 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .password-field .password-toggle{position: absolute; right: 30px; top: 47px; color: #000; font-size: 16px;}
 .right-form-column .box .row{display: flex; justify-content: space-between;}
 .right-form-column .box .row .checkbox {width: 50%; cursor: pointer; display: flex; align-items: center;}
-.right-form-column .box .checkbox{width: 100%; cursor: pointer; display: flex; align-items: center;}
+.right-form-column .box .checkbox{width: 100%; cursor: pointer; display: flex;}
 .right-form-column .box .row .forget{width: 50%; text-align: end;}
-.right-form-column .box .checkbox label{color: #000; font-size: 16px; cursor: pointer; font-weight: 500; margin-left: 10px; margin-bottom: 0px; line-height: 16px;}
+.right-form-column .box .checkbox label{color: #000; font-size: 16px; cursor: pointer; font-weight: 500; margin-left: 10px; margin-bottom: 0px; line-height: 23px;}
 .right-form-column .box .row a{color: #000; font-size: 16px; font-weight: 500;}
 .right-form-column .box .designBtn2{width: 100%;}
 .right-form-column .auth-link p{color: #000; font-size: 16px; font-weight: 400; text-align: center; margin-top: 50px;}
@@ -380,7 +391,7 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 
 .measurement-form{margin-top: 30px;}
 .measurement-form h3{text-align: left; font-size: 25px; color: #000; margin-bottom: 30px; font-weight: 600;}
-.measurement-form .input-group{width: 33.33%; margin-bottom: 20px;}
+.measurement-form .input-group{width: 33.33%; margin-bottom: 20px; position: static;}
 
 /* Event Look Page */
 .events-tab{width: 722px !important;}
@@ -447,7 +458,6 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .invited-events .noevents-dis{margin-bottom: 50px;}
 
 /* Show Events Component Css */
-.my-events{position: relative;}
 .my-events .event-name-tabs {margin-top: 30px; margin-bottom: 20px; display: flex; justify-content: left; align-items: center; gap: 20px;}
 .my-events .event-name-tabs button{border: 2px solid #000000; border-radius: 80px; transition: .5s; background: transparent; padding: 8px 20px; font-size: 16px; font-weight: 500; color: #000;}
 .my-events .event-name-tabs button:hover, .my-events .event-name-tabs button.active{background: #000 !important; color: #fff !important;}
@@ -485,7 +495,6 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .create-event .text-field{text-align: left !important;}
 .create-event .placeholder-box{width: 100% !important; height: 150px !important; margin-top: 15px;}
 .create-event .image-container img{width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-top: 15px;}
-.create-event .profile-image{position: relative;}
 .create-event .profile-image .image-edit-btn{top: 20px; right: 10px; background: #fff !important;}
 .create-event .profile-image .image-edit-btn svg{color: #000 !important;}
 .create-event .input-group i {position: absolute; right: 30px; top: 43px;}

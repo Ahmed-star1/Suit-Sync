@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import Header from "../components/header";
 import Footer from "../components/footer";
 
 const CheckoutPage = () => {
+  useEffect(() => {
+    AOS.init({ duration: 1000, once: true });
+  }, []);
+
   const [cart, setCart] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedState, setSelectedState] = useState(null);
@@ -53,7 +59,7 @@ const CheckoutPage = () => {
   const handleCountryChange = (event) => {
     const selectedOption = event.target.value;
     setSelectedCountry(selectedOption);
-    setSelectedState(null); // Reset state when country changes
+    setSelectedState(null);
     setSelectedCity("");
   };
 
@@ -77,7 +83,7 @@ const CheckoutPage = () => {
 
       <div className="container">
         <div className="row checkout-row">
-          <div className="checkout-left col-md-8">
+          <div className="checkout-left col-md-8" data-aos="fade-right">
             <div className="contect-field">
               <h3>Contact information</h3>
               <input
@@ -178,7 +184,7 @@ const CheckoutPage = () => {
               <button className="designBtn2">Place Order</button>
             </div>
           </div>
-          <div className="checkout-right col-md-4">
+          <div className="checkout-right col-md-4" data-aos="fade-left">
             <div className="summary-box">
               <h3>Order summary</h3>
 

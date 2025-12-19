@@ -2,7 +2,7 @@ import React from "react";
 
 const ContactSection = () => {
   return (
-    <section className="contact-wrapper">
+    <section className="contact-wrapper" data-aos="fade-up">
       <div className="container text-center">
         <h2>HAVE QUESTIONS? LET’S CONNECT.</h2>
 

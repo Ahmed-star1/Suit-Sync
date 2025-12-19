@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
+import { ScrollProvider } from "./components/ScrollContext";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import ContactUs from "./pages/ContactUs";
@@ -27,6 +28,7 @@ function App() {
   const [count, setCount] = useState(0);
 
   return (
+    <ScrollProvider>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/about-us" element={<About />} />
@@ -57,6 +59,7 @@ function App() {
       <Route path="/event/:eventName" element={<EventsDetailPage />} />
 
     </Routes>
+    </ScrollProvider>
   );
 }
 

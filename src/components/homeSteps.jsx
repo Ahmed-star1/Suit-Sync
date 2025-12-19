@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const steps = [
   {
@@ -24,8 +26,11 @@ const steps = [
 ];
 
 const StyleJourney = () => {
+  useEffect(() => {
+    AOS.init({ duration: 1000, once: true });
+  }, []);
   return (
-    <section className="steps-wrapper">
+    <section className="steps-wrapper" data-aos="fade-up">
       <h2>
         YOUR SEAMLESS STYLE
         <br />

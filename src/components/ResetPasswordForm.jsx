@@ -14,7 +14,7 @@ const ResetPasswordForm = () => {
   };
 
   return (
-    <div className="right-form-column col-md-6">
+    <div className="right-form-column col-md-6" data-aos="fade-left">
       <div className="logo">
         <img src="/Images/blackLogo.png" alt="Logo" />
       </div>

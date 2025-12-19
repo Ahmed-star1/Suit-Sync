@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 const InnerBanner = ({ title, background }) => {
   return (
@@ -9,7 +9,7 @@ const InnerBanner = ({ title, background }) => {
       }}
     >
       <div className="container">
-        <div className="row">
+        <div className="row" data-aos="fade-up">
           <div className="col-md-9 banner-content">
             <h1 className="text-center">{title}</h1>
           </div>

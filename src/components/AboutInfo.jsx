@@ -5,10 +5,10 @@ const AboutInfo = () => {
     <section className="about-info">
       <div className="container">
         <div className="row">
-          <div className="col-md-6">
+          <div className="col-md-6" data-aos="fade-up">
             <img src="/Images/aboutImage.png" />
           </div>
-          <div class="col-md-6">
+          <div class="col-md-6" data-aos="fade-left">
             <h2>Look Sharp. Feel Confident. Own the Moment.</h2>
             <p>
               This is dummy copy. It is not meant to be read. It has been placed

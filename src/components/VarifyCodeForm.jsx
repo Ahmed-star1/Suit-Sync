@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import { useNavigate } from 'react-router-dom';
 
 const VerifyCodeForm = () => {
+  useEffect(() => {
+      AOS.init({ duration: 1000, once: true });
+    }, []);
   const [OTPCode, setOTPCode] = useState("");
   const navigate = useNavigate();
 
@@ -10,7 +15,7 @@ const VerifyCodeForm = () => {
   };
 
   return (
-    <div className="right-form-column col-md-6">
+    <div className="right-form-column col-md-6" data-aos="fade-left">
       <div className="logo">
         <img src="/Images/blackLogo.png" alt="Logo" />
       </div>

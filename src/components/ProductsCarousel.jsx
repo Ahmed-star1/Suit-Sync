@@ -1,11 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const TrendingStyles = ({ type = "trending", data = [] }) => {
+  useEffect(() => {
+    AOS.init({ duration: 1000, once: true });
+  }, []);
+
   const navigate = useNavigate();
   const trendingStyles = [
     {
@@ -13,7 +19,7 @@ const TrendingStyles = ({ type = "trending", data = [] }) => {
       image: "/Images/suit1.png",
     },
     {
-      title: "Blue Tuxedo Suit", 
+      title: "Blue Tuxedo Suit",
       image: "/Images/suit2.png",
     },
     {
@@ -36,7 +42,7 @@ const TrendingStyles = ({ type = "trending", data = [] }) => {
       image: "/Images/suit1.png",
     },
     {
-      title: "Blue Tuxedo Suit", 
+      title: "Blue Tuxedo Suit",
       image: "/Images/suit2.png",
     },
     {
@@ -44,7 +50,7 @@ const TrendingStyles = ({ type = "trending", data = [] }) => {
       image: "/Images/suit4.png",
     },
     {
-      title: "Blue Tuxedo Suit", 
+      title: "Blue Tuxedo Suit",
       image: "/Images/suit2.png",
     },
   ];
@@ -53,13 +59,17 @@ const TrendingStyles = ({ type = "trending", data = [] }) => {
     navigate("/suits/product/2");
   };
 
-  const displayData = data.length > 0 ? data : 
-  type === "related" ? relatedProducts : trendingStyles;
+  const displayData =
+    data.length > 0
+      ? data
+      : type === "related"
+      ? relatedProducts
+      : trendingStyles;
 
   const heading = type === "related" ? "RELATED PRODUCTS" : "TRENDING STYLES";
 
   return (
-    <section className="trending-wrapper">
+    <section className="trending-wrapper" data-aos="fade-up">
       <h2>{heading}</h2>
       <div className="container">
         <Swiper
@@ -79,7 +89,11 @@ const TrendingStyles = ({ type = "trending", data = [] }) => {
         >
           {displayData.map((item, index) => (
             <SwiperSlide key={index}>
-              <div className="trending-card" onClick={handleDetailpage} style={{ cursor: "pointer" }}>
+              <div
+                className="trending-card"
+                onClick={handleDetailpage}
+                style={{ cursor: "pointer" }}
+              >
                 <img src={item.image} alt={item.title} />
                 <h3>{item.title}</h3>
               </div>

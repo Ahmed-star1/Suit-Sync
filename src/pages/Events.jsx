@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import LeftColumnTabs from "../components/LeftColumnTabs";
@@ -118,9 +119,9 @@ const EventsPage = () => {
                     </div>
                     <div className="more-button">
                       {activeTab === "my-events" && myEventsData.length > 0 && (
-                      <a href="/create-event" className="add-more-events-btn">
+                      <Link to={'/create-event'} className="add-more-events-btn">
                         <i className="fa-solid fa-plus"></i> Add More Events
-                      </a>
+                      </Link>
                     )}
                     </div>
                   </div>

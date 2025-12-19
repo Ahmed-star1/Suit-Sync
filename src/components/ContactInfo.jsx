@@ -23,7 +23,7 @@ const info = [
 
 const ContactInfo = () => {
   return (
-    <section className="steps-wrapper">
+    <section className="steps-wrapper" data-aos="fade-up">
       <h2>Contact Info</h2>
       <p className="info-content">This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text. Only for show. He who searches for meaning here will be sorely disappointed. This is dummy copy. </p>
       <div className="container">

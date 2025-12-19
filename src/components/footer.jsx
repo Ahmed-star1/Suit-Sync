@@ -1,28 +1,28 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const quickLinks = [
-    { name: "Home", href: "#home" },
-    { name: "About Us", href: "#about" },
-    { name: "Suits", href: "#suits" },
-    { name: "How It Works", href: "#how-it-works" },
+    { name: "Home", to: "/" },
+    { name: "About Us", to: "/about-us" },
+    { name: "Suits", to: "/suits" },
+    { name: "How It Works", to: "#" },
   ];
 
   const supportLinks = [
-    { name: "Terms & Conditions", href: "#terms" },
-    { name: "Privacy Policy", href: "#privacy" },
-    { name: "Contact Us", href: "#contact" },
+    { name: "Terms & Conditions", to: "#" },
+    { name: "Privacy Policy", to: "#" },
+    { name: "Contact Us", to: "/contact-us" },
   ];
 
   return (
     <footer className="site-footer">
       <div className="container">
-
         <div className="f-newsletter row align-items-center">
           <div className="col-md-6 f-subscribe">
             <h3>SUBSCRIBE OUR NEWSLETTER</h3>
             <p>
-              Subscribe our newsletter and get updated our latest discount and news
+              Subscribe to our newsletter and get updated on our latest discounts and news
             </p>
           </div>
 
@@ -44,22 +44,21 @@ const Footer = () => {
 
         <div className="footer-main-content row">
           <div className="col-md-5 f-logo">
-              <a href="/">
-                <img src= "/Images/suitsyncfooter.svg" alt="SuitSync Logo" />
-              </a>
+            <Link to="/">
+              <img src="/Images/suitsyncfooter.svg" alt="SuitSync Logo" />
+            </Link>
             <p>
               This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text. Only for show. He who searches for meaning here will be sorely disappointed. This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate.
             </p>
             <div className="f-social">
               <a href="#" target="_blank">
-                <i class="fa-brands fa-instagram"></i>
+                <i className="fa-brands fa-instagram"></i>
               </a>
               <a href="#" target="_blank">
-                <i class="fa-brands fa-twitter"></i>
+                <i className="fa-brands fa-twitter"></i>
               </a>
-
               <a href="#" target="_blank">
-                <i class="fa-brands fa-facebook-f"></i>
+                <i className="fa-brands fa-facebook-f"></i>
               </a>
             </div>
           </div>
@@ -69,7 +68,7 @@ const Footer = () => {
             <ul className="footer-list">
               {quickLinks.map(link => (
                 <li key={link.name}>
-                  <a href={link.href}>{link.name}</a>
+                  <Link to={link.to}>{link.name}</Link>
                 </li>
               ))}
             </ul>
@@ -80,7 +79,7 @@ const Footer = () => {
             <ul className="footer-list">
               {supportLinks.map(link => (
                 <li key={link.name}>
-                  <a href={link.href}>{link.name}</a>
+                  <Link to={link.to}>{link.name}</Link> {/* Using Link here */}
                 </li>
               ))}
             </ul>
@@ -91,23 +90,21 @@ const Footer = () => {
             <p>
               Call Now:
               <br />
-              <a href="#">000 000 0000</a>
+              <a href="tel: 000-000-0000">000 000 0000</a>
             </p>
             <p>
               Email Now:
               <br />
-              <a href="#">info@suitsync.com</a>
+              <a href="mailto: info@suitsync.com">info@suitsync.com</a>
             </p>
           </div>
         </div>
 
         <div className="f-copyright">
           <p>
-            © SuitSync 2025. All Rights Reserved. Designed & Developed by
-            Koderpedia.
+            © <Link to={`/`}>SuitSync</Link> 2025. All Rights Reserved. Designed & Developed by <a href="https://koderspedia.com/" target="blanck">Koderpedia</a>.
           </p>
         </div>
-
       </div>
     </footer>
   );

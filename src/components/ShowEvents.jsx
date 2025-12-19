@@ -48,15 +48,15 @@ const ShowEvents = ({ events, onEventClick }) => {
               <p>{event.eventDate}</p>
             </div>
             <div className="event-buttons col-md-3">
-              <button>
+              <Link to={`/event/${event.eventName.toLowerCase().replace(/\s+/g, '-')}`}>
                 <i className="fa-solid fa-eye"></i>
-              </button>
+              </Link>
               <button>
                 <i className="fa-solid fa-trash"></i>
               </button>
-              <Link to={`/event/${event.eventName.toLowerCase().replace(/\s+/g, '-')}`}>
+              <button>
                 <i className="fa-solid fa-pencil"></i>
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -64,7 +64,7 @@ const ShowEvents = ({ events, onEventClick }) => {
             <div className="event-members col-md-5">
               <div className="members-header">
                 <h4>Members</h4>
-                <a href="/add-event-member">+ Add More Member</a>
+                <Link to={'/add-event-member'}>+ Add More Member</Link>
               </div>
               <div className="members-list">
                 {event.members.map((member) => (

@@ -1,17 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import { useParams } from "react-router-dom";
 
 const EventDetails = ({ eventData }) => {
+  useEffect(() => {
+    AOS.init({ duration: 1000, once: true });
+  }, []);
   const { eventName } = useParams();
 
   return (
     <div className="event-details-container">
-      <div
+      <div data-aos="fade-up"
         className="event-banner"
         style={{ backgroundImage: `url(${eventData.eventImage})` }}
       ></div>
       <div className="event-details container">
-        <div className="event-info row">
+        <div className="event-info row" data-aos="fade-up">
           <div className="event-name col-md-6">
             <h2>{eventData.eventName}</h2>
           </div>
@@ -24,12 +29,12 @@ const EventDetails = ({ eventData }) => {
             <p>{eventData.eventDate}</p>
           </div>
         </div>
-        <div className="event-description">
+        <div className="event-description" data-aos="fade-up">
           <h4>Event Description</h4>
           <p>{eventData.eventDescription}</p>
         </div>
         <div className="row detail">
-          <div className="event-members col-md-6">
+          <div className="event-members col-md-6" data-aos="fade-right">
             <h3>Members</h3>
             {eventData.members.map((member) => (
               <div key={member.id} className="member">
@@ -65,7 +70,7 @@ const EventDetails = ({ eventData }) => {
               </div>
             ))}
           </div>
-          <div className="event-look col-md-6">
+          <div className="event-look col-md-6" data-aos="fade-left">
             <h3>Event Look</h3>
             <div className="look-items">
               {eventData.eventLook.map((look, index) => (

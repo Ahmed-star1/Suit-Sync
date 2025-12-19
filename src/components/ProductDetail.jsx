@@ -31,7 +31,7 @@ const ProductDetail = ({ product }) => {
   return (
     <section className="product-detail-container container">
       <div className="row">
-        <div className="product-left-column col-md-6">
+        <div className="product-left-column col-md-6" data-aos="fade-right">
           <div className="main-image">
             <img src={selectedImage} alt={product.name} />
           </div>
@@ -55,7 +55,7 @@ const ProductDetail = ({ product }) => {
             </Swiper>
           </div>
         </div>
-        <div className="product-right-column col-md-6">
+        <div className="product-right-column col-md-6" data-aos="fade-left">
           <h1 className="product-title">{product.name}</h1>
 
           <div className="product-description">

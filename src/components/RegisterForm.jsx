@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const RightColumn = () => {
   const [firstName, setFirstName] = useState("");
@@ -19,7 +19,7 @@ const RightColumn = () => {
   };
 
   return (
-    <div className="right-form-column col-md-6">
+    <div className="right-form-column col-md-6" data-aos="fade-left">
       <div className="logo">
         <img src="/Images/blackLogo.png" alt="Logo" />
       </div>
@@ -111,7 +111,7 @@ const RightColumn = () => {
       </div>
       <div className="auth-link">
         <p>
-          Already have an account? <a href="/login">Login</a>
+          Already have an account? <Link to={'/login'}>Login</Link>
         </p>
       </div>
     </div>

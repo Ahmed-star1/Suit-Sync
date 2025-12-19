@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; 
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -14,7 +14,7 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="right-form-column col-md-6">
+    <div className="right-form-column col-md-6" data-aos="fade-left">
       <div className="logo">
         <img src="/Images/blackLogo.png" alt="Logo" />
       </div>
@@ -60,16 +60,18 @@ const LoginForm = () => {
               <label htmlFor="rememberMe">Remember Me</label>
             </div>
             <div className="forget">
-              <a href="/forget-password">Forgot Password</a>
+              <Link to="/forget-password">Forgot Password</Link>
             </div>
           </div>
 
-          <button type="button" className="designBtn2" onClick={handleChange}>Login</button>
+          <button type="button" className="designBtn2" onClick={handleChange}>
+            Login
+          </button>
         </form>
       </div>
       <div className="auth-link">
         <p>
-          Don't have an account? <a href="/register">Register Now</a>
+          Don't have an account? <Link to="/register">Register Now</Link> 
         </p>
       </div>
     </div>
