@@ -15,7 +15,7 @@ const EventLookTab = () => {
       { title: "White Shirt", image: "/Images/suit1.png" },
       { title: "Cream Shirt", image: "/Images/suit3.png" },
     ],
-    paint: [
+    pant: [
       { title: "Black Pants", image: "/Images/suit4.png" },
       { title: "Grey Pants", image: "/Images/suit3.png" },
     ],

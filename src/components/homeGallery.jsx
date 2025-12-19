@@ -20,7 +20,6 @@ const HomeGallery = () => {
   ];
 
   const [visible, setVisible] = useState(6);
-
   const [modalOpen, setModalOpen] = useState(false);
   const [activeImg, setActiveImg] = useState(null);
 
@@ -47,6 +46,7 @@ const HomeGallery = () => {
   };
 
   return (
+    <>
     <section className="gallery-wrapper" data-aos="fade-up">
       <h2>
         SEE HOW OTHERS SYNCED <br /> THEIR LOOK
@@ -62,7 +62,7 @@ const HomeGallery = () => {
             >
               <img src={img} alt={`Look ${index}`} />
               <div className="img-overlay">
-                <i class="fa-solid fa-magnifying-glass"></i>
+                <i className="fa-solid fa-magnifying-glass"></i>
               </div>
             </div>
           ))}
@@ -75,18 +75,21 @@ const HomeGallery = () => {
         )}
       </div>
 
-      {modalOpen && (
-        <div className="modal-overlay">
+      
+    </section>
+    {modalOpen && (
+        <div className="gallery-modal">
           <div className="modal-content">
             <button className="close-modal" onClick={closeModal}>
-              <i class="fa-solid fa-xmark"></i>
+              <i className="fa-solid fa-xmark"></i>
             </button>
-
-            <img src={activeImg} alt="Preview" className="modal-image" />
+            <div className="suit-image">
+              <img src={activeImg} alt="Preview" className="modal-image" />
+            </div>
           </div>
         </div>
       )}
-    </section>
+      </>
   );
 };
 
