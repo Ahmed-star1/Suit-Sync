@@ -17,18 +17,17 @@ const HomeAbout = () => {
           <div className="col-md-6" data-aos="fade-left">
             <div className="content-box">
               <h2>
-                Crafted with
-                <br /> Care, Delivered
-                <br /> with Trust
+                Find your
+                <br /> SIGNATURE SUIT
+                <br /> OR TUXEDO
               </h2>
               <p>
-                This is dummy copy. It is not meant to be read. It has been
-                placed here solely to demonstrate the look and feel of finished,
-                typeset text. Only for show. He who searches for meaning here
-                will be sorely disappointed.
+                Find your signature look, set your event details, as assign
+                outfits with ease. From sleek tuxedos to modern suits, SuitSync
+                makes it easy to coordinate your crew in style.
               </p>
-              <Link to={`/about-us`} className="designBtn">
-                Read More
+              <Link to={`/shop`} className="designBtn">
+                Shop Now 
               </Link>
             </div>
           </div>

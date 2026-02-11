@@ -1,25 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { Instagram, Twitter, Facebook } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { getAccessToken } from "../Redux/Utils/localStore";
 
 const nav_items = [
   { name: "Home", to: "/", key: "home" },
   { name: "About us", to: "/about-us", key: "about" },
-  { name: "Suits", to: "/suits", key: "suits" },
+  { name: "Shop", to: "/shop", key: "shop" },
   { name: "How it Works", to: "#", key: "howitworks" },
   { name: "Contact us", to: "/contact-us", key: "contact" },
 ];
 
 const Header = () => {
   const [activeLink, setActiveLink] = useState("home");
-  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const [token, setToken] = useState(getAccessToken());
 
   useEffect(() => {
     const currentPath = window.location.pathname;
 
-    const currentItem = nav_items.find(item => {
+    const currentItem = nav_items.find((item) => {
       if (currentPath === "/" && item.to === "/") return true;
       if (currentPath !== "/" && item.to !== "/") {
         return currentPath.startsWith(item.to);
@@ -30,6 +32,18 @@ const Header = () => {
     if (currentItem) {
       setActiveLink(currentItem.key);
     }
+  }, []);
+
+  useEffect(() => {
+    const checkToken = () => {
+      setToken(getAccessToken());
+    };
+
+    window.addEventListener("storage", checkToken);
+
+    return () => {
+      window.removeEventListener("storage", checkToken);
+    };
   }, []);
 
   useEffect(() => {
@@ -53,8 +67,8 @@ const Header = () => {
   };
 
   const handleModalClose = () => {
-    setIsModalOpen(false); 
-    setSearchQuery(""); 
+    setIsModalOpen(false);
+    setSearchQuery("");
   };
 
   const handleSearchInputChange = (e) => {
@@ -73,7 +87,9 @@ const Header = () => {
                 </span>
                 <span className="separator">|</span>
                 <span>
-                  <a href="mailto:info@suitsync.com">Email Now: info@suitsync.com</a>
+                  <a href="mailto:info@suitsync.com">
+                    Email Now: info@suitsync.com
+                  </a>
                 </span>
               </div>
             </div>
@@ -101,15 +117,12 @@ const Header = () => {
                 <img src="/Images/suitsynclogo.svg" alt="SuitSync Logo" />
               </Link>
             </div>
-            <div className="col-md-7">
+            <div className="col-md-6">
               <nav className="navbar-menu">
                 <ul className="menu-list">
                   {nav_items.map((item) => (
                     <li className="menu-item" key={item.key}>
-                      <Link
-                        to={item.to}
-                        className={getLinkClassName(item.key)}
-                      >
+                      <Link to={item.to} className={getLinkClassName(item.key)}>
                         {item.name}
                       </Link>
                     </li>
@@ -118,7 +131,7 @@ const Header = () => {
               </nav>
             </div>
 
-            <div className="col-md-3">
+            <div className="col-md-4">
               <div className="navbar-actions">
                 <button className="search" onClick={handleSearchButtonClick}>
                   <i className="fa-solid fa-magnifying-glass"></i>
@@ -126,9 +139,15 @@ const Header = () => {
                 <button onClick={handleChange}>
                   <i className="fa-solid fa-cart-shopping"></i>
                 </button>
-                <Link to="/login" className="designBtn">
-                  Login
-                </Link>
+                {token ? (
+                  <Link to="/events" className="designBtn">
+                    My Events
+                  </Link>
+                ) : (
+                  <Link to="/login" className="designBtn">
+                    Login
+                  </Link>
+                )}
               </div>
             </div>
           </div>

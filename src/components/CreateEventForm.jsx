@@ -1,118 +1,286 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaPlus, FaPen } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getEventData, setEventData, clearEventData } from "../Redux/Utils/localStore";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
 const CreateEventForm = () => {
-  const [eventImage, setEventImage] = useState(null);
   const fileInputRef = useRef(null);
-
-  const handleImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const preview = URL.createObjectURL(file);
-      setEventImage(preview);
-    }
-  };
-
-  const handleContainerClick = () => {
-    fileInputRef.current.click();
-  };
-
-  const handlePlusClick = () => {
-    fileInputRef.current.click();
-  };
-
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleClick = () => {
-    navigate("/add-event-member");
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [currentEventId, setCurrentEventId] = useState(null);
+  const [formValues, setFormValues] = useState({
+    name: "",
+    type: "",
+    date: "",
+    location: "",
+    description: "",
+    image: ""
+  });
+
+  useEffect(() => {
+    const savedEvents = getEventData();
+    if (savedEvents?.length) {
+      const latest = savedEvents[savedEvents.length - 1];
+      
+      setCurrentEventId(latest.id);
+      
+      if (latest.image) setImagePreview(latest.image);
+      if (latest.imageFile) setImageFile(latest.imageFile);
+      
+      setFormValues({
+        name: latest.name || "",
+        type: latest.type || "",
+        date: latest.date || "",
+        location: latest.location || "",
+        description: latest.description || "",
+        image: latest.imageFile || ""
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const eventPaths = ["/create-event", "/add-event-member", "/edit-event", "/edit-event-members"];
+    const isEventRoute = eventPaths.some(path => location.pathname.startsWith(path));
+    
+    if (!isEventRoute) {
+      clearEventData();
+    }
+  }, [location.pathname]);
+
+  const handleImageSelect = (e, setFieldValue) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+      setFieldValue("image", file);
+    };
+    reader.readAsDataURL(file);
   };
+
+  const saveEventToLocalStorage = (values) => {
+    const events = getEventData() || [];
+    
+    if (currentEventId) {
+      const eventIndex = events.findIndex(event => event.id === currentEventId);
+      if (eventIndex !== -1) {
+        events[eventIndex] = {
+          ...events[eventIndex],
+          name: values.name,
+          type: values.type,
+          date: values.date,
+          location: values.location,
+          description: values.description,
+          image: imagePreview,
+          imageFile: imageFile
+        };
+      }
+    } else {
+      const eventData = {
+        id: Date.now().toString(),
+        name: values.name,
+        type: values.type,
+        date: values.date,
+        location: values.location,
+        description: values.description,
+        image: imagePreview,
+        imageFile: imageFile,
+        event_member: []
+      };
+      events.push(eventData);
+    }
+    
+    setEventData(events);
+  };
+
+  const validationSchema = Yup.object({
+  name: Yup.string()
+    .required("Event name is required")
+    .max(255, "Max 255 characters"),
+
+  type: Yup.string()
+    .required("Event type is required")
+    .oneOf(
+      [
+        "Bachelor Party",
+        "Wedding Ceremony",
+        "Rehearsal Dinner",
+        "Wedding Reception",
+      ],
+      "Invalid event type"
+    ),
+
+  date: Yup.date()
+    .required("Event date is required"),
+
+  location: Yup.string()
+    .required("Event location is required"),
+
+  description: Yup.string()
+    .required("Description is required")
+    .min(10, "Minimum 10 characters")
+    .max(2000, "Maximum 2000 characters"),
+
+  image: Yup.mixed()
+    .required("Image is required")
+    .test(
+      "fileType",
+      "Image must be PNG, JPG or JPEG format",
+      (value) => {
+        if (value && value instanceof File) {
+          return ["image/png", "image/jpeg", "image/jpg"].includes(value.type);
+        }
+        return !!value;
+      }
+    )
+    .test(
+      "fileSize",
+      "Image size must be less than 5MB",
+      (value) => {
+        if (value && value instanceof File) {
+          return value.size <= 5 * 1024 * 1024;
+        }
+        return !!value;
+      }
+    ),
+});
 
   return (
     <div className="col-md-9 right-column create-event">
       <div className="right-column-content">
         <h2>Create An Event</h2>
-        <div className="create-event-form">
-          <div className="row">
-            <div className="input-group">
-              <label>Event Name</label>
-              <input
-                className="input"
-                type="text"
-                placeholder="Enter Event Name"
-              />
-            </div>
-            <div className="input-group">
-              <label>Select Event Type</label>
-              <div className="select-field">
-                <select>
-                  <option>Select Event Type</option>
-                  <option>Wedding</option>
-                  <option>Birthday</option>
-                  <option>Corporate Event</option>
-                </select>
+
+        <Formik
+          initialValues={formValues}
+          enableReinitialize={true}
+          validationSchema={validationSchema}
+          onSubmit={(values) => {
+            saveEventToLocalStorage(values);
+            navigate("/add-event-member");
+          }}
+        >
+          {({ setFieldError, setFieldValue }) => (
+            <Form className="create-event-form">
+
+              <div className="row">
+                <div className="input-group">
+                  <label>Event Name *</label>
+                  <Field
+                    className="input"
+                    type="text"
+                    name="name"
+                    placeholder="Enter Event Name"
+                  />
+                  <ErrorMessage name="name" component="div" className="text-danger" />
+                </div>
+
+                <div className="input-group">
+                  <label>Select Event Type *</label>
+                  <div className="select-field">
+                    <Field as="select" name="type" className="input">
+                      <option value="">Select Event Type</option>
+                      <option value="Wedding Ceremony">Wedding Ceremony</option>
+                      <option value="Wedding Reception">Wedding Reception</option>
+                    </Field>
+                  </div>
+                  <ErrorMessage name="type" component="div" className="text-danger" />
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="row">
-            <div className="input-group">
-              <label>Event Date</label>
-              <input className="input" type="date" />
-            </div>
-            <div className="input-group">
-              <label>Event Location</label>
-              <input
-                className="input"
-                type="text"
-                placeholder="Enter Location"
-              />
-              <i class="fa-solid fa-location-crosshairs"></i>
-            </div>
-          </div>
+              <div className="row">
+                <div className="input-group">
+                  <label>Event Date *</label>
+                  <Field
+                    className="input"
+                    type="date"
+                    name="date"
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                  <ErrorMessage name="date" component="div" className="text-danger" />
+                </div>
 
-          <div className="text-field">
-            <label>Event Description</label>
-            <textarea
-              className="textarea-input"
-              placeholder="Write Event Description Here..."
-            ></textarea>
-          </div>
+                <div className="input-group">
+                  <label>Event Location *</label>
+                  <Field
+                    className="input"
+                    type="text"
+                    name="location"
+                    placeholder="Enter Location"
+                  />
+                  <i className="fa-solid fa-location-crosshairs"></i>
+                  <ErrorMessage name="location" component="div" className="text-danger" />
+                </div>
+              </div>
 
-          <div className="profile-image">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handleImageSelect}
-            />
+              <div className="text-field">
+                <label>Event Description</label>
+                <Field
+                  as="textarea"
+                  className="textarea-input"
+                  name="description"
+                  placeholder="Write Event Description Here..."
+                  rows="4"
+                />
+                <ErrorMessage name="description" component="div" className="text-danger" />
+              </div>
 
-            {eventImage ? (
-              <div className="image-container" style={{ position: "relative" }}>
-                <img src={eventImage} alt="Event" />
+              <div className="profile-image">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) =>
+                    handleImageSelect(e, setFieldValue)
+                  }
+                />
+
+                {imagePreview ? (
+                  <div className="image-container" style={{ position: "relative" }}>
+                    <img src={imagePreview} alt="Event" />
+                    <button
+                      type="button"
+                      className="image-edit-btn"
+                      onClick={() => fileInputRef.current.click()}
+                    >
+                      <FaPen size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="placeholder-box" onClick={() => fileInputRef.current.click()}>
+                    <FaPlus />
+                  </div>
+                )}
+
+                <ErrorMessage name="image" component="div" className="text-danger" />
+              </div>
+
+              <div className="buttons-row">
                 <button
+                  className="designBtn2"
                   type="button"
-                  className="image-edit-btn"
-                  onClick={handleContainerClick}
+                  onClick={() => {
+                    clearEventData();
+                    navigate(-1);
+                  }}
                 >
-                  <FaPen size={16} />
+                  Back
+                </button>
+                <button className="designBtn2" type="submit">
+                  Next
                 </button>
               </div>
-            ) : (
-              <div className="placeholder-box" onClick={handlePlusClick}>
-                <FaPlus />
-              </div>
-            )}
-          </div>
 
-          <div className="buttons-row">
-            <button className="designBtn2">Back</button>
-            <button className="designBtn2" onClick={handleClick}>
-              Next
-            </button>
-          </div>
-        </div>
+            </Form>
+          )}
+        </Formik>
       </div>
     </div>
   );

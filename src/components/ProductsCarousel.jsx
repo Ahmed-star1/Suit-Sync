@@ -56,7 +56,7 @@ const TrendingStyles = ({ type = "trending", data = [] }) => {
   ];
 
   const handleDetailpage = () => {
-    navigate("/suits/product/2");
+    navigate("/shop/product/2");
   };
 
   const displayData =

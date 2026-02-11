@@ -1,3 +1,4 @@
+// MeasurementTabsBar.js
 import React, { useState } from "react";
 import MeasurementForm from "../components/MeasurementForm";
 import { AnimatePresence, motion } from "framer-motion";
@@ -8,19 +9,23 @@ const MeasurementTabsBar = () => {
   const measurementData = {
     shirt: {
       title: "Shirt Measurement",
-      fields: ["Chest", "Overarm", "Neck", "Sleeve Length", "Waist", "Outseam"],
+      fields: ["Shirt Size"],
+      type: "shirt",
     },
     pant: {
       title: "Pant Measurement",
-      fields: ["Waist", "Hips", "Inseam", "Rise", "Outseam", "Thigh"],
+      fields: ["Pant Size", "Pant Length"],
+      type: "pant",
     },
-    suit: {
-      title: "Suit Measurement",
-      fields: ["Chest", "Shoulder", "Sleeve Length", "Waist", "Jacket Length"],
+    coat: {
+      title: "Coat Measurement",
+      fields: ["Coat Size", "Coat Length"],
+      type: "coat",
     },
     shoes: {
       title: "Shoes Measurement",
-      fields: ["Foot Length", "Foot Width", "Size (EU)", "Size (US)"],
+      fields: ["Shoes Size"],
+      type: "shoes",
     },
   };
 
@@ -33,7 +38,7 @@ const MeasurementTabsBar = () => {
         </div>
 
         <div className="main-tabs">
-          {["shirt", "pant", "suit", "shoes"].map((item) => (
+          {["shirt", "pant", "coat", "shoes"].map((item) => (
             <button
               key={item}
               className={`tab-btn ${activeTab === item ? "active" : ""}`}
@@ -55,9 +60,11 @@ const MeasurementTabsBar = () => {
             <MeasurementForm
               title={measurementData[activeTab].title}
               fields={measurementData[activeTab].fields}
+              options={measurementData[activeTab].type}
             />
           </motion.div>
         </AnimatePresence>
+
         <div className="buttons-row">
           <button className="designBtn2">Back</button>
           <button className="designBtn2">Save</button>

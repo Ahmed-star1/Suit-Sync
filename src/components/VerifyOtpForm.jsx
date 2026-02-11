@@ -1,29 +1,27 @@
 import React, { useEffect } from "react";
+import Loader from "../components/Loader";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { useNavigate } from "react-router-dom";
-
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-
 import { useDispatch, useSelector } from "react-redux";
-import { verifyToken } from "../Redux/Reducers/authSlice";
-
-import Loader from "../components/Loader";
+import { verifyOtp } from "../Redux/Reducers/authSlice";
 
 const OtpSchema = Yup.object().shape({
-  token: Yup.string()
-    .required("OTP is required")
-    .min(4, "OTP must be at least 4 digits"),
+  otp: Yup.number()
+    .typeError("OTP must be a number")
+    .required("OTP is required"),
 });
 
-const VerifyCodeForm = () => {
+const VerifyOtpForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { loading, error, forgetEmail } = useSelector(
-    (state) => state.auth
-  );
+  const { loading, error, registeredEmail } = useSelector((state) => state.auth);
+  
+  const emailFromStorage = localStorage.getItem("registeredEmail");
+  const emailToUse = registeredEmail || emailFromStorage;
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -41,10 +39,15 @@ const VerifyCodeForm = () => {
     return <div>{error.message}</div>;
   };
 
+  useEffect(() => {
+    if (!emailToUse) {
+      navigate("/register");
+    }
+  }, [emailToUse, navigate]);
+
   return (
     <>
       {loading && <Loader />}
-
       <div className="right-form-column col-md-6" data-aos="fade-left">
         <div className="logo">
           <img src="/Images/blackLogo.png" alt="Logo" />
@@ -53,22 +56,20 @@ const VerifyCodeForm = () => {
         <div className="box">
           <h2>Verify Code</h2>
           <p>Verify code which is sent to your email address</p>
-
           <Formik
-            initialValues={{
-              token: "",
-            }}
+            initialValues={{ otp: "" }}
             validationSchema={OtpSchema}
             onSubmit={(values) => {
               const payload = {
-                email: forgetEmail,
-                token: values.token,
+                email: emailToUse, 
+                otp: Number(values.otp),
               };
 
-              dispatch(verifyToken(payload))
+              dispatch(verifyOtp(payload))
                 .unwrap()
                 .then(() => {
-                  navigate("/reset-password");
+                  localStorage.removeItem("registeredEmail");
+                  navigate("/my-account");
                 })
                 .catch(() => {});
             }}
@@ -79,41 +80,29 @@ const VerifyCodeForm = () => {
                   <Field
                     className="input"
                     type="text"
-                    name="token"
+                    name="otp"
                     placeholder="Enter OTP"
                   />
 
                   <small className="text-danger">
-                    <ErrorMessage name="token" />
+                    <ErrorMessage name="otp" />
                   </small>
                 </div>
 
                 {error && (
-                  <div className="mt-2 text-danger">
-                    {renderApiError()}
-                  </div>
+                  <div className="mt-2 text-danger">{renderApiError()}</div>
                 )}
 
-                <button
-                  type="submit"
-                  className="designBtn2"
-                  disabled={loading}
-                >
-                  {loading ? "Verifying..." : "Verify"}
+                <button type="submit" className="designBtn2" disabled={loading}>
+                  {loading ? "Loading..." : "Verify"}
                 </button>
               </Form>
             )}
           </Formik>
-        </div>
-
-        <div className="auth-link">
-          <p>
-            Don’t get a code <a href="#">Send Again</a>
-          </p>
         </div>
       </div>
     </>
   );
 };
 
-export default VerifyCodeForm;
+export default VerifyOtpForm;

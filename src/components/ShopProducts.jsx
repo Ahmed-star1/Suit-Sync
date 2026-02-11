@@ -11,9 +11,6 @@ const ShopProducts = ({ selectedFilters }) => {
   ];
 
   const filteredProducts = products.filter((product) => {
-    const matchBuild =
-      selectedFilters["build-type"].length === 0 ||
-      selectedFilters["build-type"].includes(product.build);
 
     const matchCategory =
       selectedFilters.category.length === 0 ||
@@ -25,11 +22,11 @@ const ShopProducts = ({ selectedFilters }) => {
 
     const matchRentBuy = true; 
 
-    return matchBuild && matchCategory && matchColor && matchRentBuy;
+    return matchCategory && matchColor && matchRentBuy;
   });
 
   const handleProductClick = (productId) => {
-    navigate(`/suits/product/2${productId}`);
+    navigate(`/shop/product/2${productId}`);
   };
 
   return (

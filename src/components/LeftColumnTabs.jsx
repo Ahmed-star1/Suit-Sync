@@ -10,6 +10,7 @@ const LeftColumnTabs = () => {
   };
 
   return (
+    <>
     <div className="left-column col-md-3">
       <ul className="sidebar-drawer">
         <li>
@@ -27,11 +28,11 @@ const LeftColumnTabs = () => {
             <img src="/Images/measurement.png" /> Measurement
           </NavLink>
         </li>
-        <li>
+        {/* <li>
           <NavLink to="/event-look" className="sidebar-item">
             <img src="/Images/look.png" /> Look
           </NavLink>
-        </li>
+        </li> */}
         <li>
           <NavLink to="/my-orders" className="sidebar-item">
             <img src="/Images/orders.png" /> My Orders
@@ -54,11 +55,13 @@ const LeftColumnTabs = () => {
         </li>
       </ul>
 
-      <LogoutModal
+      
+    </div>
+    <LogoutModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-    </div>
+      </>
   );
 };
 

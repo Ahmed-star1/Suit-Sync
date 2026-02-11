@@ -1,14 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../Redux/Reducers/authSlice";
+import { clearEventData } from "../Redux/Utils/localStore";
 
 const LogoutModal = ({ isOpen, onClose }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
   if (isOpen) {
-    document.body.style.overflow = "hidden"; 
+    document.body.style.overflow = "hidden";
   } else {
-    document.body.style.overflow = "auto"; 
+    document.body.style.overflow = "auto";
   }
 
   if (!isOpen) return null;
+
+  const handleLogout = async () => {
+    if (loading) return;
+
+    setLoading(true);
+
+    await dispatch(logoutUser());
+    clearEventData();
+
+    document.body.style.overflow = "auto";
+
+    onClose();  
+    navigate("/login");   
+  };
 
   return (
     <AnimatePresence>
@@ -28,9 +50,27 @@ const LogoutModal = ({ isOpen, onClose }) => {
                 You're about to leave your Suit Sync account. Don't worry your
                 progress and preferences are safely saved.
               </p>
+
               <div className="logout-modal-buttons">
-                <button className="designBtn2">Yes, Please Proceed</button>
-                <button className="designBtn2" onClick={onClose}>Cancel</button>
+                <button
+                  className="designBtn2"
+                  onClick={handleLogout}
+                  disabled={loading}
+                  style={{
+                    opacity: loading ? 0.7 : 1,
+                    cursor: loading ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {loading ? "Logging out..." : "Yes, Please Proceed"}
+                </button>
+
+                <button
+                  className="designBtn2"
+                  onClick={onClose}
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </motion.div>

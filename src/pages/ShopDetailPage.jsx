@@ -10,18 +10,42 @@ const ShopDetailPage = () => {
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
   }, []);
+
   const product = {
     id: 2,
-    name: "BLACK TUXEDO SUIT",
+    name: "Tan Performance Wedding Suit",
     description:
-      "This is Dummy Copy. It is Not Never To Be Bloed If Hole Save/ Priced Here Sadly, To Downtowns? The Lode And No Off Inside, I swear! You Dove you to the Sacrifice for Kwoning Have We Be Sadly Dashboard",
-    sizes: ["S", "M", "L", "XL"],
+      "This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text.",
+
+    pantSizes: [
+      { label: "Short", values: ["34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52"] },
+      { label: "Regular", values: ["28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60"] },
+      { label: "Long", values: ["28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60"] },
+    ],
+
+    coatSizes: [
+      { label: "Short", values: ["34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"] },
+      { label: "Regular", values: ["34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66"] },
+      { label: "Long", values: ["34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66"] },
+      { label: "XL", values: ["38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52"] },
+    ],
+
+    shirtSizes: ["Small", "Medium", "Large", "XL", "2XL", "3XL"],
+
+    addons: {
+      tie: { label: "Tie", sizes: ["Regular", "Long"] }, 
+      bow: { label: "Bow", sizes: ["Small", "Medium", "Large"] },
+      shoes: { label: "Shoes", sizes: ["7", "8", "9", "10", "11", "12", "13", "14"] }, 
+    },
+
     colors: [
       { name: "ROYAL BLUE", hex: "#4169E1" },
       { name: "BLACK", hex: "#000000" },
     ],
-    buyPrice: "$500.00",
-    rentPrice: "$50.00",
+
+    buyPrice: "$479.00",
+    rentPrice: "$190.00",
+
     images: [
       "/Images/suit1.png",
       "/Images/suit2.png",

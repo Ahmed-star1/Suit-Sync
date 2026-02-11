@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 
 const ScrollContext = createContext();
 
-// This provider will be used to wrap the app
 export const ScrollProvider = ({ children }) => {
   const location = useLocation();
 

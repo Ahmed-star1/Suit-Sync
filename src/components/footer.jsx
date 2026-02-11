@@ -5,7 +5,7 @@ const Footer = () => {
   const quickLinks = [
     { name: "Home", to: "/" },
     { name: "About Us", to: "/about-us" },
-    { name: "Suits", to: "/suits" },
+    { name: "Shop", to: "/shop" },
     { name: "How It Works", to: "#" },
   ];
 
@@ -18,7 +18,7 @@ const Footer = () => {
   return (
     <footer className="site-footer">
       <div className="container">
-        <div className="f-newsletter row align-items-center">
+        {/* <div className="f-newsletter row align-items-center">
           <div className="col-md-6 f-subscribe">
             <h3>SUBSCRIBE OUR NEWSLETTER</h3>
             <p>
@@ -40,7 +40,7 @@ const Footer = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="footer-main-content row">
           <div className="col-md-5 f-logo">

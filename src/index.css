@@ -14,6 +14,30 @@ span { font-size: 14px; font-weight: normal; line-height: normal; font-style: no
 li { font-size: 14px; font-weight: normal; line-height: normal; font-style: normal; font-variant: normal; font-family: "Urbanist", sans-serif; color: #333; } 
 a { font-size: 1.2vw; font-weight: normal; line-height: normal; font-style: normal; font-variant: normal; font-family: "Urbanist", sans-serif; color: #333; text-decoration: none; transition: all 0.3s ease 0s; cursor: pointer; }
 
+/* Loader CSS */
+.global-loader {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.801); display: flex; align-items: center; justify-content: center; z-index: 9999;}
+.ball-loader {display: flex; gap: 20px;}
+.ball-loader span {width: 20px; height: 20px; background: #fff; border-radius: 50%; animation: bounce 1.2s infinite ease-in-out;}
+.ball-loader span:nth-child(1) {animation-delay: 0s;}
+.ball-loader span:nth-child(2) {animation-delay: 0.2s;}
+.ball-loader span:nth-child(3) {animation-delay: 0.4s;}
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.3;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Sweet Loader */
+.swal2-title {color:#000 !important; text-transform: uppercase !important; font-size:32px !important; padding-top: 10px !important;}
+.swal2-html-container{padding-top: 0px !important;}
+.swal2-confirm{padding: 13px 60px; background: #000000; color: white; border-radius: 50px; font-weight: 600; font-size: 16px; transition: .5s; border: solid 2px black;}
+.swal2-confirm:hover {background: white; color: black; border: 2px solid #000; transform: none !important;}
+
 /* Header */
 header{position: absolute; width: 100%; z-index: 999;}
 
@@ -31,7 +55,7 @@ header .navbar {padding-top: 1rem; padding-bottom: 1rem; background-color: #ffff
 header .navbar .container{display: block;}
 header .navbar-menu {display: flex; justify-content: center;}
 header .menu-list {display: flex; list-style: none; padding: 0; margin: 0; gap: 40px;}
-header .menu-link {color: #000; font-weight: 400; transition: .5s; position: relative; padding-bottom: 8px;}
+header .menu-link {color: #000; font-weight: 400; font-size: 16px; transition: .5s; position: relative; padding-bottom: 8px;}
 header .menu-link::after {content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background-color: #000000; transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease-out;}
 header .menu-link:hover::after {transform: scaleX(1);}
 header .menu-link:hover {color: #000000;}
@@ -40,18 +64,18 @@ header .menu-link.active {color: #000000;}
 header .navbar-actions {display: flex; align-items: center; gap: 1rem; justify-content: flex-end;}
 header .navbar-actions button {display: flex; justify-content: center; border:none; align-items: center; width: 50px; height: 50px; background: #f0f0f0; border-radius: 50%; transition: .5s; color:#000;}
 header .navbar-actions button:hover {background: #000; color: #fff !important;}
-header .designBtn {padding: 13px 39px; background: #000000; color: white; border-radius: 50px; font-weight: 600; font-size: 16px; transition: .5s; border: solid 2px black;}
+header .designBtn {padding: 13px 40px; background: #000000; color: white; border-radius: 50px; font-weight: 600; font-size: 16px; transition: .5s; border: solid 2px black;}
 header .designBtn:hover {background: white; color: black; border: 2px solid #000; transform: none !important;}
 
 /* Search Modal */
 .search-modal{position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgb(0 0 0 / 83%); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999;}
-.search-modal-content{width: 1000px; background: #fff;border-radius: 20px; position: relative; padding: 60px 30px 30px 20px; gap: 20px; animation: fadeIn 0.35s ease; display: flex; flex-direction: column; justify-content: center; align-items: center;}
+.search-modal-content{width: 550px; background: #fff;border-radius: 20px; position: relative; padding: 60px 30px 30px 20px; gap: 20px; animation: fadeIn 0.35s ease; display: flex; flex-direction: column; justify-content: center; align-items: center;}
 .search-modal .close-modal{position: absolute; top: 12px; transition: .5s; right: 14px; background: #000; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 16px; font-weight: 900; cursor: pointer; border: 2px solid #000;}
 .close-modal:hover{background: transparent; color: #000;}
 .search-modal h2{color: #000;}
-.search-modal input{padding: 13px 20px; border: none; border-radius: 30px; background-color: #ffffff; color: #000; border: 2px solid #000; font-size: 16px; outline: none; font-family: "Urbanist", sans-serif; width: 50%;}
+.search-modal input{padding: 13px 20px; border: none; border-radius: 30px; background-color: #ffffff; color: #000; border: 2px solid #000; font-size: 16px; outline: none; font-family: "Urbanist", sans-serif; width: 80%;}
 .search-modal input::placeholder{color: #000;}
-.search-modal .designBtn{width: 50%;}
+.search-modal .designBtn{width: 80%;}
 
 /* Footer */
 .site-footer {background-image: url(/public/Images/footer-background.png); background-size: cover; background-repeat: no-repeat; padding-top: 70px; padding-bottom: 30px; margin-top:90px;}
@@ -144,11 +168,12 @@ header .designBtn:hover {background: white; color: black; border: 2px solid #000
 
 /* Why Choose Us Section */
 .about-choose{margin-top: 70px; background: #F5F5F5;}
+.about-choose .row{align-items: center;}
 .about-choose h2{color: #000; margin-bottom: 20px;}
 .about-choose p{color: #757575;}
-.about-choose .col-md-6:nth-child(1){padding-left: 110px; padding-right: 40px; padding-top: 80px;}
+.about-choose .col-md-6:nth-child(1){padding-left: 110px; padding-right: 40px;}
 .about-choose .col-md-6:nth-child(2){padding-right: 0px;}
-.about-choose .col-md-6:nth-child(2) img{width: 100%;}
+.about-choose .col-md-6:nth-child(2) img{width: 100%; height: 750px;}
 .about-choose ul{display: flex; list-style: none; flex-wrap: wrap; padding: 0px; margin: 0px; gap: 40px; margin-top: 30px !important;}
 .about-choose ul li{display: flex; gap: 20px; align-items: center;}
 .about-choose ul li h4{font-size: 18px; font-weight: 600; color: #000; margin-bottom: 5px;}
@@ -210,19 +235,33 @@ header .designBtn:hover {background: white; color: black; border: 2px solid #000
 .product-detail-page header{position: relative; border-bottom: 1px solid #F0F0F0;}
 .product-detail-page footer{margin-top: 0px;}
 .product-detail-page .product-detail-container{margin-top: 50px;}
-.product-detail-page .main-image img {object-fit: cover; object-position: top; width: 100%; height: 500px;}
+.product-detail-page .main-image img {object-fit: cover; object-position: top; width: 100%; height: 610px;}
 .product-detail-page .image-gallery {margin-top: 10px;}
 .product-detail-page .image-gallery img {width: 100%; height: 100px; object-fit: cover;cursor: pointer;border: 2px solid transparent; transition: .5s;}
 .product-detail-page .image-gallery img.active, .image-gallery img:hover {border-color: #000;}
 .product-detail-page .product-title {font-size: 42px; font-weight: 800; line-height: 50px;text-transform: uppercase; color: #000000; border-bottom: 1px solid #DBDBDB; padding-bottom: 20px; margin-bottom: 30px;}
-.product-detail-page .product-detail-page h5 {font-size: 18px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; color: #000;}
+.product-detail-page .product-detail-container h5 {font-size: 18px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; color: #000;}
 .product-detail-page .product-description p {color: #000; margin-bottom: 20px;}
-.product-detail-page .product-size{display: flex; justify-content: space-between;}
-.product-detail-page .size-options {display: flex; gap: 10px; margin-bottom: 15px;}
+.product-detail-page .product-size{display: flex; flex-direction: column; gap: 20px;}
+.product-detail-page .sizes-dropdown{display: flex; gap: 20px;}
+.product-detail-page .sizes-dropdown .custom-select-wrapper{width: 50%;}
+.product-detail-page .product-size .sizes {position: relative;}
+.product-detail-page .custom-select-wrapper{position: relative;}
+.product-detail-page .custom-select { border: 2px solid #000; padding: 12px 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: #fff;}
+.product-detail-page .custom-select span{color: #000; font-size: 16px; font-weight: 500; font-family: "Urbanist", sans-serif;}
+.product-detail-page .custom-select.open {border-color: #000;}
+.product-detail-page .custom-select i {font-size: 12px; color: #000;}
+.product-detail-page .custom-select-dropdown {position: absolute; top: 110%; left: 0; width: 100%; background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); z-index: 10; padding: 0px; height: 130px; overflow-y: scroll;}
+.product-detail-page .custom-select-dropdown li {padding: 13px 15px; cursor: pointer; list-style: none; transition: .5s; border-radius: 10px; color: #000; font-size: 16px; font-weight: 500; font-family: "Urbanist", sans-serif;}
+.product-detail-page .custom-select-dropdown li:hover, .product-detail-page .custom-select-dropdown li.active { background: #000 !important; color: #fff;}
+.product-detail-page .custom-select-dropdown::-webkit-scrollbar {width: 4px;}
+.product-detail-page .custom-select-dropdown::-webkit-scrollbar-track { background: #fff; border-radius: 10px;}
+.product-detail-page .custom-select-dropdown::-webkit-scrollbar-thumb { background: #000; border-radius: 10px;}
+.product-detail-page .size-options{display: flex; gap: 10px; margin-bottom: 15px;}
 .product-detail-page .size-options button {width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 1px solid #000; border-radius: 50%; background: white; cursor: pointer; font-size: 18px; font-weight: 400; transition: .5s; text-transform: uppercase;}
 .product-detail-page .size-options button.active, .size-options button:hover {background: #000; color: white;}
-.product-detail-page .size-actions {display: flex; flex-direction: column; align-items: end; gap: 15px; margin-bottom: 30px;}
-.product-detail-page .size-chart-btn, .measurement-btn {padding: 8px 15px; border: none; background: #F5F5F5; cursor: pointer; font-size: 12px; text-transform: uppercase; border-radius: 50px; transition: .5s;}
+.product-detail-page .size-actions {display: flex; gap: 15px; margin-bottom: 30px; margin-top: 30px;}
+.product-detail-page .size-chart-btn, .measurement-btn {padding: 10px 20px; border: none; background: #F5F5F5; cursor: pointer; font-size: 14px; text-transform: uppercase; border-radius: 50px; transition: .5s;}
 .product-detail-page .size-chart-btn:hover, .measurement-btn:hover {background: #000; color: #fff !important; text-decoration: none !important;}
 .product-detail-page .color-options {display: flex; gap: 20px; margin-bottom: 30px;}
 .product-detail-page .color-option {display: flex;align-items: center; gap: 8px; cursor: pointer; border: 2px solid transparent; padding: 5px; border-radius: 50px; transition: .5s;}
@@ -230,8 +269,10 @@ header .designBtn:hover {background: white; color: black; border: 2px solid #000
 .product-detail-page .color-swatch {width: 22px; height: 22px; border-radius: 50%;}
 .product-detail-page .color-name {font-size: 16px; color: #000;}
 .product-detail-page .prices {display: flex; gap: 10px; margin-bottom: 30px;}
-.product-detail-page .price-option {display: flex;align-items: center; border: 1px solid #000000; color: #000; text-align: center; padding: 10px 20px; border-radius: 50px;}
-.product-detail-page .price-option span{color: #000; font-size: 16px; font-weight: 400; }
+.product-detail-page .price-option {display: flex;align-items: center; gap: 8px; border: 1px solid #000000; color: #000; text-align: center; padding: 10px 20px; border-radius: 50px; cursor: pointer; transition: .5s;}
+.product-detail-page .prices .price-option:hover, .product-detail-page .price-option.active{background: #000;}
+.product-detail-page .price-option span{color: #000; font-size: 16px; font-weight: 400; transition: .5s;}
+.product-detail-page .prices .price-option:hover span, .product-detail-page .price-option.active span{color: #fff !important;}
 .product-detail-page .product-actions {display: flex; gap: 15px; margin-bottom: 30px; border-top: 1px solid #DBDBDB; padding-top: 30px; align-items: center; justify-content: space-between;}
 .product-detail-page .product-actions button {padding: 10px 30px; color: #fff; border-radius: 50px; border: 2px solid transparent; cursor: pointer; font-size: 16px; background: #000; font-weight: 500; text-transform: uppercase; transition: .5s;}
 .product-detail-page .product-actions button:hover{color: #000 !important; background: transparent !important; border-color: #000;}
@@ -243,6 +284,34 @@ header .designBtn:hover {background: white; color: black; border: 2px solid #000
 .product-detail-page .tab-content {max-height: 0; overflow: hidden; transition: .5s;}
 .product-detail-page .tab-content.open {max-height: 200px;}
 .product-detail-page .tab-content p {font-size: 14px; line-height: 1.6; color: #666; padding: 15px 0; margin: 0;}
+
+/* Rent Modal */
+.rent-modal-overlay{position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgb(0 0 0 / 83%); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999;}
+.rent-modal-overlay .rent-modal{width: 650px; background: #fff; border-radius: 20px; position: relative; padding: 30px; gap: 20px; animation: fadeIn 0.35s ease;}
+.rent-modal-overlay .rent-modal h3 {font-size: 18px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; color: #000;}
+.rent-modal-overlay .addon-heading{margin-top: 20px;}
+.rent-modal-overlay .all-adons{display: flex; gap: 20px; margin-bottom: 10px;}
+.rent-modal-overlay .addon{display: flex; flex-direction: column; width: 100%; gap: 20px;}
+.rent-modal-overlay .rent-modal .price-option {padding: 14px 16px; border: 1px solid #ddd; border-radius: 10px;cursor: pointer; transition: .5s; justify-content: center;}
+.rent-modal-overlay .rent-modal .price-option:hover {background: #f8f8f8; border-color: #000;}
+.rent-modal-overlay .rent-modal .price-option.active {border-color: #000; background: #000; color: #fff;}
+.rent-modal-overlay .rent-modal .price-label {font-size: 16px; font-weight: 600 !important;}
+.rent-modal .price-option + .custom-select-wrapper { margin-top: -6px; margin-bottom: 14px;}
+.rent-modal-overlay .rent-modal .custom-select-wrapper {animation: fadeSlide 0.25s ease;}
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rent-modal-overlay .agreement-checkbox{display: flex; gap: 10px; align-items: center; cursor: pointer;}
+.rent-modal-overlay .agreement-checkbox label{margin-bottom: 0px !important;}
+.rent-modal-overlay .button-row{display: flex; flex-direction: column; align-items: center; margin-top: 20px;}
+.rent-modal-overlay .button-row .designBtn2{margin-top: 10px !important; width: 100%;}
 
 /* Size Chart Modal */
 .size-modal-overlay {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgb(0 0 0 / 83%); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999;}
@@ -299,7 +368,7 @@ header .designBtn:hover {background: white; color: black; border: 2px solid #000
 .input {width: 100%; padding: 15px 20px; outline: none; border: none; background: #F5F5F5; border-radius: 10px; margin-bottom: 15px; font-size: 16px !important; font-family: "Urbanist", sans-serif !important;  color: #757575 !important;}
 .input::placeholder{color: #757575 !important; font-size: 16px; font-family: "Urbanist", sans-serif; }
 label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-family: "Urbanist", sans-serif;}
-.select-field{background: #F5F5F5; border-radius: 10px; padding: 0px 20px !important; border: none; width: 100%; margin-bottom: 15px;}
+.select-field{background: #F5F5F5; border-radius: 10px !important; padding: 0px 20px !important; border: none; width: 100%; margin-bottom: 15px;}
 .select-field select{background: transparent; width: 100%; padding: 15px 0px; border: none; color: #757575; font-size: 16px; outline: none;}
 .checkout-page .checkout-row span{color: #000;}
 .checkout-page .row-fields {display: flex; gap: 15px;}
@@ -333,12 +402,13 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .right-form-column .box p{color: #000; margin-bottom: 30px; text-align: center; font-size: 16px;}
 .verify .box h2{margin-bottom: 10px;}
 .right-form-column .logo{text-align: center;}
-.right-form-column .box input{border-radius: 80px;}
+.right-form-column .box input{margin-top: 5px;}
 .password-field{position: relative;}
 .password-field .password-toggle{position: absolute; right: 30px; top: 47px; color: #000; font-size: 16px;}
 .right-form-column .box .row{display: flex; justify-content: space-between;}
 .right-form-column .box .row .checkbox {width: 50%; cursor: pointer; display: flex; align-items: center;}
-.right-form-column .box .checkbox{width: 100%; cursor: pointer; display: flex;}
+.right-form-column .box .checkbox{width: 100%; cursor: pointer; display: flex; align-items: start;}
+.login .box input{margin-top: 0px;}
 .right-form-column .box .row .forget{width: 50%; text-align: end;}
 .right-form-column .box .checkbox label{color: #000; font-size: 16px; cursor: pointer; font-weight: 500; margin-left: 10px; margin-bottom: 0px; line-height: 23px;}
 .right-form-column .box .row a{color: #000; font-size: 16px; font-weight: 500;}
@@ -346,6 +416,11 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .right-form-column .auth-link p{color: #000; font-size: 16px; font-weight: 400; text-align: center; margin-top: 50px;}
 .right-form-column .auth-link p a{color: #000; font-weight: 600; font-size: 16px; transition: .5s;}
 .right-form-column a:hover{color: #757575 !important;}
+.right-form-column .input-group{display: flex; gap: 20px;}
+.right-form-column .input-group .input-field{width: 48%;}
+.right-form-column .input-field{display: flex; flex-direction: column;}
+.right-form-column .input{margin-bottom: 0px !important;}
+.right-form-column .input-field small{margin-top: 5px; margin-bottom: 10px;}
 
 /* Main Page */
 .main-page header{position: relative; border-bottom: 1px solid #F0F0F0;}
@@ -458,7 +533,7 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .invited-events .noevents-dis{margin-bottom: 50px;}
 
 /* Show Events Component Css */
-.my-events .event-name-tabs {margin-top: 30px; margin-bottom: 20px; display: flex; justify-content: left; align-items: center; gap: 20px;}
+/* .my-events .event-name-tabs {margin-top: 30px; margin-bottom: 20px; display: flex; justify-content: left; align-items: center; gap: 20px;}
 .my-events .event-name-tabs button{border: 2px solid #000000; border-radius: 80px; transition: .5s; background: transparent; padding: 8px 20px; font-size: 16px; font-weight: 500; color: #000;}
 .my-events .event-name-tabs button:hover, .my-events .event-name-tabs button.active{background: #000 !important; color: #fff !important;}
 .show-events .event-card{background: #F5F5F5; padding: 20px; border-radius: 20px;}
@@ -470,9 +545,6 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .show-events .event-header .event-name-address p{margin: 0px; color: #757575; font-size: 12px; line-height: 20px; text-align: left;}
 .show-events .event-header .event-date h6{color: #000; font-size: 16px; font-weight: 600; line-height: 18px; margin-bottom: 5px; text-align: left;}
 .show-events .event-header .event-date p{margin: 0px; color: #757575; font-size: 12px; line-height: 20px; text-align: left;}
-.show-events .event-header .event-buttons {display: flex; align-items: center; justify-content: end; gap: 10px;}
-.show-events .event-header .event-buttons button, .show-events .event-header .event-buttons a{background: #fff; transition: .5s; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; border: none;}
-.show-events .event-header .event-buttons button:hover, .show-events .event-header .event-buttons a:hover{background: #000; color: #fff;}
 .show-events .event-details{display: flex;}
 .show-events .event-members{text-align: left; padding-right: 30px;}
 .show-events .event-members .members-header{display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
@@ -482,11 +554,30 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .show-events .event-members .member-row .member-center{margin-left: 10px !important;}
 .show-events .event-look{background: #fff; border-radius: 20px; padding: 20px; text-align: left;}
 .show-events .event-look h4{color: #000; font-size: 18px; font-weight: 600; margin-bottom: 20px;}
-.show-events .event-look .look-items {display: flex; gap: 10px; flex-wrap: wrap;}
+.show-events .event-look .look-items {display: flex; gap: 10px;}
 .show-events .event-look .look-item img {width: 100%;height: 180px; object-fit: cover; object-position: top;}
-.show-events .event-look .look-item p{font-size: 14px; font-weight: 600; color: #000; margin-bottom: 0px; text-align: center;}
+.show-events .event-look .look-item p{font-size: 14px; font-weight: 600; color: #000; margin-bottom: 0px; text-align: center;}*/
 .add-more-events-btn{border: 2px dashed #757575; color: #757575; font-size: 16px; font-weight: 500; padding: 10px 30px; border-radius: 50px; background: transparent; transition: .5s;}
-.add-more-events-btn:hover{background: #000; border-color: transparent; color: #fff;}
+.add-more-events-btn:hover{background: #000; border-color: transparent; color: #fff;} 
+
+.invited-events{margin-top: 40px;}
+.invited-events .row .col-md-4{margin-bottom: 20px;}
+.invited-events .invited-event-card {background: #F5F5F5; cursor: pointer; border-radius: 15px; text-align: left; position: relative;}
+.invited-events .invited-event-card img{width: 100%; height: 160px; object-fit: cover; object-position: top; border-radius: 15px;}
+.invited-events .event-content{padding: 20px;}
+.invited-events .invited-event-card h3{color: #000; font-size: 16px; font-weight: 600; margin-bottom: 5px;}
+.invited-events .invited-event-card p{font-size: 12px; color: #757575; line-height: 18px; margin-bottom: 0px;}
+.event-date{margin-top: 5px;}
+.invited-events .invited-event-card span{color: #000; font-size: 14px; font-weight: 600;}
+.invited-events .event-icons {display: flex; align-items: center; justify-content: end; gap: 10px; flex-direction: column; position: absolute; top: 10px; right: 10px;}
+.invited-events .event-icons button{background: #fff; transition: .5s; width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #000; border: none;}
+.invited-events .event-icons button:hover{background: #000; color: #fff;}
+.invited-events .event-icons button i{font-size: 15px;}
+
+.accept-invite .rent-modal{width: 450px; text-align: center;}
+.accept-invite .rent-modal h3{color: #000; font-size: 30px; text-transform: uppercase; margin-bottom: 5px !important;}
+.accept-invite .rent-modal p{color: #000;}
+.accept-invite .rent-modal .modal-actions{display: flex; justify-content: center; gap: 20px;}
 
 /* Creat Event Page */
 .create-event .input-group{width: 50%; position: relative;}
@@ -498,18 +589,33 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .create-event .profile-image .image-edit-btn{top: 20px; right: 10px; background: #fff !important;}
 .create-event .profile-image .image-edit-btn svg{color: #000 !important;}
 .create-event .input-group i {position: absolute; right: 30px; top: 43px;}
+.create-event .select-field select{margin-bottom: 0px !important;}
+.create-event .text-danger{margin-top: -12px; font-size: 14px; margin-bottom: 10px;}
+.create-event form .row{align-items: baseline;}
+.create-event .profile-image .text-danger{margin-top: 0px !important;}
+.create-event-form .text-field .text-danger{margin-top: -4px !important;}
+
+.shiping-modal .rent-modal{text-align: center; position: relative;}
+.shiping-modal h3{color: #000; font-size: 35px !important; text-transform: uppercase; text-align: center;}
+.shiping-modal p{color: #000; text-align: center; margin-bottom: 30px !important;}
+.shiping-modal img{height: 200px;}
+.shiping-modal form{width: 70%; margin: 0px auto;}
+.shiping-modal button{width: 100%; margin-top: 0px !important; border-radius: 10px !important;}
+.shiping-modal .close-btn{position: absolute; top:-10px; right: -10px; background: #fff !important; border-radius: 50% !important; border: 2px solid #000; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #000;}
+.designBtn2.disabled {opacity: 0.6; cursor: not-allowed; background-color: #000;}
 
 /* Add Event Members */
 .add-member .add-member-container{margin-top: 30px;}
 .add-member .add-member-form{border-radius: 20px; border: 2px solid #F5F5F5; padding: 0px; padding-bottom: 20px !important;}
 .add-member .add-member-form h3{background: #F5F5F5; color: #000; border-radius: 17px 17px 0px 0px; padding: 15px; margin: 0px; font-size: 18px; font-weight: 600; text-align: center;}
-.add-member .add-member-form .upload-photo-box{display: flex; justify-content: center; margin-top: 20px;}
+.add-member .add-member-form .upload-photo-box{display: flex; justify-content: center; margin-top: 20px; flex-direction: column; align-items: center; gap: 20px;}
 .add-member .add-member-form .image-edit-btn{top: 59px; right: 0px; background: #fff !important; border: 2px solid #000; border-radius: 50%;}
 .add-member .add-member-form .image-edit-btn svg{color: #000 !important;}
 .add-member .add-member-form .member-preview { width: 80px; height: 80px;border-radius: 50%; object-position: top; object-fit: cover;}
 .add-member .add-member-form .field{text-align: left;}
-.add-member .add-member-form .select-field{border-radius: 80px;}
+.add-member .add-member-form .select-field{border-radius: 80px !important;}
 .add-member .designBtn2{margin-top: 0px !important; width: 100% !important;}
+.add-member .buttons-row .designBtn2{width: auto !important;}
 .add-member .add-member-form .member-form-fields{padding: 0px 20px;}
 .add-member .member-box {border-radius: 15px; padding: 20px; border: 2px solid #F5F5F5; height: 85%;} 
 .add-member .member-box .empty-box {display: flex; margin: auto 0px; height: 100%; flex-direction: column; align-items: center; justify-content: center;}
@@ -518,6 +624,14 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .add-member .camera-box input {display: none;}
 .add-member .member-box .empty-box h3{color: #000; font-size: 32px; font-weight: 600; text-align: center; margin-top: 20px; margin-bottom: 15px;}
 .add-member .member-box .empty-box p{color: #000; text-align: center; margin-bottom: 40px;}
+.add-member .text-danger{margin-top: -12px; font-size: 14px; margin-bottom: 10px;}
+
+/* Add New Members  */
+.add-new-member .buttons-row{margin-top: 140px !important;}
+.add-new-member .select-field{border-radius: 80px !important;}
+.add-new-member .select-field select{margin-bottom: 0px !important;}
+.add-new-member .text-danger{margin-top: -12px; font-size: 14px; margin-bottom: 10px;}
+.add-new-member .row{align-items: baseline;}
 
 .members-list {text-align: left;}
 .members-list h3 {color: #000; border-bottom: 2px solid #F5F5F5; padding-bottom: 20px; margin-bottom: 20px; font-size: 25px;}
@@ -531,12 +645,16 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .member-row .member-right i{color: #757575; transition: .5s;}
 .member-row .member-right button:hover i{color: #000 !important;}
 .member-row .member-right button{border: none; background: transparent; transition: .5s;}
-.member-row .member-right .dropdown-menu{display: block; position: absolute; right: 0px; background: #000; padding: 0px;}
+.member-row .member-right .dropdown-menu{display: block; position: absolute; right: 0px; background: #000; padding: 0px; text-align: center;}
 .member-row .member-right .remove-btn{color: #fff; font-size: 12px; text-align: center; padding: 5px 20px;}
 .add-member .member-lists .buttons-row{margin-top: 20px;}
 
 /* Event Detail Page */
-.event-details-container .event-banner {height: 460px; background-size: cover; background-position: center; width: 100%;}
+.event-details-container .event-banner {height: 460px; background-size: cover; background-position: center; padding: 0px 120px; width: 100%; position: relative;}
+.event-details-container .event-banner .invited-name{position: absolute; bottom: -30px; background: #33333380; display: flex; align-items: center; border-radius: 100px; padding: 12px 40px 12px 15px; gap: 10px; backdrop-filter: blur(6px); box-shadow: -1px 0px 3px 4px #0000001A;}
+.event-details-container .event-banner .invited-name img{width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: top;}
+.event-details-container .event-banner .invited-name {color: #fff; font-size: 14px; font-weight: 400;}
+.event-details-container .event-banner .invited-name h4{color: #fff; font-size: 16px; font-weight: 600; margin: 0px; line-height: 16px;}
 .event-details-container .event-info{padding: 20px 0px; border-bottom: 2px solid #DBDBDB; align-items: center; margin-top: 30px;}
 .event-details-container .event-info h2 {color: #000; font-size: 42px; margin-bottom: 0px; line-height: 45px;}
 .event-details-container .event-info h4, .event-details-container .event-description h4 {color: #000; font-size: 18px; line-height: 20px; font-weight: 800; margin-bottom: 5px; text-transform: uppercase;}
