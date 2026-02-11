@@ -39,7 +39,7 @@ const EventDetails = () => {
             <img src="/Images/suit2.png" alt="Creator" />
             <div>
               Created By
-              <h4>{event.organizer?.name}</h4>
+              <h4>{event.organizer?.name}</h4> 
             </div>
           </div>
         )}
