@@ -16,7 +16,7 @@ const EventDetails = () => {
   const { eventData, loading } = useSelector((state) => state.events);
   useEffect(() => {
     dispatch(getEventDetails(eventId));
-    AOS.init({ duration: 1000, once: true });
+    AOS.init({ duration: 1000, once: true }); 
   }, [dispatch, eventId]);
 
   const formatDate = (dateString) => {
