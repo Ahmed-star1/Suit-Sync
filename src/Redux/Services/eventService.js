@@ -256,3 +256,12 @@ export const getEventDetailsService = async (eventId) => {
     throw new Error(error.message || "Error fetching event details");
   }
 };
+
+// Delete Event
+export const deleteEventService = async (eventId) => {
+  return await fetchApi({
+    method: "DELETE",
+    endPoint: API_ENDPOINTS.DELETE_EVENT(eventId),
+    token: true,
+  });
+};

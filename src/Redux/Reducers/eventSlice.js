@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { setEventData, getEventData, clearEventData } from "../Utils/localStore";
-import { createEventService, getEventsService, getInvitedEventsService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService  } from "../Services/eventService";
+import { createEventService, getEventsService, getInvitedEventsService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService } from "../Services/eventService";
 
 // Async thunk to create an event
 export const createEvent = createAsyncThunk(
@@ -127,6 +127,19 @@ export const getEventDetails = createAsyncThunk(
       return data; 
     } catch (error) {
       return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Delete Event Thunk
+export const deleteEvent = createAsyncThunk(
+  "events/deleteEvent",
+  async (eventId, { rejectWithValue }) => {
+    try {
+      const response = await deleteEventService(eventId);
+      return { response, eventId };
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to delete event");
     }
   }
 );
@@ -260,7 +273,7 @@ const eventSlice = createSlice({
             event_member: [
               ...(state.events[lastEventIndex].event_member || []),
               ...addedMembers,
-            ],
+            ], 
           };
         }
       })
@@ -290,6 +303,22 @@ const eventSlice = createSlice({
         state.eventData = action.payload;
       })
       .addCase(getEventDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Delete Event
+      .addCase(deleteEvent.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteEvent.fulfilled, (state, action) => {
+        state.loading = false;
+        const deletedEventId = action.payload.eventId;
+        state.events = state.events.filter(event => event.id !== deletedEventId);
+        setEventData(state.events); // Update localStorage
+      })
+      .addCase(deleteEvent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

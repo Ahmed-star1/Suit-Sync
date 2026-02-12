@@ -675,10 +675,16 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .event-details-container .event-members .step-circle {width: 25px; height: 25px; border-radius: 50%; background: white; display: flex; justify-content: center; align-items: center; transition: .5s; position: relative; border: 4px solid #fff !important;}
 .event-details-container .event-members .step-circle i{font-size: 10px;}
 .event-details-container .event-members .step-circle.completed {background: #009A33; color: white;}
-.event-details-container .event-members .step-circle.in-progress {background: white;}
+.event-details-container .event-members .progress-step .pending i {display: none !important;}
 
 .event-details-container .event-look {padding-left: 30px;}
 .event-details-container .event-look h3{color: #000; font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px;}
 .event-details-container .look-items{display: flex; gap: 10px; flex-wrap: wrap;}
 .event-details-container .look-items img{width: 100%; height: 200px; object-fit: cover; object-position: top;}
 .event-details-container .look-items p{color: #000; text-align: center; margin-top: 10px; margin-bottom: 0px;}
+
+.delete-event-modal .rent-modal{width: 400px !important; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 30px 70px !important;}
+.delete-event-modal .delete-icon{width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: #f6f8fa; border-radius: 50%;}
+.delete-event-modal .delete-icon i{font-size: 30px !important; color: #000;}
+.delete-event-modal p{color: #000; margin-bottom: 0px; text-align: center;}
+.delete-event-modal .modal-actions{display: flex; gap: 20px;}

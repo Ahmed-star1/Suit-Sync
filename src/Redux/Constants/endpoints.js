@@ -9,7 +9,7 @@ export const API_ENDPOINTS = Object.freeze({
 
   UPDATE_PROFILE: "user/update/profile",
   GET_PROFILE: "user",
-  
+   
   CREATE_EVENT: "events/store",
   GET_EVENTS: "events",
   GET_INVITED_EVENTS: "events/invited",
@@ -17,4 +17,5 @@ export const API_ENDPOINTS = Object.freeze({
   ADD_NEW_MEMBER: (eventId) => `events/${eventId}/add-members`,
   UPDATE_EVENT: (eventId) => `events/update/${eventId}`,
   GET_EVENT_DETAILS: (eventId) => `events/${eventId}/details`,
+  DELETE_EVENT: (eventId) => `events/delete/${eventId}`,
 });

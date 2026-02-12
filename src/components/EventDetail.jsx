@@ -19,12 +19,24 @@ const EventDetails = () => {
     AOS.init({ duration: 1000, once: true });
   }, [dispatch, eventId]);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+      timeZone: "UTC"
+    }).format(new Date(dateString));
+  };
+
   if (loading) {
     return <Loader />;
   }
 
   if (!eventData || !eventData.event) return;
   const members = eventData.members || [];
+  const looks = eventData.looks || [];
 
   const event = eventData.event;
   return (
@@ -36,10 +48,10 @@ const EventDetails = () => {
       >
         {isInvitedEvent && (
           <div className="invited-name">
-            <img src="/Images/suit2.png" alt="Creator" />
+            <img src={event.organizer?.image_url} alt="Creator" />
             <div>
               Created By
-              <h4>{event.organizer?.name}</h4> 
+              <h4>{event.organizer?.name}</h4>
             </div>
           </div>
         )}
@@ -58,7 +70,7 @@ const EventDetails = () => {
 
           <div className="event-date col-md-2">
             <h4>Date</h4>
-            <p>{new Date(event.date).toLocaleString()}</p>
+            <p>{formatDate(event.date)}</p>
           </div>
         </div>
 
@@ -85,26 +97,38 @@ const EventDetails = () => {
                     </div>
 
                     <div className="progress-bar">
-                      {member.progressSteps?.map((step, index) => (
-                        <div className="progress-step" key={index}>
-                          <span>{step.label}</span>
-                          <div
-                            className={`step-circle ${
-                              step.completed ? "completed" : "in-progress"
-                            }`}
-                          >
-                            {step.completed && (
-                              <i className="fa-solid fa-check"></i>
-                            )}
-                          </div>
+                      <div className="progress-step">
+                        <span>Invite Sent</span>
+                        <div
+                          className={`step-circle ${
+                            member.status === "accepted"
+                              ? "completed"
+                              : "pending"
+                          }`}
+                        >
+                          {member.status === "accepted" && (
+                            <i className="fa-solid fa-check"></i>
+                          )}
                         </div>
-                      ))}
+                      </div>
+                      <div className="progress-step">
+                        <span>Order Placed</span>
+                        <div className="step-circle pending">
+                          <i className="fa-solid fa-check"></i>
+                        </div>
+                      </div>
+                      <div className="progress-step">
+                        <span>Suit Delivered</span>
+                        <div className="step-circle pending">
+                          <i className="fa-solid fa-check"></i>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <p>No members available</p> // This will show if there are no members
+              <p>No members available</p>
             )}
           </div>
 

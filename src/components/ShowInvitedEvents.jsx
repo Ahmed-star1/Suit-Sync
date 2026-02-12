@@ -72,11 +72,7 @@ const ShowInvitedEvents = () => {
 
       closeModal();
 
-      const slug = selectedInvite.event.name
-        .toLowerCase()
-        .replace(/\s+/g, "-");
-
-      navigate(`/event/${slug}`, {
+      navigate(`/event/${eventId}`, {
         state: { from: "invited", eventId },
       });
     } catch (error) {
