@@ -7,6 +7,7 @@ import Loader from "../components/Loader";
 import {
   getInvitedEvents,
   acceptInvite,
+  declineInvite,
 } from "../Redux/Reducers/eventSlice";
 
 const ShowInvitedEvents = () => {
@@ -18,6 +19,7 @@ const ShowInvitedEvents = () => {
   const [showModal, setShowModal] = useState(false);
   const [animateModal, setAnimateModal] = useState(false);
   const [selectedInvite, setSelectedInvite] = useState(null);
+  const [isDeclining, setIsDeclining] = useState(false);
 
   useEffect(() => {
     dispatch(getInvitedEvents());
@@ -54,6 +56,7 @@ const ShowInvitedEvents = () => {
 
   const closeModal = () => {
     setAnimateModal(false);
+    setIsDeclining(false);
     setTimeout(() => {
       setShowModal(false);
       setSelectedInvite(null);
@@ -77,6 +80,20 @@ const ShowInvitedEvents = () => {
       });
     } catch (error) {
       console.error("Accept invite failed:", error);
+    }
+  };
+
+  const handleDecline = async () => {
+    if (!selectedInvite) return;
+    const eventId = selectedInvite.event.id;
+    const token = selectedInvite.invitation.invitation_token;
+    try {
+      setIsDeclining(true);
+      await dispatch(declineInvite({ eventId, token })).unwrap();
+      closeModal(); 
+    } catch (error) {
+      console.error("Decline invite failed:", error);
+      setIsDeclining(false);
     }
   };
 
@@ -150,13 +167,15 @@ const ShowInvitedEvents = () => {
             <div className="modal-actions">
               <button
                 className="designBtn2 outline"
-                onClick={closeModal}
+                onClick={handleDecline}
+                disabled={isDeclining}
               >
                 Deny
               </button>
               <button
                 className="designBtn2"
                 onClick={handleAccept}
+                disabled={isDeclining}
               >
                 Accept
               </button>

@@ -195,10 +195,6 @@ const RightColumn = () => {
                   <ErrorMessage name="acceptTerms" />
                 </small>
 
-                {error && (
-                  <div className="mt-2 text-danger">{renderApiError()}</div>
-                )}
-
                 <button type="submit" className="designBtn2" disabled={loading}>
                   {loading ? "Loading..." : "Register"}
                 </button>

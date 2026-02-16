@@ -117,7 +117,7 @@ const Header = () => {
                 <img src="/Images/suitsynclogo.svg" alt="SuitSync Logo" />
               </Link>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-7">
               <nav className="navbar-menu">
                 <ul className="menu-list">
                   {nav_items.map((item) => (
@@ -131,7 +131,7 @@ const Header = () => {
               </nav>
             </div>
 
-            <div className="col-md-4">
+            <div className="col-md-3">
               <div className="navbar-actions">
                 <button className="search" onClick={handleSearchButtonClick}>
                   <i className="fa-solid fa-magnifying-glass"></i>

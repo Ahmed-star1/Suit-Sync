@@ -12,9 +12,9 @@ const Shop = () => {
   }, []);
 
   const [selectedFilters, setSelectedFilters] = useState({
-    "build-type": [],
+    // "build-type": [],
     category: [],
-    color: [],
+    // color: [],
     "rent-buy": [],
   });
 

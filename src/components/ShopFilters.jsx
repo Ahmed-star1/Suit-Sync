@@ -3,7 +3,7 @@ import React, { useState } from "react";
 const ShopFilters = ({ selectedFilters, onFilterChange }) => {
   const [tabState, setTabState] = useState({
     category: false,
-    color: false,
+    // color: false,
     "rent-buy": false,
   });
 
@@ -16,41 +16,17 @@ const ShopFilters = ({ selectedFilters, onFilterChange }) => {
 
   const filterData = {
     category: ["Suits", "Tuxedos", "Jackets", "Pants"],
-    color: [
-      { name: "Black", hex: "#000000" },
-      { name: "Blue", hex: "#0000FF" },
-      { name: "Grey", hex: "#808080" },
-    ],
+    // color: [
+    //   { name: "Black", hex: "#000000" },
+    //   { name: "Blue", hex: "#0000FF" },
+    //   { name: "Grey", hex: "#808080" },
+    // ],
     "rent-buy": ["Buy", "Rent"],
   };
 
   return (
     <div className="filters-wrapper">
       <h3>FILTER</h3>
-
-      {/* <div className={`filter-tab ${tabState["build-type"] ? "open" : ""}`}>
-        <div className="filter-heading" onClick={() => handleTabToggle("build-type")}>
-          <h4>Build Type</h4>
-          <i className={`fa-solid fa-angle-down arrow-icon ${tabState["build-type"] ? "rotate" : ""}`}></i>
-        </div>
-
-        {tabState["build-type"] && (
-          <div className="filter-options">
-            {filterData["build-type"].map((option, index) => (
-              <label key={index}>
-                <input
-                  type="checkbox"
-                  checked={selectedFilters["build-type"].includes(option)}
-                  onChange={() => onFilterChange("build-type", option)}
-                />
-                <span></span>
-                {option}
-              </label>
-            ))}
-          </div>
-        )}
-      </div> */}
-
       <div className={`filter-tab ${tabState["category"] ? "open" : ""}`}>
         <div
           className="filter-heading"
@@ -81,7 +57,7 @@ const ShopFilters = ({ selectedFilters, onFilterChange }) => {
         )}
       </div>
 
-      <div
+      {/* <div
         className={`filter-tab ${
           tabState["color"] ? "open" : ""
         } color-filter-tab`}
@@ -121,7 +97,7 @@ const ShopFilters = ({ selectedFilters, onFilterChange }) => {
             ))}
           </div>
         )}
-      </div>
+      </div> */}
 
       <div className={`filter-tab ${tabState["rent-buy"] ? "open" : ""}`}>
         <div

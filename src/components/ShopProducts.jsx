@@ -1,33 +1,55 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getProducts } from "../Redux/Reducers/productSlice";
 
 const ShopProducts = ({ selectedFilters }) => {
   const navigate = useNavigate();
-  const products = [
-    { id: 1, name: "Blue Tuxedo Suit", buyPrice: "$300", rentPrice: "$50", img: "/Images/suit1.png", color: "Blue", category: "Suits", build: "Slim" },
-    { id: 2, name: "Black Tuxedo Suit", buyPrice: "$250", rentPrice: "$45", img: "/Images/suit2.png", color: "Black", category: "Tuxedos", build: "Athletic" },
-    { id: 3, name: "Blue Tuxedo Suit", buyPrice: "$320", rentPrice: "$55", img: "/Images/suit3.png", color: "Blue", category: "Jackets", build: "Regular" },
-    { id: 4, name: "Black Tuxedo Suit", buyPrice: "$280", rentPrice: "$50", img: "/Images/suit4.png", color: "Black", category: "Suits", build: "Skinny" },
-  ];
+  const dispatch = useDispatch();
+
+  const { products, loading } = useSelector((state) => state.products);
+  
+  useEffect(() => {
+    dispatch(getProducts());
+  }, [dispatch]);
+
+  const formatPrice = (price) => {
+    return `$${price}`;
+  };
+  
+  const getPrimaryImageUrl = (product) => {
+    if (!product.images || product.images.length === 0) {
+      return "/Images/suit1.png";
+    }
+    const primaryImage = product.images.find(img => img.is_primary === true);
+    if (primaryImage) {
+      return primaryImage.image_url;
+    } else {
+      return product.images[0].image_url;
+    }
+  };
 
   const filteredProducts = products.filter((product) => {
-
     const matchCategory =
       selectedFilters.category.length === 0 ||
-      selectedFilters.category.includes(product.category);
+      selectedFilters.category.includes(product.category?.name || product.category);
 
-    const matchColor =
-      selectedFilters.color.length === 0 ||
-      selectedFilters.color.includes(product.color);
+    // const matchColor =
+    //   selectedFilters.color.length === 0 ||
+    //   selectedFilters.color.includes(product.color);
 
     const matchRentBuy = true; 
 
-    return matchCategory && matchColor && matchRentBuy;
+    return matchCategory && matchRentBuy;
   });
 
   const handleProductClick = (productId) => {
-    navigate(`/shop/product/2${productId}`);
+    navigate(`/shop/product/${productId}`); 
   };
+
+   //  if (loading) {
+  //   return <Loader />;
+  // }
 
   return (
     <div className="products-grid">
@@ -35,15 +57,23 @@ const ShopProducts = ({ selectedFilters }) => {
         <p>No products found.</p>
       ) : (
         filteredProducts.map((product) => (
-          <div className="product-card" key={product.id} onClick={() => handleProductClick(product.id)} style={{ cursor: "pointer" }}>
-            <img src={product.img} alt={product.name} />
+          <div 
+            className="product-card" 
+            key={product.id} 
+            onClick={() => handleProductClick(product.id)} 
+            style={{ cursor: "pointer" }}
+          >
+            <img  
+              src={getPrimaryImageUrl(product)} 
+              alt={product.name} 
+            />
             <div className="product-content">
               <h5>{product.name}</h5>
               <div className="product-price">
                 <p className="text">Starting At</p>
                 <div className="price">
-                  <span>Buy: {product.buyPrice}</span>{" "}
-                  <span>Rent: {product.rentPrice}</span>
+                  <span>Buy: {formatPrice(product.buy_price)}</span>{" "}
+                  <span>Rent: {formatPrice(product.rent_price)}</span>
                 </div>
               </div>
             </div>

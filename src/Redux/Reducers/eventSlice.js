@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { setEventData, getEventData, clearEventData } from "../Utils/localStore";
-import { createEventService, getEventsService, getInvitedEventsService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService } from "../Services/eventService";
+import { createEventService, getEventsService, getInvitedEventsService, declineEventInviteService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService } from "../Services/eventService";
 
 // Async thunk to create an event
 export const createEvent = createAsyncThunk(
@@ -88,6 +88,19 @@ export const acceptInvite = createAsyncThunk(
       return response;
     } catch (error) {
       return rejectWithValue(error?.message || "Invite accept failed");
+    }
+  }
+);
+
+// DECLINE Event INVITE THUNK
+export const declineInvite = createAsyncThunk(
+  "events/declineInvite",
+  async ({ eventId, token }, { rejectWithValue }) => {
+    try {
+      const response = await declineEventInviteService(eventId, token);
+      return { response, eventId };
+    } catch (error) {
+      return rejectWithValue(error?.message || "Invite decline failed");
     }
   }
 );
@@ -231,10 +244,10 @@ const eventSlice = createSlice({
       .addCase(getInvitedEvents.fulfilled, (state, action) => {
         state.loading = false;
 
-        const invitedEvents = action.payload?.data?.invited_events;
+        const invitedEventsObj = action.payload?.data?.invited_events;
 
-        if (Array.isArray(invitedEvents)) {
-          state.events = invitedEvents;
+        if (invitedEventsObj) {
+          state.events = Object.values(invitedEventsObj);
         } else {
           state.events = [];
         }
@@ -252,6 +265,25 @@ const eventSlice = createSlice({
         state.loading = false;
       })
       .addCase(acceptInvite.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Decline Event Invite
+      .addCase(declineInvite.pending, (state) => {
+        state.loading = true;
+      })
+
+      .addCase(declineInvite.fulfilled, (state, action) => {
+        state.loading = false;
+        if (state.events && Array.isArray(state.events)) {
+          state.events = state.events.filter(
+            (invite) => invite.event?.id !== action.payload.eventId
+          );
+        }
+      })
+
+      .addCase(declineInvite.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

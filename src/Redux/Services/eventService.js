@@ -177,6 +177,15 @@ export const acceptEventInviteService = async (eventId, token) => {
   });
 };
 
+// Decline Event Invite 
+export const declineEventInviteService = async (eventId, token) => {
+  return await fetchApi({
+    method: "GET",
+    endPoint: API_ENDPOINTS.DECLINE_INVITE(eventId, token),
+    token: true,
+  });
+};
+
 // Add New Members
 export const addNewMemberService = async (eventId, memberData) => {
   const formData = new FormData();

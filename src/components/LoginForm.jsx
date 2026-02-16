@@ -7,10 +7,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../Redux/Reducers/authSlice";
 import Loader from "../components/Loader";
 
-
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
-
   password: Yup.string().required("Password is required"),
 });
 
@@ -91,15 +89,10 @@ const LoginForm = () => {
                   >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
-
-                  <small className="text-danger">
-                    <ErrorMessage name="password" />
-                  </small>
+                  {error && (
+                    <div className="mt-2 text-danger">{renderApiError()}</div>
+                  )}
                 </div>
-
-                {error && (
-                  <div className="mt-2 text-danger">{renderApiError()}</div>
-                )}
 
                 <div className="row">
                   <div className="checkbox">

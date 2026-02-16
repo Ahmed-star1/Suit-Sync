@@ -101,13 +101,18 @@ const EventDetails = () => {
                         <span>Invite Sent</span>
                         <div
                           className={`step-circle ${
-                            member.status === "accepted"
-                              ? "completed"
+                            member.status === "accepted" 
+                              ? "completed" 
+                              : member.status === "declined"
+                              ? "declined"
                               : "pending"
                           }`}
                         >
                           {member.status === "accepted" && (
                             <i className="fa-solid fa-check"></i>
+                          )}
+                          {member.status === "declined" && (
+                            <i className="fa-solid fa-xmark"></i>
                           )}
                         </div>
                       </div>
