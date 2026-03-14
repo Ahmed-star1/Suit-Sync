@@ -25,7 +25,6 @@ export const useEventFlowCleanup = () => {
 
     // If not in event flow, clear the event data
     if (!isEventRoute) {
-      console.log('Clearing event data - navigated away from event flow to:', location.pathname);
       clearEventData();
     }
   }, [location.pathname]);

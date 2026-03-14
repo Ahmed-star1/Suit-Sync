@@ -33,13 +33,25 @@ const LoginForm = () => {
     return <div>{error.message}</div>;
   };
 
+  const handleLoginSuccess = () => {
+    const redirectPath = localStorage.getItem('redirectAfterLogin');
+    if (redirectPath) {
+      localStorage.removeItem('redirectAfterLogin');
+      navigate(redirectPath);
+    } else {
+      navigate('/my-account');
+    }
+  };
+
   return (
     <>
       {loading && <Loader />}
 
       <div className="right-form-column col-md-6 login" data-aos="fade-left">
         <div className="logo">
-          <img src="/Images/blackLogo.png" alt="Logo" />
+          <Link to="/">
+            <img src="/Images/blackLogo.png" alt="Logo" />
+          </Link>
         </div>
 
         <div className="box">
@@ -55,7 +67,7 @@ const LoginForm = () => {
               dispatch(loginUser(values))
                 .unwrap()
                 .then(() => {
-                  navigate("/my-account");
+                  handleLoginSuccess();
                 })
                 .catch(() => {});
             }}

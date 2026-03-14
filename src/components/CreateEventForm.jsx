@@ -13,6 +13,7 @@ const CreateEventForm = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [currentEventId, setCurrentEventId] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState(null);
   const [formValues, setFormValues] = useState({
     name: "",
     type: "",
@@ -21,6 +22,13 @@ const CreateEventForm = () => {
     description: "",
     image: ""
   });
+
+  const eventTypes = [
+    { value: "Wedding Ceremony", label: "Wedding Ceremony" },
+    { value: "Wedding Reception", label: "Wedding Reception" },
+    { value: "Bachelor Party", label: "Bachelor Party" },
+    { value: "Rehearsal Dinner", label: "Rehearsal Dinner" },
+  ];
 
   useEffect(() => {
     const savedEvents = getEventData();
@@ -52,6 +60,15 @@ const CreateEventForm = () => {
     }
   }, [location.pathname]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveDropdown(null);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   const handleImageSelect = (e, setFieldValue) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -63,6 +80,16 @@ const CreateEventForm = () => {
       setFieldValue("image", file);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleDropdownClick = (dropdownName, e) => {
+    e.stopPropagation();
+    setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
+  };
+
+  const handleEventTypeSelect = (value, setFieldValue) => {
+    setFieldValue("type", value);
+    setActiveDropdown(null);
   };
 
   const saveEventToLocalStorage = (values) => {
@@ -101,56 +128,56 @@ const CreateEventForm = () => {
   };
 
   const validationSchema = Yup.object({
-  name: Yup.string()
-    .required("Event name is required")
-    .max(255, "Max 255 characters"),
+    name: Yup.string()
+      .required("Event name is required")
+      .max(255, "Max 255 characters"),
 
-  type: Yup.string()
-    .required("Event type is required")
-    .oneOf(
-      [
-        "Bachelor Party",
-        "Wedding Ceremony",
-        "Rehearsal Dinner",
-        "Wedding Reception",
-      ],
-      "Invalid event type"
-    ),
+    type: Yup.string()
+      .required("Event type is required")
+      .oneOf(
+        [
+          "Bachelor Party",
+          "Wedding Ceremony",
+          "Rehearsal Dinner",
+          "Wedding Reception",
+        ],
+        "Invalid event type"
+      ),
 
-  date: Yup.date()
-    .required("Event date is required"),
+    date: Yup.date()
+      .required("Event date is required"),
 
-  location: Yup.string()
-    .required("Event location is required"),
+    location: Yup.string()
+      .required("Event location is required"),
 
-  description: Yup.string()
-    .required("Description is required")
-    .min(10, "Minimum 10 characters")
-    .max(2000, "Maximum 2000 characters"),
+    description: Yup.string()
+      .required("Description is required")
+      .min(10, "Minimum 10 characters")
+      .max(2000, "Maximum 2000 characters"),
 
-  image: Yup.mixed()
-    .required("Image is required")
-    .test(
-      "fileType",
-      "Image must be PNG, JPG or JPEG format",
-      (value) => {
-        if (value && value instanceof File) {
-          return ["image/png", "image/jpeg", "image/jpg"].includes(value.type);
+    image: Yup.mixed()
+      .required("Image is required")
+      .test(
+        "fileType",
+        "Image must be PNG, JPG or JPEG format",
+        (value) => {
+          if (value && value instanceof File) {
+            return ["image/png", "image/jpeg", "image/jpg"].includes(value.type);
+          }
+          return !!value;
         }
-        return !!value;
-      }
-    )
-    .test(
-      "fileSize",
-      "Image size must be less than 5MB",
-      (value) => {
-        if (value && value instanceof File) {
-          return value.size <= 5 * 1024 * 1024;
+      )
+      .test(
+        "fileSize",
+        "Image size must be less than 5MB",
+        (value) => {
+          if (value && value instanceof File) {
+            return value.size <= 5 * 1024 * 1024;
+          }
+          return !!value;
         }
-        return !!value;
-      }
-    ),
-});
+      ),
+  });
 
   return (
     <div className="col-md-9 right-column create-event">
@@ -166,7 +193,7 @@ const CreateEventForm = () => {
             navigate("/add-event-member");
           }}
         >
-          {({ setFieldError, setFieldValue }) => (
+          {({ setFieldError, setFieldValue, values }) => (
             <Form className="create-event-form">
 
               <div className="row">
@@ -181,14 +208,35 @@ const CreateEventForm = () => {
                   <ErrorMessage name="name" component="div" className="text-danger" />
                 </div>
 
-                <div className="input-group">
+                <div className="input-group select-field product-detail-page">
                   <label>Select Event Type *</label>
-                  <div className="select-field">
-                    <Field as="select" name="type" className="input">
-                      <option value="">Select Event Type</option>
-                      <option value="Wedding Ceremony">Wedding Ceremony</option>
-                      <option value="Wedding Reception">Wedding Reception</option>
-                    </Field>
+                  <div className="custom-select-wrapper">
+                    <div
+                      className="custom-select"
+                      onClick={(e) => handleDropdownClick('eventType', e)}
+                    >
+                      <span className="selected-value">
+                        {values.type || "Select Event Type"}
+                      </span>
+                      <i className="fa-solid fa-chevron-down"></i>
+                    </div>
+
+                    {activeDropdown === 'eventType' && (
+                      <ul className="custom-select-dropdown">
+                        {eventTypes.map((type, index) => (
+                          <li
+                            key={index}
+                            className={values.type === type.value ? 'active' : ''}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEventTypeSelect(type.value, setFieldValue);
+                            }}
+                          >
+                            {type.label}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                   <ErrorMessage name="type" component="div" className="text-danger" />
                 </div>
@@ -214,7 +262,6 @@ const CreateEventForm = () => {
                     name="location"
                     placeholder="Enter Location"
                   />
-                  <i className="fa-solid fa-location-crosshairs"></i>
                   <ErrorMessage name="location" component="div" className="text-danger" />
                 </div>
               </div>

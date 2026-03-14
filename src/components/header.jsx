@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Instagram, Twitter, Facebook } from "lucide-react";
+import { Instagram, Twitter, Facebook, Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAccessToken } from "../Redux/Utils/localStore";
 
@@ -14,6 +14,7 @@ const nav_items = [
 const Header = () => {
   const [activeLink, setActiveLink] = useState("home");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const [token, setToken] = useState(getAccessToken());
@@ -54,12 +55,24 @@ const Header = () => {
     }
   }, [isModalOpen]);
 
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [isMobileMenuOpen]);
+
   const getLinkClassName = (key) => {
     return `menu-link ${activeLink === key ? "active" : ""}`;
   };
 
   const handleChange = () => {
     navigate("/cart");
+  };
+
+  const handleWishlistChange = () => {
+    navigate("/wishlist");
   };
 
   const handleSearchButtonClick = () => {
@@ -73,6 +86,14 @@ const Header = () => {
 
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -93,7 +114,7 @@ const Header = () => {
                 </span>
               </div>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-6 h-icons">
               <div className="topbar-social d-flex justify-content-md-end">
                 <a href="#">
                   <Instagram size={18} />
@@ -109,15 +130,18 @@ const Header = () => {
           </div>
         </div>
       </div>
+      
       <div className="navbar">
         <div className="container">
           <div className="row align-items-center">
-            <div className="col-md-2 h-logo">
+            <div className="col-6 col-md-2 h-logo">
               <Link to="/">
                 <img src="/Images/suitsynclogo.svg" alt="SuitSync Logo" />
               </Link>
             </div>
-            <div className="col-md-7">
+            
+            {/* Desktop Menu - Hidden on mobile */}
+            <div className="col-md-6 desktop-menu">
               <nav className="navbar-menu">
                 <ul className="menu-list">
                   {nav_items.map((item) => (
@@ -131,24 +155,86 @@ const Header = () => {
               </nav>
             </div>
 
-            <div className="col-md-3">
+            <div className="col-6 col-md-4">
               <div className="navbar-actions">
+                <button onClick={handleWishlistChange}>
+                  <i className="fa-solid fa-heart"></i>
+                </button>
                 <button className="search" onClick={handleSearchButtonClick}>
                   <i className="fa-solid fa-magnifying-glass"></i>
                 </button>
                 <button onClick={handleChange}>
                   <i className="fa-solid fa-cart-shopping"></i>
                 </button>
+                
+                {/* Mobile Menu Toggle */}
+                <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+                  <i class="fa-solid fa-bars"></i>
+                </button>
+                
                 {token ? (
-                  <Link to="/events" className="designBtn">
+                  <Link to="/events" className="designBtn desktop-only">
                     My Events
                   </Link>
                 ) : (
-                  <Link to="/login" className="designBtn">
+                  <Link to="/login" className="designBtn desktop-only">
                     Login
                   </Link>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className={`mobile-menu-overlay ${isMobileMenuOpen ? 'active' : ''}`} onClick={closeMobileMenu}>
+        <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
+          <div className="mobile-menu-header">
+            <Link to="/" onClick={closeMobileMenu}>
+              <img src="/Images/suitsynclogo.svg" alt="SuitSync Logo" />
+            </Link>
+            <button className="close-mobile-menu" onClick={closeMobileMenu}>
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          
+          <nav className="mobile-nav-menu">
+            <ul className="mobile-menu-list">
+              {nav_items.map((item) => (
+                <li className="mobile-menu-item" key={item.key}>
+                  <Link 
+                    to={item.to} 
+                    className={`mobile-menu-link ${activeLink === item.key ? 'active' : ''}`}
+                    onClick={closeMobileMenu}
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          
+          <div className="mobile-menu-footer">
+            {token ? (
+              <Link to="/events" className="mobile-menu-btn" onClick={closeMobileMenu}>
+                My Events
+              </Link>
+            ) : (
+              <Link to="/login" className="mobile-menu-btn" onClick={closeMobileMenu}>
+                Login
+              </Link>
+            )}
+            
+            <div className="navbar-actions">
+              <button onClick={handleWishlistChange}>
+                <i className="fa-solid fa-heart"></i>
+              </button>
+              <button className="search" onClick={handleSearchButtonClick}>
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </button>
+              <button onClick={handleChange}>
+                <i className="fa-solid fa-cart-shopping"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -175,4 +261,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Header;  

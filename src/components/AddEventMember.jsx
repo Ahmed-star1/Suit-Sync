@@ -15,6 +15,7 @@ import Loader from "../components/Loader";
 const AddEventMember = () => {
   const [event_member, setMembersList] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeRoleDropdown, setActiveRoleDropdown] = useState(null);
   const [currentEventId, setCurrentEventId] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageBase64, setImageBase64] = useState(null);
@@ -25,6 +26,14 @@ const AddEventMember = () => {
   const dispatch = useDispatch();
 
   const { loading } = useSelector((state) => state.events);
+
+  const roleOptions = [
+    { value: "groomsmen", label: "Groomsmen" },
+    { value: "groomsman 2", label: "Groomsman 2" },
+    { value: "groomsman 3", label: "Groomsman 3" },
+    { value: "best man", label: "Best Man" },
+    { value: "father of groom", label: "Father of Groom" },
+  ];
 
   useEffect(() => {
     const events = getEventData();
@@ -38,7 +47,6 @@ const AddEventMember = () => {
   // Cleanup on unmount - clear all event data
   useEffect(() => {
     return () => {
-      // If user navigates away without completing, clear all event data
       clearEventData();
     };
   }, []);
@@ -53,6 +61,16 @@ const AddEventMember = () => {
     }
   }, [location.pathname]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveDropdown(null);
+      setActiveRoleDropdown(null);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   const convertToBase64 = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -63,8 +81,7 @@ const AddEventMember = () => {
 
   const validationSchema = Yup.object({
     role: Yup.string()
-      .required("Role is required")
-      .oneOf(["groomsmen"], "Invalid role"),
+      .required("Role is required"),
 
     name: Yup.string()
       .required("Member name is required")
@@ -136,6 +153,7 @@ const AddEventMember = () => {
     );
 
     setEventData(updatedEvents);
+    setActiveDropdown(null);
   };
 
   const handleCreateEvent = async () => {
@@ -156,6 +174,11 @@ const AddEventMember = () => {
       clearEventData();
       navigate("/events");
     }
+  };
+
+  const handleRoleSelect = (value, setFieldValue) => {
+    setFieldValue("role", value);
+    setActiveRoleDropdown(null);
   };
 
   return (
@@ -182,7 +205,7 @@ const AddEventMember = () => {
                   validationSchema={validationSchema}
                   onSubmit={handleSaveMember}
                 >
-                  {({ setFieldValue }) => (
+                  {({ setFieldValue, values }) => (
                     <Form>
                       <div className="upload-photo-box">
                         <input
@@ -225,16 +248,39 @@ const AddEventMember = () => {
                         <ErrorMessage name="image" component="div" className="text-danger" />
                       </div>
 
-                      <div className="member-form-fields">
-                        <div className="field">
+                      <div className="member-form-fields product-detail-page">
+                        <div className="field select-field">
                           <label>Select Role</label>
-                          <div className="select-field">
-                            <Field as="select" name="role">
-                              <option value="">Select Role</option>
-                              <option value="groomsmen">groomsmen</option>
-                              <option value="groomsman 2">groomsman 2</option>
-                              <option value="groomsman 3">groomsman 3</option>
-                            </Field>
+                          <div className="custom-select-wrapper">
+                            <div
+                              className="custom-select"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveRoleDropdown(activeRoleDropdown === 'role' ? null : 'role');
+                              }}
+                            >
+                              <span className="selected-value">
+                                {values.role ? roleOptions.find(r => r.value === values.role)?.label || values.role : "Select Role"}
+                              </span>
+                              <i className="fa-solid fa-chevron-down"></i>
+                            </div>
+
+                            {activeRoleDropdown === 'role' && (
+                              <ul className="custom-select-dropdown">
+                                {roleOptions.map((role, index) => (
+                                  <li
+                                    key={index}
+                                    className={values.role === role.value ? 'active' : ''}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRoleSelect(role.value, setFieldValue);
+                                    }}
+                                  >
+                                    {role.label}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
                           </div>
                           <ErrorMessage name="role" component="div" className="text-danger" />
                         </div>
@@ -298,7 +344,14 @@ const AddEventMember = () => {
                         {event_member.map((member) => (
                           <div key={member.id} className="member-row">
                             <div className="member-left">
-                              <img src={member.image || member.image_url} className="member-thumb" alt={member.name} />
+                              <img 
+                                src={member.image || member.image_url || "/Images/suit1.png"} 
+                                className="member-thumb" 
+                                alt={member.name}
+                                onError={(e) => {
+                                  e.target.src = "/Images/suit1.png";
+                                }}
+                              />
                             </div>
                             <div className="member-center">
                               <h4>{member.name}</h4>
@@ -307,7 +360,10 @@ const AddEventMember = () => {
                             <div className="member-right">
                               <button
                                 className="dots-btn"
-                                onClick={() => setActiveDropdown(member.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveDropdown(activeDropdown === member.id ? null : member.id);
+                                }}
                               >
                                 <i className="fa-solid fa-ellipsis-vertical"></i>
                               </button>
@@ -339,7 +395,15 @@ const AddEventMember = () => {
                   >
                     Back
                   </button>
-                  <button className="designBtn2" onClick={handleCreateEvent}>
+                  <button 
+                    className="designBtn2" 
+                    onClick={handleCreateEvent}
+                    disabled={event_member.length === 0}
+                    style={{
+                      opacity: event_member.length === 0 ? 0.5 : 1,
+                      cursor: event_member.length === 0 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
                     Create Event
                   </button>
                 </div>

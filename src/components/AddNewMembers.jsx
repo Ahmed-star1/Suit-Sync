@@ -11,11 +11,16 @@ const AddNewMember = () => {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const { eventId } = useParams();
 
   const { loading } = useSelector((state) => state.events);
   const [imagePreview, setImagePreview] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+
+  const roleOptions = [
+    { value: "groomsmen", label: "Groomsmen" },
+    { value: "best_man", label: "Best Man" },
+  ];
 
   useEffect(() => {
     if (!eventId) {
@@ -27,6 +32,15 @@ const AddNewMember = () => {
       navigate(-1);
     }
   }, [eventId, navigate]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveDropdown(null);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Name is required"),
@@ -50,6 +64,16 @@ const AddNewMember = () => {
         (value) => value && value.size <= 5 * 1024 * 1024
       ),
   });
+
+  const handleDropdownClick = (dropdownName, e) => {
+    e.stopPropagation();
+    setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
+  };
+
+  const handleRoleSelect = (value, setFieldValue) => {
+    setFieldValue("role", value);
+    setActiveDropdown(null);
+  };
 
   return (
     <div className="col-md-9 right-column add-new-member">
@@ -86,7 +110,7 @@ const AddNewMember = () => {
             }
           }}
         >
-          {({ setFieldValue }) => (
+          {({ setFieldValue, values }) => (
             <Form>
               <div className="profile-info">
                 <div className="profile-image">
@@ -143,16 +167,37 @@ const AddNewMember = () => {
                       />
                     </div>
 
-                    <div className="input-group">
+                    <div className="input-group select-field product-detail-page">
                       <label>Role</label>
-                      <div className="select-field">
-                        <Field as="select" name="role" className="input">
-                          <option value="">Select Role</option>
-                          <option value="groomsmen">Groomsmen</option>
-                          <option value="best_man">Best Man</option>
-                          <option value="bridesmaid">Bridesmaid</option>
-                          <option value="maid_of_honor">Maid of Honor</option>
-                        </Field>
+                      <div className="custom-select-wrapper">
+                        <div
+                          className="custom-select"
+                          onClick={(e) => handleDropdownClick('role', e)}
+                        >
+                          <span className="selected-value">
+                            {values.role 
+                              ? roleOptions.find(r => r.value === values.role)?.label || values.role 
+                              : "Select Role"}
+                          </span>
+                          <i className="fa-solid fa-chevron-down"></i>
+                        </div>
+
+                        {activeDropdown === 'role' && (
+                          <ul className="custom-select-dropdown">
+                            {roleOptions.map((role, index) => (
+                              <li
+                                key={index}
+                                className={values.role === role.value ? 'active' : ''}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRoleSelect(role.value, setFieldValue);
+                                }}
+                              >
+                                {role.label}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                       <ErrorMessage
                         name="role"

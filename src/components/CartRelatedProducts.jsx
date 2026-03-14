@@ -1,32 +1,15 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import AOS from "aos";
-import "aos/dist/aos.css";
-import { getFeaturedProducts, getRelatedProducts } from "../Redux/Reducers/productSlice";
+import { useNavigate } from "react-router-dom";
+import Loader from "./Loader";
 
-const TrendingStyles = ({ type = "featured", data = [], productId = null }) => {
-  const dispatch = useDispatch();
+const CartRelatedProducts = ({ products = [], loading = false }) => {
   const navigate = useNavigate();
-  
-  const { featuredProducts, featuredLoading, relatedProducts, relatedProductsLoading } = useSelector((state) => state.products);
-  
-  useEffect(() => {
-    AOS.init({ duration: 1000, once: true });
-    
-    if (type === "featured") {
-      dispatch(getFeaturedProducts());
-    } else if (type === "related" && productId) {
-      console.log("Fetching related products for ID:", productId);
-      dispatch(getRelatedProducts(productId));
-    }
-  }, [dispatch, type, productId]);
 
-  const handleDetailpage = (productId) => {
+  const handleProductClick = (productId) => {
     navigate(`/shop/product/${productId}`);
   };
 
@@ -46,38 +29,24 @@ const TrendingStyles = ({ type = "featured", data = [], productId = null }) => {
     return "/Images/suit1.png";
   };
 
-  let displayData = [];
-  let heading = "";
-  let isLoading = false;
-
-  if (type === "related") {
-    displayData = data.length > 0 ? data : relatedProducts;
-    heading = "RELATED PRODUCTS";
-    isLoading = relatedProductsLoading;
-  } else {
-    displayData = data.length > 0 ? data : featuredProducts;
-    heading = "TRENDING STYLES";
-    isLoading = featuredLoading;
-  }
-
-  if (isLoading) {
+  if (loading) {
     return (
       <section className="trending-wrapper" data-aos="fade-up">
-        <h2>{heading}</h2>
+        <h2>Related Products</h2>
         <div className="container" style={{ textAlign: 'center', padding: '50px 0' }}>
-          Loading...
+          <Loader />
         </div>
       </section>
     );
   }
 
-  if (displayData.length === 0) {
+  if (!products || products.length === 0) {
     return null;
   }
 
   return (
     <section className="trending-wrapper" data-aos="fade-up">
-      <h2>{heading}</h2>
+      <h2>Related Products</h2>
       <div className="container">
         <Swiper
           modules={[Navigation]}
@@ -94,19 +63,25 @@ const TrendingStyles = ({ type = "featured", data = [], productId = null }) => {
             1280: { slidesPerView: 4 },
           }}
         >
-          {displayData.map((item, index) => {
-            const productId = item.id || index + 1;
+          {products.map((item) => {
+            const productId = item.id;
             const productTitle = item.name || item.title;
-            const productImage = getProductImage(item) || item.image || "/Images/suit1.png";
+            const productImage = getProductImage(item);
             
             return (
               <SwiperSlide key={productId}>
                 <div
                   className="trending-card"
-                  onClick={() => handleDetailpage(productId)}
+                  onClick={() => handleProductClick(productId)}
                   style={{ cursor: "pointer" }}
                 >
-                  <img src={productImage} alt={productTitle} />
+                  <img 
+                    src={productImage} 
+                    alt={productTitle}
+                    onError={(e) => {
+                      e.target.src = "/Images/suit1.png";
+                    }}
+                  />
                   <h3>{productTitle}</h3>
                 </div>
               </SwiperSlide>
@@ -118,4 +93,4 @@ const TrendingStyles = ({ type = "featured", data = [], productId = null }) => {
   );
 };
 
-export default TrendingStyles;
+export default CartRelatedProducts;

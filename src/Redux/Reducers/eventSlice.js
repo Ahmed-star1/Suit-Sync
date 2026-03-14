@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { setEventData, getEventData, clearEventData } from "../Utils/localStore";
-import { createEventService, getEventsService, getInvitedEventsService, declineEventInviteService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService } from "../Services/eventService";
+import { createEventService, getEventsService, getInvitedEventsService, declineEventInviteService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService, assignLookToEventService } from "../Services/eventService";
 
 // Async thunk to create an event
 export const createEvent = createAsyncThunk(
@@ -157,6 +157,22 @@ export const deleteEvent = createAsyncThunk(
   }
 );
 
+// NEW: Assign Look to Event Thunk
+export const assignLookToEvent = createAsyncThunk(
+  "events/assignLookToEvent",
+  async ({ eventId, productId }, { rejectWithValue }) => {
+    try {
+      const response = await assignLookToEventService({
+        event_id: eventId,
+        product_id: productId
+      });
+      return { response, eventId, productId };
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to assign look to event");
+    }
+  }
+);
+
 
 const eventSlice = createSlice({
   name: "events",
@@ -164,6 +180,10 @@ const eventSlice = createSlice({
     events: getEventData(),
     loading: false,
     error: null,
+    assignLookLoading: false,
+    selectedEvent: {
+      id: null,
+    }
   },
   reducers: {
     clearEventsState: (state) => {
@@ -172,6 +192,19 @@ const eventSlice = createSlice({
       state.events = [];
       clearEventData(); 
     },
+     setSelectedEvent: (state, action) => {
+      state.selectedEvent = {
+        id: action.payload.id,
+      };
+    },
+    clearSelectedEvent: (state) => {
+      state.selectedEvent = {
+        id: null,
+        name: null,
+        type: null,
+        image_url: null
+      };
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -348,14 +381,27 @@ const eventSlice = createSlice({
         state.loading = false;
         const deletedEventId = action.payload.eventId;
         state.events = state.events.filter(event => event.id !== deletedEventId);
-        setEventData(state.events); // Update localStorage
+        setEventData(state.events);
       })
       .addCase(deleteEvent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
+
+      // Assign Look to Event cases
+      .addCase(assignLookToEvent.pending, (state) => {
+        state.assignLookLoading = true;
+        state.error = null;
+      })
+      .addCase(assignLookToEvent.fulfilled, (state, action) => {
+        state.assignLookLoading = false;
+      })
+      .addCase(assignLookToEvent.rejected, (state, action) => {
+        state.assignLookLoading = false;
+        state.error = action.payload;
+      });
     },
 });
 
-export const { clearEventsState } = eventSlice.actions;
+export const { clearEventsState, setSelectedEvent, clearSelectedEvent } = eventSlice.actions;
 export default eventSlice.reducer;

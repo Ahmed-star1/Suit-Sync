@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { getEventDetails } from "../Redux/Reducers/eventSlice";
@@ -9,36 +9,48 @@ import Loader from "../components/Loader";
 const EventDetails = () => {
   const { eventId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const isInvitedEvent = location.state?.from === "invited";
 
+  const { user } = useSelector((state) => state.auth);
+
   const { eventData, loading } = useSelector((state) => state.events);
+
   useEffect(() => {
     dispatch(getEventDetails(eventId));
-    AOS.init({ duration: 1000, once: true }); 
+    AOS.init({ duration: 1000, once: true });
   }, [dispatch, eventId]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
-    
+
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "long",
       day: "2-digit",
-      timeZone: "UTC"
+      timeZone: "UTC",
     }).format(new Date(dateString));
+  };
+
+  // Check if current user is the event creator
+  const isEventCreator = () => {
+    if (!eventData?.event || !user) return false;
+    return eventData.event.user_id === user.id;
   };
 
   if (loading) {
     return <Loader />;
   }
 
-  if (!eventData || !eventData.event) return;
+  if (!eventData || !eventData.event) return null;
+
   const members = eventData.members || [];
   const looks = eventData.looks || [];
-
   const event = eventData.event;
+  const isCreator = isEventCreator();
+
   return (
     <div className="event-details-container">
       <div
@@ -98,14 +110,14 @@ const EventDetails = () => {
 
                     <div className="progress-bar">
                       <div className="progress-step">
-                        <span>Invite Sent</span>
+                        <span>Invite Accept</span>
                         <div
                           className={`step-circle ${
-                            member.status === "accepted" 
-                              ? "completed" 
+                            member.status === "accepted"
+                              ? "completed"
                               : member.status === "declined"
-                              ? "declined"
-                              : "pending"
+                                ? "declined"
+                                : "pending"
                           }`}
                         >
                           {member.status === "accepted" && (
@@ -139,14 +151,41 @@ const EventDetails = () => {
 
           <div className="event-look col-md-6" data-aos="fade-left">
             <h3>Event Look</h3>
-            <div className="look-items">
-              {event.looks?.map((look, index) => (
-                <div key={index} className="look-item">
-                  <img src={look.image} alt={look.name} />
-                  <p>{look.name}</p>
-                </div>
-              ))}
-            </div>
+
+            {looks && looks.length > 0 ? (
+              <div className="look-items">
+                {looks.map((look, index) => (
+                  <div key={index} className="look-item">
+                    <img src={look.image} alt={look.name} />
+                    <p>{look.name}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-look">
+                {isInvitedEvent ? (
+                  <div className="empty-look-content">
+                    <p>
+                      The event organizer hasn't assigned a look for this event
+                      yet. Please check back later.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="empty-look-content">
+                    <p>
+                      You haven't assigned any look for this event. Start by
+                      assigning a look from your orders.{" "}
+                    </p>
+                    <button
+                      className="designBtn2 assign-link"
+                      onClick={() => navigate("/my-orders")}
+                    >
+                      Assign Look
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,96 +1,154 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
-const MeasurementForm = ({ title, fields, options }) => {
-  const optionsData = {
-    shirt: {
-      "Shirt Size": ["S", "M", "L", "XL", "2XL", "3XL"],
-    },
-    pant: {
-      "Pant Size": ["Short", "Regular", "Long"],
-      "Pant Length": {
-        Short: ["34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52",],
-        Regular: ["28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60",],
-        Long: ["28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60",],
-      },
-    },
-    coat: {
-      "Coat Size": ["Short", "Regular", "Long", "XL"],
-      "Coat Length": {
-        Short: ["34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50",],
-        Regular: ["34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66",],
-        Long: ["34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66",],
-        XL: ["38","39","40","41","42","43","44","45","46","47","48","49","50","51","52",],
-      },
-    },
-    shoes: {
-      "Shoes Size": ["7", "8", "9", "10", "11", "12", "13", "14"],
-    },
+const MeasurementForm = ({ 
+  title, 
+  fields, 
+  categoryData,
+  onMeasurementChange, 
+  selectedValues = {} 
+}) => {
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const dropdownRefs = useRef({});
+
+  // Parse category data based on type
+  const getOptionsForField = (field) => {
+    if (!categoryData) return [];
+    const { type, data } = categoryData.size_options || {};
+    switch (type) {
+      case "size_type":
+        return data?.size_types || [];
+        
+      case "measurement":
+        return data?.measurements || [];
+        
+      case "standard":
+        return ["Standard"];
+        
+      case "complex":
+        if (field === "coat_size" || field === "pant_size") {
+          const category = field === "coat_size" ? "coat" : "pants";
+          const categoryData = data?.categories?.find(c => c.name === category);
+          return categoryData?.types?.map(t => t.name) || [];
+        } else if (field === "coat_fit" || field === "pant_fit") {
+          const category = field === "coat_fit" ? "coat" : "pants";
+          const sizeField = field === "coat_fit" ? "coat_size" : "pant_size";
+          const selectedSize = selectedValues[sizeField];
+          if (!selectedSize) return [];
+          const categoryData = data?.categories?.find(c => c.name === category);
+          const sizeType = categoryData?.types?.find(t => t.name === selectedSize);
+          return sizeType?.measurements || [];
+        }
+        return [];
+        
+      default:
+        return [];
+    }
   };
 
-  const [selectedValues, setSelectedValues] = useState({});
-
   const handleFieldChange = (fieldName, value) => {
-    const newValues = { ...selectedValues, [fieldName]: value };
+    onMeasurementChange(fieldName, value);
+    setActiveDropdown(null);
+  };
 
-    if (fieldName === "Pant Size" || fieldName === "Coat Size") {
-      const lengthField =
-        fieldName === "Pant Size" ? "Pant Length" : "Coat Length";
-      newValues[lengthField] = "";
-    }
+  const handleDropdownClick = (fieldName, e) => {
+    e.stopPropagation();
+    setActiveDropdown(activeDropdown === fieldName ? null : fieldName);
+  };
 
-    setSelectedValues(newValues);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (activeDropdown && !dropdownRefs.current[activeDropdown]?.contains(event.target)) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [activeDropdown]);
+
+  // Get display label for field
+  const getFieldLabel = (field) => {
+    const labels = {
+      shirt_size: "Shirt Size",
+      pant_fit: "Pant Fit",
+      pant_size: "Pant Size",
+      coat_fit: "Coat Fit",
+      coat_size: "Coat Size",
+      shoe_size: "Shoes Size",
+      belt_size: "Belt Size",
+      tie_size: "Tie Size"
+    };
+    return labels[field] || field;
+  };
+
+  // Check if field is dependent on another field (for complex categories)
+  const isDependentField = (field) => {
+    return field === "coat_fit" || field === "pant_fit";
+  };
+
+  const getParentField = (field) => {
+    if (field === "coat_fit") return "coat_size";
+    if (field === "pant_fit") return "pant_size";
+    return "";
   };
 
   return (
-    <div className="measurement-form">
+    <div className="measurement-form product-detail-page checkout-page">
       <h3>{title}</h3>
 
       <div className="row">
         {fields.map((field, i) => {
-          const isLengthField =
-            field === "Pant Length" || field === "Coat Length";
-          const sizeField =
-            field === "Pant Length"
-              ? "Pant Size"
-              : field === "Coat Length"
-                ? "Coat Size"
-                : "";
+          const selectedValue = selectedValues[field] || "";
+          const fieldLabel = getFieldLabel(field);
+          const isDependent = isDependentField(field);
+          const parentField = getParentField(field);
+          const isDisabled = isDependent && !selectedValues[parentField];
+          
+          // Get options dynamically
+          let optionsList = getOptionsForField(field);
 
           return (
             <div
               key={i}
-              className= "input-group"
+              className="input-group"
+              ref={(el) => (dropdownRefs.current[field] = el)}
             >
-              <label>{field}</label>
+              <label>{fieldLabel}</label>
               <div className="select-field">
-                <select
-                  value={selectedValues[field] || ""}
-                  onChange={(e) => handleFieldChange(field, e.target.value)}
-                  disabled={isLengthField && !selectedValues[sizeField]}
-                >
-                  <option value="" disabled>
-                    {isLengthField && !selectedValues[sizeField]
-                      ? "Select Length"
-                      : `Select ${field}`}
-                  </option>
+                <div className="custom-select-wrapper">
+                  <div
+                    className={`custom-select ${isDisabled ? "disabled" : ""}`}
+                    onClick={(e) => !isDisabled && handleDropdownClick(field, e)}
+                  >
+                    <span className="selected-value">
+                      {selectedValue || (isDisabled ? `Select ${fieldLabel} First` : `Select ${fieldLabel}`)}
+                    </span>
+                    <i className="fa-solid fa-chevron-down"></i>
+                  </div>
 
-                  {isLengthField &&
-                    selectedValues[sizeField] &&
-                    optionsData[options]?.[field]?.[
-                      selectedValues[sizeField]
-                    ]?.map((option, index) => (
-                      <option key={index} value={option}>
-                        {option}
-                      </option>
-                    ))}
-
-                  {!isLengthField &&
-                    optionsData[options]?.[field]?.map((option, index) => (
-                      <option key={index} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                </select>
+                  {activeDropdown === field && !isDisabled && (
+                    <ul className="custom-select-dropdown">
+                      {optionsList.length > 0 ? (
+                        optionsList.map((option, index) => (
+                          <li
+                            key={index}
+                            className={selectedValue === option ? "active" : ""}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFieldChange(field, option);
+                            }}
+                          >
+                            {option}
+                          </li>
+                        ))
+                      ) : (
+                        <li className="dropdown-item no-results">
+                          No options available
+                        </li>
+                      )}
+                    </ul>
+                  )}
+                </div>
               </div>
             </div>
           );

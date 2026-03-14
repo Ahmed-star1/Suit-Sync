@@ -45,6 +45,17 @@ const VerifyOtpForm = () => {
     }
   }, [emailToUse, navigate]);
 
+  const handleVerifySuccess = () => {
+    localStorage.removeItem("registeredEmail");
+    const redirectPath = localStorage.getItem('redirectAfterLogin');
+    if (redirectPath) {
+      localStorage.removeItem('redirectAfterLogin');
+      navigate(redirectPath);
+    } else {
+      navigate("/my-account");
+    }
+  };
+
   return (
     <>
       {loading && <Loader />}
@@ -69,7 +80,7 @@ const VerifyOtpForm = () => {
                 .unwrap()
                 .then(() => {
                   localStorage.removeItem("registeredEmail");
-                  navigate("/my-account");
+                  handleVerifySuccess();
                 })
                 .catch(() => {});
             }}

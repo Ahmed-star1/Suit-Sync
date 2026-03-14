@@ -39,7 +39,13 @@ const RightColumn = () => {
   useEffect(() => {
     if (registerSuccess) {
       dispatch(clearAuthState());
-      navigate("/verify-otp");
+      const redirectPath = localStorage.getItem('redirectAfterLogin');
+      if (redirectPath) {
+        localStorage.removeItem('redirectAfterLogin');
+        navigate(redirectPath);
+      } else {
+        navigate("/verify-otp");
+      }
     }
   }, [registerSuccess, navigate, dispatch]);
 
@@ -65,7 +71,9 @@ const RightColumn = () => {
 
       <div className="right-form-column col-md-6" data-aos="fade-left">
         <div className="logo">
-          <img src="/Images/blackLogo.png" alt="Logo" />
+          <Link to="/">
+            <img src="/Images/blackLogo.png" alt="Logo" />
+          </Link>
         </div>
 
         <div className="box">
@@ -194,6 +202,12 @@ const RightColumn = () => {
                 <small className="text-danger">
                   <ErrorMessage name="acceptTerms" />
                 </small>
+
+                {error && (
+                  <div className="api-error text-danger">
+                    {renderApiError()}
+                  </div>
+                )}
 
                 <button type="submit" className="designBtn2" disabled={loading}>
                   {loading ? "Loading..." : "Register"}

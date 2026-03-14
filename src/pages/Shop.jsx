@@ -5,16 +5,20 @@ import ShopFilters from "../components/ShopFilters";
 import ShopProducts from "../components/ShopProducts";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { useDispatch, useSelector } from "react-redux";
+import Loader from "../components/Loader";
 
 const Shop = () => {
+  const dispatch = useDispatch();
+  
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
   }, []);
 
+  const { loading, products } = useSelector((state) => state.products);
+
   const [selectedFilters, setSelectedFilters] = useState({
-    // "build-type": [],
     category: [],
-    // color: [],
     "rent-buy": [],
   });
 
@@ -31,6 +35,23 @@ const Shop = () => {
       return newFilters;
     });
   };
+
+  if (loading && products.length === 0) {
+    return (
+      <div>
+        <Header />
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '60vh' 
+        }}>
+          <Loader />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="shop-page">

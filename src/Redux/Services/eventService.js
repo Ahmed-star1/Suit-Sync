@@ -274,3 +274,20 @@ export const deleteEventService = async (eventId) => {
     token: true,
   });
 };
+
+// Assign Look to Event Service
+export const assignLookToEventService = async (lookData) => {
+  try {
+    const response = await fetchApi({
+      method: "POST",
+      endPoint: API_ENDPOINTS.ASSIGN_LOOK,
+      token: true,
+      data: lookData,
+    });
+    
+    return response;
+  } catch (error) {
+    console.error("assignLookToEventService error", error);
+    throw error;
+  }
+};

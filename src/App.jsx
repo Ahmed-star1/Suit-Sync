@@ -2,13 +2,16 @@ import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ScrollProvider } from "./components/ScrollContext";
 import { useEventFlowCleanup } from "./hooks/useEventFlowCleanup";
+import ProtectedRoutes from "./components/ProtectedRoutes";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import ContactUs from "./pages/ContactUs";
 import Shop from "./pages/Shop";
 import ShopDetailPage from "./pages/ShopDetailPage";
 import CartPage from "./pages/CartPage";
+import WishlistPage from "./pages/Wishlist";
 import CheckoutPage from "./pages/CheckoutPage";
+import ThankyouPage from "./pages/Thankyou";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import VarifyOtp from "./pages/VerifyOtp";
@@ -32,7 +35,6 @@ import EditEventPage from "./pages/EditEventPage";
 function App() {
   const [count, setCount] = useState(0);
   
-  // Clear event data when navigating away from event flow
   useEventFlowCleanup();
 
   return (
@@ -46,7 +48,9 @@ function App() {
       <Route path="/shop" element={<Shop />} />
       <Route path="/shop/product/:id" element={<ShopDetailPage />} />
       <Route path="/cart" element={<CartPage />} />
+      <Route path="/wishlist" element={<WishlistPage />} />
       <Route path="/Checkout" element={<CheckoutPage />} />
+      <Route path="/thank-you" element={<ThankyouPage />} />
 
       {/* Auth Pages */}
       <Route path="/login" element={<LoginPage />} />
@@ -56,19 +60,20 @@ function App() {
       <Route path="/verify-code" element={<VarifyCode />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      <Route path="/my-account" element={<MyAccountPge />} />
-      <Route path="/events" element={<EventsPage />} />
-      <Route path="/measurement" element={<MeasurementPage />} />
+      <Route path="/my-account" element={<ProtectedRoutes><MyAccountPge /></ProtectedRoutes>} />
+      <Route path="/events" element={<ProtectedRoutes><EventsPage /></ProtectedRoutes>} />
+      <Route path="/measurement" element={<ProtectedRoutes><MeasurementPage /></ProtectedRoutes>} />
       {/* <Route path="/event-look" element={<EventLookPage />} /> */}
-      <Route path="/my-orders" element={<MyOrdersPage />} />
-      <Route path="/support" element={<SupportPage />} />
-      <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-      <Route path="/create-event" element={<CreateEventPage />} />
-      <Route path="/edit-event/:id" element={<EditEventPage />} />
-      <Route path="/add-event-member" element={<AddEventMemberPage />} />
-      <Route path="/edit-event-members/:id" element={<EditEventMembersPage />} />
-      <Route path="/add-new-members/:eventId" element={<AddNewMembersPage />} />
-      <Route path="/event/:eventId" element={<EventsDetailPage />} />
+      <Route path="/my-orders" element={<ProtectedRoutes><MyOrdersPage /></ProtectedRoutes>} />
+      <Route path="/wishlist" element={<ProtectedRoutes><WishlistPage /></ProtectedRoutes>} />
+      <Route path="/support" element={<ProtectedRoutes><SupportPage /></ProtectedRoutes>} />
+      <Route path="/privacy-policy" element={<ProtectedRoutes><PrivacyPolicyPage /></ProtectedRoutes>} />
+      <Route path="/create-event" element={<ProtectedRoutes><CreateEventPage /></ProtectedRoutes>} />
+      <Route path="/edit-event/:id" element={<ProtectedRoutes><EditEventPage /></ProtectedRoutes>} />
+      <Route path="/add-event-member" element={<ProtectedRoutes><AddEventMemberPage /></ProtectedRoutes>} />
+      <Route path="/edit-event-members/:id" element={<ProtectedRoutes><EditEventMembersPage /></ProtectedRoutes>} />
+      <Route path="/add-new-members/:eventId" element={<ProtectedRoutes><AddNewMembersPage /></ProtectedRoutes>} />
+      <Route path="/event/:eventId" element={<ProtectedRoutes><EventsDetailPage /></ProtectedRoutes>} />
 
     </Routes>
     </ScrollProvider>
