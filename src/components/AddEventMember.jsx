@@ -29,10 +29,6 @@ const AddEventMember = () => {
 
   const roleOptions = [
     { value: "groomsmen", label: "Groomsmen" },
-    { value: "groomsman 2", label: "Groomsman 2" },
-    { value: "groomsman 3", label: "Groomsman 3" },
-    { value: "best man", label: "Best Man" },
-    { value: "father of groom", label: "Father of Groom" },
   ];
 
   useEffect(() => {

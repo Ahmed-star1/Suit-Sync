@@ -1,22 +1,43 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import LeftColumnTabs from "../components/LeftColumnTabs";
 import CreateEventForm from "../components/CreateEventForm";
+import { sendFreeTape, checkTapeStatus } from "../Redux/Reducers/eventSlice";
 
 const CreatEventPage = () => {
+  const dispatch = useDispatch();
   const [showModal, setShowModal] = useState(false);
   const [fadeIn, setFadeIn] = useState(false);
   const [shippingAddress, setShippingAddress] = useState("");
+  
+  const { tapeRequested, loading, success } = useSelector((state) => state.tape);
+  
+  const isLoggedIn = !!localStorage.getItem("access_token");
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      dispatch(checkTapeStatus());
+    }
+  }, [dispatch, isLoggedIn]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setShowModal(true);
-      setTimeout(() => setFadeIn(true), 100);
+      if (isLoggedIn && !tapeRequested) {
+        setShowModal(true);
+        setTimeout(() => setFadeIn(true), 100);
+      }
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isLoggedIn, tapeRequested]);
+
+  useEffect(() => {
+    if (success) {
+      closeModal();
+    }
+  }, [success]);
 
   useEffect(() => {
     if (showModal) {
@@ -30,16 +51,19 @@ const CreatEventPage = () => {
     };
   }, [showModal]);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!shippingAddress.trim()) {
       alert("Please enter your shipping address");
       return;
     }
 
-    alert(
-      `Thank you! Your tailor's tape will be shipped to: ${shippingAddress}`,
-    );
-    closeModal();
+    try {
+      await dispatch(sendFreeTape({
+        address: shippingAddress
+      })).unwrap();
+    } catch (error) {
+      alert(error || "Failed to send request. Please try again.");
+    }
   };
 
   const closeModal = () => {
@@ -82,6 +106,7 @@ const CreatEventPage = () => {
             <h3>Send Me a Free Tailor's Tape</h3>
             <p>Enter your shipping address to receive a free tailor's tape.</p>
             <img src="/Images/tailorTape.png" alt="Tailor's Tape" />
+            
             <form onSubmit={(e) => e.preventDefault()}>
               <div className="form-group">
                 <input
@@ -91,11 +116,16 @@ const CreatEventPage = () => {
                   onChange={(e) => setShippingAddress(e.target.value)}
                   placeholder="Enter your complete shipping address"
                   type="text"
+                  disabled={loading}
                 />
               </div>
               <div className="modal-footer">
-                <button className="designBtn2" onClick={handleConfirm}>
-                  CONFIRM
+                <button 
+                  className="designBtn2" 
+                  onClick={handleConfirm}
+                  disabled={loading}
+                >
+                  {loading ? "SENDING..." : "CONFIRM"}
                 </button>
               </div>
             </form>

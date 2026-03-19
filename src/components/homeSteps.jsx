@@ -32,9 +32,8 @@ const StyleJourney = () => {
   return (
     <section className="steps-wrapper" data-aos="fade-up">
       <h2>
-        YOUR EVENT, Fully
-        <br />
-        synced
+        YOUR EVENT, Fully 
+        <br />synced
       </h2>
       <div class="container">
         <div className="steps-row row">

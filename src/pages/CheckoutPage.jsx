@@ -51,20 +51,10 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     if (success) {
-      alert("Checkout submitted successfully!");
       navigate("/thank-you", {
-        state: {
-          message: "Your request has been submitted successfully!",
-        },
       });
     }
   }, [success, navigate]);
-
-  useEffect(() => {
-    if (error) {
-      alert(error || "Something went wrong");
-    }
-  }, [error]);
 
   const formik = useFormik({
     initialValues: {
@@ -100,13 +90,11 @@ const CheckoutPage = () => {
   const countries = [
     { value: "US", label: "United States" },
     { value: "CA", label: "Canada" },
-    { value: "IN", label: "India" },
   ];
 
   const statesByCountry = {
     US: ["California", "Texas", "Florida", "New York"],
     CA: ["Ontario", "Quebec", "British Columbia"],
-    IN: ["Maharashtra", "Karnataka", "Delhi"],
   };
 
   const citiesByState = {
@@ -117,9 +105,6 @@ const CheckoutPage = () => {
     Ontario: ["Toronto", "Ottawa"],
     Quebec: ["Montreal", "Quebec City"],
     "British Columbia": ["Vancouver", "Victoria"],
-    Maharashtra: ["Mumbai", "Pune"],
-    Karnataka: ["Bangalore", "Mysore"],
-    Delhi: ["New Delhi", "Gurgaon"],
   };
 
   const cartItems = Array.isArray(cart)
@@ -130,18 +115,39 @@ const CheckoutPage = () => {
 
   const calculateTotal = () => {
     return cartItems.reduce((sum, item) => {
-      if (item.items && Array.isArray(item.items)) {
-        const groupTotal = item.items.reduce((groupSum, nestedItem) => {
-          return groupSum + getProductPrice(nestedItem);
-        }, 0);
-        return sum + groupTotal;
+      if (item.items && Array.isArray(item.items) && item.items.length > 0) {
+        let suitTotal = 0;
+        item.items.forEach(nestedItem => {
+          const product = nestedItem.product;
+          const buyType = nestedItem.buy_type;
+          
+          let price = 0;
+          if (buyType === "buy") {
+            price = product?.buy_price || 0;
+          } else if (buyType === "rent") {
+            price = product?.rent_price || 0;
+          }
+          
+          suitTotal += price * (nestedItem.quantity || 1);
+        });
+        return sum + suitTotal;
       } else {
-        return sum + getProductPrice(item);
+        const product = item.product;
+        const buyType = item.buy_type;
+        
+        let price = 0;
+        if (buyType === "buy") {
+          price = product?.buy_price || 0;
+        } else if (buyType === "rent") {
+          price = product?.rent_price || 0;
+        }
+        
+        return sum + (price * (item.quantity || 1));
       }
     }, 0);
   };
 
-  // ✅ Custom dropdown handlers
+  // Custom dropdown handlers
   const handleDropdownClick = (dropdownName) => {
     setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
   };
@@ -231,20 +237,46 @@ const CheckoutPage = () => {
     return "/Images/suit1.png";
   };
 
-  const getProductName = (item) => {
+  const getProductDisplayName = (item) => {
+    if (item.items && Array.isArray(item.items) && item.items.length > 0) {
+      return item.product?.name || "Suit";
+    }
     return item.product?.name || "Product";
   };
 
-  const getProductPrice = (item) => {
-    const product = item.product;
-    const buyType = item.buy_type;
-
-    if (buyType === "buy") {
-      return product?.buy_price || 0;
-    } else if (buyType === "rent") {
-      return product?.rent_price || 0;
+  const getProductDisplayType = (item) => {
+    if (item.items && item.items.length > 0) {
+      return item.items[0]?.buy_type || "rent";
     }
-    return 0;
+    return item.buy_type;
+  };
+
+  const getProductPrice = (item) => {
+    let basePrice = 0;
+    
+    if (item.items && Array.isArray(item.items) && item.items.length > 0) {
+      const firstItem = item.items[0];
+      const product = firstItem?.product;
+      const buyType = firstItem?.buy_type;
+
+      if (buyType === "buy") {
+        basePrice = product?.buy_price || 0;
+      } else if (buyType === "rent") {
+        basePrice = product?.rent_price || 0;
+      }
+    } else {
+      const product = item.product;
+      const buyType = item.buy_type;
+
+      if (buyType === "buy") {
+        basePrice = product?.buy_price || 0;
+      } else if (buyType === "rent") {
+        basePrice = product?.rent_price || 0;
+      }
+    }
+    
+    const quantity = item.quantity || 1;
+    return basePrice * quantity;
   };
 
   const getProductBuyType = (item) => {
@@ -548,7 +580,7 @@ const CheckoutPage = () => {
 
               <div className="buttons">
                 <a href="/cart">
-                  <i class="fa-solid fa-arrow-left-long"></i> Return to Cart
+                  <i className="fa-solid fa-arrow-left-long"></i> Return to Cart
                 </a>
                 <button
                   type="submit"
@@ -576,7 +608,6 @@ const CheckoutPage = () => {
                       <div className="summary-info-image">
                         <img
                           src={getProductImage(item)}
-                          alt={getProductName(item)}
                           onError={(e) => {
                             e.target.src = "/Images/suit1.png";
                           }}
@@ -584,14 +615,21 @@ const CheckoutPage = () => {
                       </div>
                       <div className="summary-info">
                         <div className="summary-info-title">
-                          <h4>{getProductName(item)}</h4>
+                          <h4>
+                            {getProductDisplayName(item)}
+                            {item.items && item.items.length > 0 && (
+                              <span className="suit-badge"> (Suit)</span>
+                            )}
+                          </h4>
                           <span className="summary-price">
                             {formatPrice(getProductPrice(item))}
                           </span>
                         </div>
                         <div className="summary-info-type">
                           <p className="item-type">
-                            {getProductBuyType(item) === "buy" ? "Buy" : "Rent"}
+                            {getProductDisplayType(item) === "buy"
+                              ? "Buy"
+                              : "Rent"}
                           </p>
                         </div>
                       </div>

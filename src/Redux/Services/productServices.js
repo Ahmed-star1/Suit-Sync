@@ -152,6 +152,23 @@ export const removeCartItemService = async (itemId) => {
   }
 };
 
+// Update Cart Item Quantity Service
+export const updateCartItemQuantityService = async (itemId, quantity) => {
+  try {
+    const response = await fetchApi({
+      method: "POST",
+      endPoint: API_ENDPOINTS.UPDATE_CART_ITEM(itemId),
+      token: true,
+      data: { quantity },
+    });
+    
+    return response;
+  } catch (error) {
+    console.error("updateCartItemQuantityService error", error);
+    throw error;
+  }
+};
+
 // Get Cart Related Products Service
 export const getCartRelatedProductsService = async () => {
   try {

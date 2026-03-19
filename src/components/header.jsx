@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Instagram, Twitter, Facebook, Menu, X } from "lucide-react";
+import { Instagram, Twitter, Facebook } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAccessToken } from "../Redux/Utils/localStore";
+import SearchModal from "./SearchModal"; // Add this import
 
 const nav_items = [
   { name: "Home", to: "/", key: "home" },
@@ -21,7 +22,6 @@ const Header = () => {
 
   useEffect(() => {
     const currentPath = window.location.pathname;
-
     const currentItem = nav_items.find((item) => {
       if (currentPath === "/" && item.to === "/") return true;
       if (currentPath !== "/" && item.to !== "/") {
@@ -29,72 +29,35 @@ const Header = () => {
       }
       return false;
     });
-
-    if (currentItem) {
-      setActiveLink(currentItem.key);
-    }
+    if (currentItem) setActiveLink(currentItem.key);
   }, []);
 
   useEffect(() => {
-    const checkToken = () => {
-      setToken(getAccessToken());
-    };
-
+    const checkToken = () => setToken(getAccessToken());
     window.addEventListener("storage", checkToken);
-
-    return () => {
-      window.removeEventListener("storage", checkToken);
-    };
+    return () => window.removeEventListener("storage", checkToken);
   }, []);
 
   useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-  }, [isModalOpen]);
+    document.body.style.overflow = isModalOpen || isMobileMenuOpen ? "hidden" : "auto";
+  }, [isModalOpen, isMobileMenuOpen]);
 
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-  }, [isMobileMenuOpen]);
+  const getLinkClassName = (key) => `menu-link ${activeLink === key ? "active" : ""}`;
 
-  const getLinkClassName = (key) => {
-    return `menu-link ${activeLink === key ? "active" : ""}`;
-  };
-
-  const handleChange = () => {
-    navigate("/cart");
-  };
-
-  const handleWishlistChange = () => {
-    navigate("/wishlist");
-  };
-
-  const handleSearchButtonClick = () => {
-    setIsModalOpen(true);
-  };
-
+  const handleChange = () => navigate("/cart");
+  const handleWishlistChange = () => navigate("/wishlist");
+  const handleSearchButtonClick = () => setIsModalOpen(true);
   const handleModalClose = () => {
     setIsModalOpen(false);
     setSearchQuery("");
   };
-
-  const handleSearchInputChange = (e) => {
-    setSearchQuery(e.target.value);
+  const handleSearchInputChange = (value) => setSearchQuery(value);
+  const handleSearch = () => {
+    console.log("Searching for:", searchQuery);
+    handleModalClose();
   };
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <header className="site-header">
@@ -103,28 +66,16 @@ const Header = () => {
           <div className="row align-items-center">
             <div className="col-md-6">
               <div className="topbar-contact">
-                <span>
-                  <a href="tel: 000-000-0000">Call Now: 000 000 0000</a>
-                </span>
+                <span><a href="tel: 000-000-0000">Call Now: 000 000 0000</a></span>
                 <span className="separator">|</span>
-                <span>
-                  <a href="mailto:info@suitsync.com">
-                    Email Now: info@suitsync.com
-                  </a>
-                </span>
+                <span><a href="mailto:info@suitsync.com">Email Now: info@suitsync.com</a></span>
               </div>
             </div>
             <div className="col-md-6 h-icons">
               <div className="topbar-social d-flex justify-content-md-end">
-                <a href="#">
-                  <Instagram size={18} />
-                </a>
-                <a href="#">
-                  <Twitter size={18} />
-                </a>
-                <a href="#">
-                  <Facebook size={18} />
-                </a>
+                <a href="#"><Instagram size={18} /></a>
+                <a href="#"><Twitter size={18} /></a>
+                <a href="#"><Facebook size={18} /></a>
               </div>
             </div>
           </div>
@@ -135,20 +86,15 @@ const Header = () => {
         <div className="container">
           <div className="row align-items-center">
             <div className="col-6 col-md-2 h-logo">
-              <Link to="/">
-                <img src="/Images/suitsynclogo.svg" alt="SuitSync Logo" />
-              </Link>
+              <Link to="/"><img src="/Images/suitsynclogo.svg" alt="SuitSync Logo" /></Link>
             </div>
             
-            {/* Desktop Menu - Hidden on mobile */}
             <div className="col-md-6 desktop-menu">
               <nav className="navbar-menu">
                 <ul className="menu-list">
                   {nav_items.map((item) => (
                     <li className="menu-item" key={item.key}>
-                      <Link to={item.to} className={getLinkClassName(item.key)}>
-                        {item.name}
-                      </Link>
+                      <Link to={item.to} className={getLinkClassName(item.key)}>{item.name}</Link>
                     </li>
                   ))}
                 </ul>
@@ -157,29 +103,18 @@ const Header = () => {
 
             <div className="col-6 col-md-4">
               <div className="navbar-actions">
-                <button onClick={handleWishlistChange}>
-                  <i className="fa-solid fa-heart"></i>
-                </button>
-                <button className="search" onClick={handleSearchButtonClick}>
-                  <i className="fa-solid fa-magnifying-glass"></i>
-                </button>
-                <button onClick={handleChange}>
-                  <i className="fa-solid fa-cart-shopping"></i>
-                </button>
+                <button onClick={handleWishlistChange}><i className="fa-solid fa-heart"></i></button>
+                <button className="search" onClick={handleSearchButtonClick}><i className="fa-solid fa-magnifying-glass"></i></button>
+                <button onClick={handleChange}><i className="fa-solid fa-cart-shopping"></i></button>
                 
-                {/* Mobile Menu Toggle */}
                 <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
-                  <i class="fa-solid fa-bars"></i>
+                  <i className="fa-solid fa-bars"></i>
                 </button>
                 
                 {token ? (
-                  <Link to="/events" className="designBtn desktop-only">
-                    My Events
-                  </Link>
+                  <Link to="/events" className="designBtn desktop-only">My Events</Link>
                 ) : (
-                  <Link to="/login" className="designBtn desktop-only">
-                    Login
-                  </Link>
+                  <Link to="/login" className="designBtn desktop-only">Login</Link>
                 )}
               </div>
             </div>
@@ -187,6 +122,7 @@ const Header = () => {
         </div>
       </div>
 
+      {/* Mobile Menu - unchanged */}
       <div className={`mobile-menu-overlay ${isMobileMenuOpen ? 'active' : ''}`} onClick={closeMobileMenu}>
         <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
           <div className="mobile-menu-header">
@@ -194,7 +130,7 @@ const Header = () => {
               <img src="/Images/suitsynclogo.svg" alt="SuitSync Logo" />
             </Link>
             <button className="close-mobile-menu" onClick={closeMobileMenu}>
-              <i class="fa-solid fa-xmark"></i>
+              <i className="fa-solid fa-xmark"></i>
             </button>
           </div>
           
@@ -216,49 +152,29 @@ const Header = () => {
           
           <div className="mobile-menu-footer">
             {token ? (
-              <Link to="/events" className="mobile-menu-btn" onClick={closeMobileMenu}>
-                My Events
-              </Link>
+              <Link to="/events" className="mobile-menu-btn" onClick={closeMobileMenu}>My Events</Link>
             ) : (
-              <Link to="/login" className="mobile-menu-btn" onClick={closeMobileMenu}>
-                Login
-              </Link>
+              <Link to="/login" className="mobile-menu-btn" onClick={closeMobileMenu}>Login</Link>
             )}
             
             <div className="navbar-actions">
-              <button onClick={handleWishlistChange}>
-                <i className="fa-solid fa-heart"></i>
-              </button>
-              <button className="search" onClick={handleSearchButtonClick}>
-                <i className="fa-solid fa-magnifying-glass"></i>
-              </button>
-              <button onClick={handleChange}>
-                <i className="fa-solid fa-cart-shopping"></i>
-              </button>
+              <button onClick={handleWishlistChange}><i className="fa-solid fa-heart"></i></button>
+              <button className="search" onClick={handleSearchButtonClick}><i className="fa-solid fa-magnifying-glass"></i></button>
+              <button onClick={handleChange}><i className="fa-solid fa-cart-shopping"></i></button>
             </div>
           </div>
         </div>
       </div>
 
-      {isModalOpen && (
-        <div className="search-modal">
-          <div className="search-modal-content">
-            <button className="close-modal" onClick={handleModalClose}>
-              <i className="fa-solid fa-times"></i>
-            </button>
-            <h2>Search</h2>
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={handleSearchInputChange}
-            />
-            <button className="designBtn">Search</button>
-          </div>
-        </div>
-      )}
+      <SearchModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchInputChange}
+        onSearch={handleSearch}
+      />
     </header>
   );
 };
 
-export default Header;  
+export default Header;

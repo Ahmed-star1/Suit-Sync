@@ -73,12 +73,10 @@ const ThankYouPage = () => {
 
   // Get product image
   const getProductImage = (item) => {
-    // Agar image API se aa rahi ho
     if (item.image) {
       return item.image;
     }
 
-    // Agar images array ho
     if (item.images && Array.isArray(item.images) && item.images.length > 0) {
       const featuredImage = item.images.find((img) => img.is_featured === true);
       if (featuredImage?.image_url) {
@@ -87,7 +85,6 @@ const ThankYouPage = () => {
       return item.images[0].image_url;
     }
 
-    // Agar product object ho with images
     if (item.product?.images && Array.isArray(item.product.images)) {
       const featuredImage = item.product.images.find(
         (img) => img.is_featured === true,
@@ -98,7 +95,6 @@ const ThankYouPage = () => {
       return item.product.images[0]?.image_url;
     }
 
-    // Dummy image as fallback
     return "/Images/suit1.png";
   };
 
@@ -135,14 +131,59 @@ const ThankYouPage = () => {
   const order = getOrder();
   const totalSummary = getTotalSummary();
 
-  // Calculate totals if not provided in API
+  // ✅ ONLY CHANGED: Sirf quantity set ki hai, UI bilkul same hai
+  const groupedItems = () => {
+    if (!order?.items) return [];
+
+    const groups = {};
+    const standaloneItems = [];
+
+    order.items.forEach((item) => {
+      if (item.group_uuid) {
+        // Suit item
+        if (!groups[item.group_uuid]) {
+          groups[item.group_uuid] = {
+            group_uuid: item.group_uuid,
+            product_name: item.product_name || "Suit",
+            items: [],
+            quantity: 1, // ✅ Sirf quantity 1 set ki
+            total_price: 0,
+          };
+        }
+        groups[item.group_uuid].items.push(item);
+        groups[item.group_uuid].total_price += item.total_price || item.unit_price * item.quantity || 0;
+      } else {
+        // Regular item
+        standaloneItems.push(item);
+      }
+    });
+
+    const groupedSuits = Object.values(groups);
+    return [...groupedSuits, ...standaloneItems];
+  };
+
+  const displayItems = groupedItems();
+
+  // Check if item is a suit group
+  const isSuitGroup = (item) => {
+    return item.items && Array.isArray(item.items);
+  };
+
+  // Calculate totals
   const calculateItemTotal = () => {
     if (!order?.items) return 0;
-    return order.items.reduce(
-      (sum, item) =>
-        sum + (item.total_price || item.unit_price * item.quantity || 0),
-      0,
-    );
+    
+    let total = 0;
+    
+    displayItems.forEach((item) => {
+      if (isSuitGroup(item)) {
+        total += item.total_price;
+      } else {
+        total += item.total_price || item.unit_price * item.quantity || 0;
+      }
+    });
+    
+    return total;
   };
 
   const subtotal =
@@ -246,43 +287,80 @@ const ThankYouPage = () => {
           <div className="details-grid">
             <div className="items-section">
               <h3 className="section-title">
-                Order Items ({order.items?.length || 0})
+                Order Items ({displayItems.length})
               </h3>
               <div className="items-list">
-                {order.items &&
-                  order.items.map((item, index) => (
-                    <div
-                      className="list-item with-image"
-                      key={item.id || index}
-                    >
-                      <div className="item-image">
-                        <img
-                          src={getProductImage(item)}
-                          alt={item.product_name}
-                          onError={(e) => {
-                            e.target.src = "/Images/suit1.png";
-                          }}
-                        />
-                      </div>
+                {displayItems.map((item, index) => {
+                  if (isSuitGroup(item)) {
+                    return (
+                      <div
+                        className="list-item with-image"
+                        key={item.group_uuid || index}
+                      >
+                        <div className="item-image">
+                          <img
+                            src={getProductImage(item.items[0])}
+                            alt={item.product_name}
+                            onError={(e) => {
+                              e.target.src = "/Images/suit1.png";
+                            }}
+                          />
+                        </div>
 
-                      <div className="item-info">
-                        <div className="item-name-wrapper">
-                          <span className="item-name">{item.product_name}</span>
-                          <span className="item-badge">
-                            {getBuyTypeLabel(item)}
-                          </span>
+                        <div className="item-info">
+                          <div className="item-name-wrapper">
+                            <span className="item-name">{item.product_name}</span>
+                            <span className="item-badge">
+                              {getBuyTypeLabel(item.items[0])}
+                            </span>
+                          </div>
+                          <div className="item-meta">
+                            <span className="item-quantity">
+                              Qty: {item.quantity}
+                            </span>
+                          </div>
                         </div>
-                        <div className="item-meta">
-                          <span className="item-quantity">
-                            Qty: {item.quantity}
-                          </span>
+                        <div className="item-price">
+                          {formatPrice(item.total_price)}
                         </div>
                       </div>
-                      <div className="item-price">
-                        {formatPrice(item.unit_price)}
+                    );
+                  } else {
+                    return (
+                      <div
+                        className="list-item with-image"
+                        key={item.id || index}
+                      >
+                        <div className="item-image">
+                          <img
+                            src={getProductImage(item)}
+                            alt={item.product_name}
+                            onError={(e) => {
+                              e.target.src = "/Images/suit1.png";
+                            }}
+                          />
+                        </div>
+
+                        <div className="item-info">
+                          <div className="item-name-wrapper">
+                            <span className="item-name">{item.product_name}</span>
+                            <span className="item-badge">
+                              {getBuyTypeLabel(item)}
+                            </span>
+                          </div>
+                          <div className="item-meta">
+                            <span className="item-quantity">
+                              Qty: {item.quantity}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="item-price">
+                          {formatPrice(item.unit_price)}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  }
+                })}
               </div>
 
               <div className="price-breakdown">

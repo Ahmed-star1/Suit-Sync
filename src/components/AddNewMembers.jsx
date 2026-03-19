@@ -19,7 +19,6 @@ const AddNewMember = () => {
 
   const roleOptions = [
     { value: "groomsmen", label: "Groomsmen" },
-    { value: "best_man", label: "Best Man" },
   ];
 
   useEffect(() => {

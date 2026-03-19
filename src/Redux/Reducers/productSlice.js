@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getProductsService, getProductByIdService, getFeaturedProductsService, getWishlistService, addToCartService, getCartService, removeCartItemService, submitCheckoutService, getOrderSummaryService, getRelatedProductsService, getCartRelatedProductsService, storeMeasurementService, getMeasurementsService, getCategoriesService, addToWishlistService } from "../Services/productServices";
+import { getProductsService, getProductByIdService, getFeaturedProductsService, getWishlistService, addToCartService, getCartService, removeCartItemService, updateCartItemQuantityService, submitCheckoutService, getOrderSummaryService, getRelatedProductsService, getCartRelatedProductsService, storeMeasurementService, getMeasurementsService, getCategoriesService, addToWishlistService } from "../Services/productServices";
 
 // Get Products Thunk
 export const getProducts = createAsyncThunk(
@@ -114,6 +114,19 @@ export const removeCartItem = createAsyncThunk(
       return { itemId, response }
     } catch (error) {
       return rejectWithValue(error?.message || "Failed to remove item from cart");
+    }
+  }
+);
+
+// Update Cart Item Quantity Thunk
+export const updateCartItemQuantity = createAsyncThunk(
+  "products/updateCartItemQuantity",
+  async ({ itemId, quantity }, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await updateCartItemQuantityService(itemId, quantity);
+      return { itemId, quantity, response };
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to update quantity");
     }
   }
 );
@@ -453,15 +466,32 @@ const productSlice = createSlice({
       })
       .addCase(removeCartItem.fulfilled, (state, action) => {
         state.removeLoading = false;
-        
+
         const itemId = action.payload.itemId;
-        
+        const apiResponse = action.payload.response;
+
+        const decrementItemList = (items) => {
+          return items.map((item) => {
+            const matches = item.product_variant_id === itemId || item.id === itemId;
+            if (!matches) return item;
+
+            // prefer API-provided quantity if available
+            if (apiResponse?.data?.quantity !== undefined && apiResponse?.data?.id === itemId) {
+              return { ...item, quantity: apiResponse.data.quantity };
+            }
+
+            const currentQty = item.quantity || 1;
+            if (currentQty > 1) {
+              return { ...item, quantity: currentQty - 1 };
+            }
+            return null;
+          }).filter(Boolean);
+        };
+
         if (Array.isArray(state.cart)) {
-          state.cart = state.cart.filter(item => item.product_variant_id !== itemId && item.id !== itemId);
+          state.cart = decrementItemList(state.cart);
         } else if (state.cart?.cart_items) {
-          state.cart.cart_items = state.cart.cart_items.filter(
-            item => item.product_variant_id !== itemId && item.id !== itemId
-          );
+          state.cart.cart_items = decrementItemList(state.cart.cart_items);
         }
       })
       .addCase(removeCartItem.rejected, (state, action) => {

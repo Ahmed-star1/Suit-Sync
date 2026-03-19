@@ -16,6 +16,7 @@ const MeasurementTabsBar = () => {
   const [measurements, setMeasurements] = useState({});
   const [originalMeasurements, setOriginalMeasurements] = useState({});
   const [hasChanges, setHasChanges] = useState(false);
+   const [saveTriggered, setSaveTriggered] = useState(false);
 
   const { 
     measurementLoading, 
@@ -92,11 +93,11 @@ const MeasurementTabsBar = () => {
         showConfirmButton: true,
         confirmButtonColor: '#000',
       }).then(() => {
-        dispatch(resetMeasurementState());
+        setSaveTriggered(false);
         dispatch(getMeasurements());
       });
     }
-  }, [measurementSuccess, dispatch]);
+  }, [measurementSuccess, saveTriggered, dispatch]);
 
   // Show error message if save fails
   useEffect(() => {
@@ -107,10 +108,10 @@ const MeasurementTabsBar = () => {
         text: measurementError || 'Failed to save measurements',
         confirmButtonColor: '#000',
       }).then(() => {
-        dispatch(resetMeasurementState());
+        setSaveTriggered(false);
       });
     }
-  }, [measurementError, dispatch]);
+  }, [measurementError, saveTriggered, dispatch]);
 
   // Populate measurements from API response
   useEffect(() => {
@@ -199,8 +200,7 @@ const MeasurementTabsBar = () => {
       category: categoryMap[activeTab].toLowerCase(),
       measurements: apiMeasurements
     };
-
-    console.log("Saving to API:", measurementPayload);
+    setSaveTriggered(true);
     dispatch(storeMeasurement(measurementPayload)).then(() => {
       setOriginalMeasurements(prev => ({
         ...prev,

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { setEventData, getEventData, clearEventData } from "../Utils/localStore";
-import { createEventService, getEventsService, getInvitedEventsService, declineEventInviteService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService, assignLookToEventService } from "../Services/eventService";
+import { createEventService, getEventsService, getInvitedEventsService, declineEventInviteService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService, assignLookToEventService, sendFreeTapeService, checkTapeStatusService, getEventLooksService } from "../Services/eventService";
 
 // Async thunk to create an event
 export const createEvent = createAsyncThunk(
@@ -157,7 +157,7 @@ export const deleteEvent = createAsyncThunk(
   }
 );
 
-// NEW: Assign Look to Event Thunk
+// Assign Look to Event Thunk
 export const assignLookToEvent = createAsyncThunk(
   "events/assignLookToEvent",
   async ({ eventId, productId }, { rejectWithValue }) => {
@@ -173,6 +173,45 @@ export const assignLookToEvent = createAsyncThunk(
   }
 );
 
+// Get Event Looks Thunk
+export const getEventLooks = createAsyncThunk(
+  "events/getEventLooks",
+  async (eventId, { rejectWithValue }) => {
+    try {
+      const response = await getEventLooksService(eventId);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to fetch event looks");
+    }
+  }
+);
+
+// Send Free Tape Thunk
+export const sendFreeTape = createAsyncThunk(
+  "tape/sendFreeTape",
+  async (addressData, { rejectWithValue }) => {
+    try {
+      const response = await sendFreeTapeService(addressData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to send free tape request");
+    }
+  }
+);
+
+// Check Tape Status Thunk
+export const checkTapeStatus = createAsyncThunk(
+  "tape/checkTapeStatus",
+  async (_, { rejectWithValue }) => {
+    try {
+      const status = await checkTapeStatusService();
+      return { requested: status };
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to check tape status");
+    }
+  }
+);
+
 
 const eventSlice = createSlice({
   name: "events",
@@ -181,6 +220,9 @@ const eventSlice = createSlice({
     loading: false,
     error: null,
     assignLookLoading: false,
+    tapeRequested: false,
+    eventLooks: [],
+    eventLooksLoading: false,
     selectedEvent: {
       id: null,
     }
@@ -204,7 +246,15 @@ const eventSlice = createSlice({
         type: null,
         image_url: null
       };
-    }
+    },
+    resetTapeState: (state) => {
+      state.loading = false;
+      state.success = false;
+      state.error = null;
+    },
+    setTapeRequested: (state, action) => {
+      state.tapeRequested = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -399,9 +449,57 @@ const eventSlice = createSlice({
       .addCase(assignLookToEvent.rejected, (state, action) => {
         state.assignLookLoading = false;
         state.error = action.payload;
+      })
+
+      // Get Event Looks cases
+      .addCase(getEventLooks.pending, (state) => {
+        state.eventLooksLoading = true;
+        state.error = null;
+      })
+      .addCase(getEventLooks.fulfilled, (state, action) => {
+        state.eventLooksLoading = false;
+        const data = action.payload?.data || action.payload;
+        state.eventLooks = data?.looks || data || [];
+      })
+      .addCase(getEventLooks.rejected, (state, action) => {
+        state.eventLooksLoading = false;
+        state.error = action.payload;
+        state.eventLooks = [];
+      })
+
+      // Send Free Tape
+      .addCase(sendFreeTape.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(sendFreeTape.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.tapeRequested = true;
+        localStorage.setItem('free_tape_requested', 'true');
+        console.log("Free tape request sent successfully:", action.payload);
+      })
+      .addCase(sendFreeTape.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+
+      // Check Tape Status
+      .addCase(checkTapeStatus.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(checkTapeStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.tapeRequested = action.payload.requested;
+      })
+      .addCase(checkTapeStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
     },
 });
 
-export const { clearEventsState, setSelectedEvent, clearSelectedEvent } = eventSlice.actions;
+export const { clearEventsState, setSelectedEvent, clearSelectedEvent, resetTapeState, setTapeRequested  } = eventSlice.actions;
 export default eventSlice.reducer;

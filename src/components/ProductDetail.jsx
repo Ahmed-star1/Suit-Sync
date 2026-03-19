@@ -564,7 +564,9 @@ const ProductDetail = ({ product }) => {
       buy_type: selectedPriceType.toLowerCase(),
     };
 
-    if (product?.category?.id === 2 || product?.category_id === 2) {
+    const isShoes = product?.category?.slug === "shoes" || product?.category_id === 2;
+    
+    if (isShoes) {
       cartData.size_measurement = selectedGenericSize;
     } else {
       cartData.size_type = selectedGenericSize;
@@ -586,6 +588,13 @@ const ProductDetail = ({ product }) => {
     if (!selectedPriceType) {
       return false;
     }
+    
+    const isStandardSize = isStandardSizeProduct();
+    
+    if (isStandardSize) {
+      return true;
+    }
+    
     if (coatSizeTypes.length || pantSizeTypes.length) {
       return (
         selectedPantType &&

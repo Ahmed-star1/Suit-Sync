@@ -85,7 +85,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="col-md-2">
+          <div className="col-md-2 footer-info">
             <h4>Contact Info</h4>
             <p>
               Call Now:

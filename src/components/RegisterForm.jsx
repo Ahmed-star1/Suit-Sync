@@ -37,16 +37,10 @@ const RightColumn = () => {
   );
 
   useEffect(() => {
-    if (registerSuccess) {
-      dispatch(clearAuthState());
-      const redirectPath = localStorage.getItem('redirectAfterLogin');
-      if (redirectPath) {
-        localStorage.removeItem('redirectAfterLogin');
-        navigate(redirectPath);
-      } else {
-        navigate("/verify-otp");
-      }
-    }
+  if (registerSuccess) {
+    dispatch(clearAuthState());
+    navigate("/verify-otp");
+  }
   }, [registerSuccess, navigate, dispatch]);
 
   const renderApiError = () => {

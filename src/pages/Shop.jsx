@@ -25,12 +25,11 @@ const Shop = () => {
   const handleFilterChange = (filterType, value) => {
     setSelectedFilters((prevFilters) => {
       const newFilters = { ...prevFilters };
+      // Single selection per filter group
       if (newFilters[filterType].includes(value)) {
-        newFilters[filterType] = newFilters[filterType].filter(
-          (item) => item !== value
-        );
+        newFilters[filterType] = [];
       } else {
-        newFilters[filterType].push(value);
+        newFilters[filterType] = [value];
       }
       return newFilters;
     });

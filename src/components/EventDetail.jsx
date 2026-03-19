@@ -40,6 +40,20 @@ const EventDetails = () => {
     return eventData.event.user_id === user.id;
   };
 
+  // ✅ Get look image with fallback to dummy
+  const getLookImage = (look) => {
+    if (look.image && look.image !== null) {
+      return look.image;
+    }
+    return "/Images/suit1.png";
+  };
+
+  const handleLookClick = (look) => {
+    if (look.id) {
+      navigate(`/shop/product/${look.id}`);
+    }
+  };
+
   if (loading) {
     return <Loader />;
   }
@@ -153,10 +167,16 @@ const EventDetails = () => {
             <h3>Event Look</h3>
 
             {looks && looks.length > 0 ? (
-              <div className="look-items">
+              <div className="look-items row">
                 {looks.map((look, index) => (
-                  <div key={index} className="look-item">
-                    <img src={look.image} alt={look.name} />
+                  <div key={index} className="look-item col-md-4" onClick={() => handleLookClick(look)} style={{ cursor: "pointer" }}>
+                    <img 
+                      src={getLookImage(look)} 
+                      alt={look.name}
+                      onError={(e) => {
+                        e.target.src = "/Images/suit1.png";
+                      }}
+                    />
                     <p>{look.name}</p>
                   </div>
                 ))}

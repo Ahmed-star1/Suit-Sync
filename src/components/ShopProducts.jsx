@@ -15,18 +15,6 @@ const ShopProducts = ({ selectedFilters }) => {
     (state) => state.products,
   );
 
-  useEffect(() => {
-    if (!loading && products.length > 0) {
-      setIsFilterChanging(true);
-    }
-  }, [selectedFilters]);
-
-  useEffect(() => {
-    if (!loading) {
-      setIsFilterChanging(false);
-    }
-  }, [loading]);
-
   const buildApiParams = () => {
     const params = {};
 
@@ -45,12 +33,25 @@ const ShopProducts = ({ selectedFilters }) => {
       }
     }
 
-    if (selectedFilters.buy_type) {
-      params.buy_type = selectedFilters.buy_type;
+    const rentBuySelection = selectedFilters["rent-buy"] || selectedFilters.buy_type;
+    if (Array.isArray(rentBuySelection) && rentBuySelection.length > 0) {
+      params.buy_type = rentBuySelection.map((type) => String(type).toLowerCase());
     }
 
     return params;
   };
+
+  useEffect(() => {
+    if (!loading && products.length > 0) {
+      setIsFilterChanging(true);
+    }
+  }, [selectedFilters]);
+
+  useEffect(() => {
+    if (!loading) {
+      setIsFilterChanging(false);
+    }
+  }, [loading]);
 
   useEffect(() => {
     dispatch(setCurrentPage(1));
@@ -157,7 +158,7 @@ const ShopProducts = ({ selectedFilters }) => {
     <>
       <div className="products-grid">
         {products.length === 0 && !loading ? (
-          <p>No products found.</p>
+          <p className="no-products">No products found.</p>
         ) : (
           products.map((product) => (
             <div

@@ -86,6 +86,7 @@ const MyAccountTab = () => {
         profile_image: null,
       });
 
+      // ✅ FIXED: image_url se preview set karo
       if (user.image_url) {
         setImagePreview(user.image_url);
       }
@@ -132,9 +133,12 @@ const MyAccountTab = () => {
                   className="placeholder-box"
                   onClick={() => fileInputRef.current.click()}
                   style={{
-                    backgroundImage: imagePreview
-                      ? `url(${imagePreview})`
-                      : "none",
+                    // ✅ FIXED: imagePreview ya user.image_url dono mein se jo available ho use karo
+                    backgroundImage: imagePreview 
+                      ? `url(${imagePreview})` 
+                      : user?.image_url 
+                        ? `url(${user.image_url})` 
+                        : "none",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     border:"none",

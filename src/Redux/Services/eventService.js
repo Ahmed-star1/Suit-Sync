@@ -291,3 +291,46 @@ export const assignLookToEventService = async (lookData) => {
     throw error;
   }
 };
+
+// Get Event Looks Service
+export const getEventLooksService = async (eventId) => {
+  try {
+    const response = await fetchApi({
+      method: "GET",
+      endPoint: API_ENDPOINTS.GET_EVENT_LOOKS(eventId),
+      token: true,
+    });
+    
+    return response;
+  } catch (error) {
+    console.error("getEventLooksService error", error);
+    throw error;
+  }
+};
+
+// Free Tailor's Tape Service
+export const sendFreeTapeService = async (addressData) => {
+  try {
+    const response = await fetchApi({
+      method: "POST",
+      endPoint: API_ENDPOINTS.SEND_FREE_TAPE,
+      token: true,
+      data: addressData,
+    });
+    
+    return response;
+  } catch (error) {
+    console.error("sendFreeTapeService error", error);
+    throw error;
+  }
+};
+
+// Check if user has already requested free tape
+export const checkTapeStatusService = async () => {
+  try {
+    return localStorage.getItem('free_tape_requested') === 'true';
+  } catch (error) {
+    console.error("checkTapeStatusService error", error);
+    return false;
+  }
+};
