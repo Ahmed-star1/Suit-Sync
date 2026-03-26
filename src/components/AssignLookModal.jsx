@@ -414,9 +414,7 @@ const AssignLookModal = ({ isOpen, onClose, order }) => {
               <div className="conflict-modal-content">
                 <h2>Category Already Assigned</h2>
                 <p className="conflict-description">
-                  This event already has a{" "}
-                  <strong>{selectedProductCategoryId}</strong> category product
-                  assigned. Do you want to replace it with this new product?
+                  This event already has a look assigned for this category. Do you want to replace it with this new product?
                 </p>
 
                 {existingLooks

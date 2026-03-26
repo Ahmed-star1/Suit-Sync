@@ -1,36 +1,88 @@
 import React, { useState, useEffect } from "react";
 import { Instagram, Twitter, Facebook } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { getAccessToken } from "../Redux/Utils/localStore";
-import SearchModal from "./SearchModal"; // Add this import
+import { getWishlistCount, getCartCount } from "../Redux/Reducers/productSlice";
+import SearchModal from "./SearchModal";
 
 const nav_items = [
   { name: "Home", to: "/", key: "home" },
   { name: "About us", to: "/about-us", key: "about" },
   { name: "Shop", to: "/shop", key: "shop" },
-  { name: "How it Works", to: "#", key: "howitworks" },
   { name: "Contact us", to: "/contact-us", key: "contact" },
 ];
 
+const NON_NAVIGATION_ROUTES = [
+  "/cart",
+  "/checkout",
+  "/thankyou",
+  "/wishlist",
+  "/login",
+  "/register",
+  "/events",
+  "/product/",
+];
+
 const Header = () => {
-  const [activeLink, setActiveLink] = useState("home");
+  const dispatch = useDispatch();
+  const [activeLink, setActiveLink] = useState(null); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const location = useLocation(); 
   const [token, setToken] = useState(getAccessToken());
 
+  const { wishlistCount, cartCount } = useSelector((state) => state.products || {});
+
   useEffect(() => {
-    const currentPath = window.location.pathname;
-    const currentItem = nav_items.find((item) => {
-      if (currentPath === "/" && item.to === "/") return true;
-      if (currentPath !== "/" && item.to !== "/") {
-        return currentPath.startsWith(item.to);
-      }
-      return false;
+    if (token) {
+      dispatch(getWishlistCount());
+      dispatch(getCartCount());
+    }
+  }, [dispatch, token]);
+
+  const isNavigationRoute = (pathname) => {
+    const exactMatch = nav_items.some(item => item.to === pathname);
+    if (exactMatch) return true;
+    
+    const startsWithMatch = nav_items.some(item => {
+      if (item.to === "/") return false; 
+      return pathname.startsWith(item.to);
     });
-    if (currentItem) setActiveLink(currentItem.key);
-  }, []);
+    if (startsWithMatch) return true;
+    
+    const isNonNavRoute = NON_NAVIGATION_ROUTES.some(route => {
+      if (route.endsWith("/")) {
+        return pathname.startsWith(route);
+      }
+      return pathname === route || pathname.startsWith(route);
+    });
+    
+    return !isNonNavRoute;
+  };
+
+  useEffect(() => {
+    const currentPath = location.pathname;
+    
+    if (isNavigationRoute(currentPath)) {
+      const currentItem = nav_items.find((item) => {
+        if (currentPath === "/" && item.to === "/") return true;
+        if (currentPath !== "/" && item.to !== "/") {
+          return currentPath.startsWith(item.to);
+        }
+        return false;
+      });
+      if (currentItem) {
+        setActiveLink(currentItem.key);
+      } else {
+        setActiveLink(null);
+      }
+    } else {
+      setActiveLink(null); 
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const checkToken = () => setToken(getAccessToken());
@@ -42,7 +94,9 @@ const Header = () => {
     document.body.style.overflow = isModalOpen || isMobileMenuOpen ? "hidden" : "auto";
   }, [isModalOpen, isMobileMenuOpen]);
 
-  const getLinkClassName = (key) => `menu-link ${activeLink === key ? "active" : ""}`;
+  const getLinkClassName = (key) => {
+    return `menu-link ${activeLink === key && activeLink !== null ? "active" : ""}`;
+  };
 
   const handleChange = () => navigate("/cart");
   const handleWishlistChange = () => navigate("/wishlist");
@@ -103,9 +157,21 @@ const Header = () => {
 
             <div className="col-6 col-md-4">
               <div className="navbar-actions">
-                <button onClick={handleWishlistChange}><i className="fa-solid fa-heart"></i></button>
-                <button className="search" onClick={handleSearchButtonClick}><i className="fa-solid fa-magnifying-glass"></i></button>
-                <button onClick={handleChange}><i className="fa-solid fa-cart-shopping"></i></button>
+                <button onClick={handleWishlistChange} className="wishlist-btn">
+                  <i className="fa-solid fa-heart"></i>
+                  {wishlistCount > 0 && (
+                    <span className="wishlist-count">{wishlistCount}</span>
+                  )}
+                </button>
+                <button className="search" onClick={handleSearchButtonClick}>
+                  <i className="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button onClick={handleChange}>
+                  <i className="fa-solid fa-cart-shopping"></i>
+                  {cartCount > 0 && (
+                    <span className="cart-count">{cartCount}</span>
+                  )}
+                </button>
                 
                 <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
                   <i className="fa-solid fa-bars"></i>
@@ -122,7 +188,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Menu - unchanged */}
+      {/* Mobile Menu */}
       <div className={`mobile-menu-overlay ${isMobileMenuOpen ? 'active' : ''}`} onClick={closeMobileMenu}>
         <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
           <div className="mobile-menu-header">
@@ -140,7 +206,7 @@ const Header = () => {
                 <li className="mobile-menu-item" key={item.key}>
                   <Link 
                     to={item.to} 
-                    className={`mobile-menu-link ${activeLink === item.key ? 'active' : ''}`}
+                    className={`mobile-menu-link ${activeLink === item.key && activeLink !== null ? 'active' : ''}`}
                     onClick={closeMobileMenu}
                   >
                     {item.name}
@@ -158,9 +224,18 @@ const Header = () => {
             )}
             
             <div className="navbar-actions">
-              <button onClick={handleWishlistChange}><i className="fa-solid fa-heart"></i></button>
-              <button className="search" onClick={handleSearchButtonClick}><i className="fa-solid fa-magnifying-glass"></i></button>
-              <button onClick={handleChange}><i className="fa-solid fa-cart-shopping"></i></button>
+              <button onClick={handleWishlistChange} className="wishlist-btn">
+                <i className="fa-solid fa-heart"></i>
+                {wishlistCount > 0 && (
+                  <span className="wishlist-count">{wishlistCount}</span>
+                )}
+              </button>
+              <button className="search" onClick={handleSearchButtonClick}>
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </button>
+              <button onClick={handleChange}>
+                <i className="fa-solid fa-cart-shopping"></i>
+              </button>
             </div>
           </div>
         </div>

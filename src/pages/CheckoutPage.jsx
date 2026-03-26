@@ -116,24 +116,10 @@ const CheckoutPage = () => {
   const calculateTotal = () => {
     return cartItems.reduce((sum, item) => {
       if (item.items && Array.isArray(item.items) && item.items.length > 0) {
-        let suitTotal = 0;
-        item.items.forEach(nestedItem => {
-          const product = nestedItem.product;
-          const buyType = nestedItem.buy_type;
-          
-          let price = 0;
-          if (buyType === "buy") {
-            price = product?.buy_price || 0;
-          } else if (buyType === "rent") {
-            price = product?.rent_price || 0;
-          }
-          
-          suitTotal += price * (nestedItem.quantity || 1);
-        });
-        return sum + suitTotal;
-      } else {
-        const product = item.product;
-        const buyType = item.buy_type;
+        const firstItem = item.items[0];
+        const product = firstItem?.product;
+        const buyType = firstItem?.buy_type;
+        const quantity = firstItem?.quantity || 1;
         
         let price = 0;
         if (buyType === "buy") {
@@ -142,7 +128,21 @@ const CheckoutPage = () => {
           price = product?.rent_price || 0;
         }
         
-        return sum + (price * (item.quantity || 1));
+        return sum + (price * quantity);
+        
+      } else {
+        const product = item.product;
+        const buyType = item.buy_type;
+        const quantity = item.quantity || 1;
+        
+        let price = 0;
+        if (buyType === "buy") {
+          price = product?.buy_price || 0;
+        } else if (buyType === "rent") {
+          price = product?.rent_price || 0;
+        }
+        
+        return sum + (price * quantity);
       }
     }, 0);
   };
@@ -253,11 +253,13 @@ const CheckoutPage = () => {
 
   const getProductPrice = (item) => {
     let basePrice = 0;
+    let quantity = 1;
     
     if (item.items && Array.isArray(item.items) && item.items.length > 0) {
       const firstItem = item.items[0];
       const product = firstItem?.product;
       const buyType = firstItem?.buy_type;
+      quantity = firstItem?.quantity || 1;
 
       if (buyType === "buy") {
         basePrice = product?.buy_price || 0;
@@ -267,6 +269,7 @@ const CheckoutPage = () => {
     } else {
       const product = item.product;
       const buyType = item.buy_type;
+      quantity = item.quantity || 1;
 
       if (buyType === "buy") {
         basePrice = product?.buy_price || 0;
@@ -275,16 +278,14 @@ const CheckoutPage = () => {
       }
     }
     
-    const quantity = item.quantity || 1;
     return basePrice * quantity;
   };
 
-  const getProductBuyType = (item) => {
+  const getProductQuantity = (item) => {
     if (item.items && item.items.length > 0) {
-      return item.items[0]?.buy_type;
-    } else {
-      return item.buy_type;
+      return item.items[0]?.quantity || 1;
     }
+    return item.quantity || 1;
   };
 
   const formatPrice = (price) => {
@@ -624,12 +625,13 @@ const CheckoutPage = () => {
                           <span className="summary-price">
                             {formatPrice(getProductPrice(item))}
                           </span>
+                          <p className="item-quantity">
+                            Qty: {getProductQuantity(item)}
+                          </p>
                         </div>
                         <div className="summary-info-type">
                           <p className="item-type">
-                            {getProductDisplayType(item) === "buy"
-                              ? "Buy"
-                              : "Rent"}
+                            {getProductDisplayType(item) === "buy" ? "Buy" : "Rent"}
                           </p>
                         </div>
                       </div>

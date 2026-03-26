@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import Swal from "sweetalert2";
 import AboutImage from "/Images/AboutBanner.png";
-import { getWishlist, clearWishlist } from "../Redux/Reducers/productSlice";
+import { getWishlist, clearWishlist, deleteWishlist, getWishlistCount } from "../Redux/Reducers/productSlice";
 import Loader from "../components/Loader";
 import InnerBanner from "../components/InnerBanner";
 import Header from "../components/header";
@@ -22,7 +23,6 @@ const Wishlist = () => {
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
-
     dispatch(getWishlist());
 
     return () => {
@@ -77,20 +77,7 @@ const Wishlist = () => {
         if (item.product) {
           return {
             ...item.product,
-            wishlist_id: item.wishlist_id,
-            added_at: item.added_at,
-          };
-        }
-        return item;
-      });
-    }
-
-    if (wishlist && wishlist.count > 0 && wishlist.wishlist) {
-      return wishlist.wishlist.map((item) => {
-        if (item.product) {
-          return {
-            ...item.product,
-            wishlist_id: item.wishlist_id,
+            product_id: item.id || item.product_id,
             added_at: item.added_at,
           };
         }
@@ -99,6 +86,42 @@ const Wishlist = () => {
     }
 
     return [];
+  };
+
+  // Delete wishlist item function
+  const handleDeleteWishlist = async (itemId, productId, e) => {
+    e.stopPropagation();
+    
+    const result = await Swal.fire({
+      title: 'Remove from Wishlist?',
+      text: "Are you sure you want to remove this item from your wishlist?",
+      icon: 'warning',
+      confirmButtonColor: '#000',
+      confirmButtonText: 'Yes, remove it!',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await dispatch(deleteWishlist(itemId)).unwrap();
+        await dispatch(getWishlist()).unwrap();
+        await dispatch(getWishlistCount()).unwrap();
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Removed!',
+          text: 'Item has been removed from your wishlist.',
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Failed to remove item from wishlist.',
+          confirmButtonColor: '#000',
+        });
+      }
+    }
   };
 
   const wishlistItems = getWishlistItems();
@@ -141,14 +164,15 @@ const Wishlist = () => {
                 {wishlistItems.map((item) => {
                   const product = item.product || item;
                   const productId = product.id || item.id;
-                  const uniqueKey = item.wishlist_id || productId || Math.random();
+                  const wishlistId = item.product_id || item.id;
+                  const uniqueKey = wishlistId || productId || Math.random();
                   
                   return (
                     <div
                       className="product-card col-md-3"
                       key={uniqueKey}
                       onClick={() => handleProductClick(productId)}
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: "pointer", position: "relative" }}
                     >
                       <img
                         src={getPrimaryImageUrl(product)}
@@ -157,6 +181,10 @@ const Wishlist = () => {
                           e.target.src = "/Images/suit1.png";
                         }}
                       />
+                      <i 
+                        className="fa-solid fa-trash-can delete-wishlist-icon"
+                        onClick={(e) => handleDeleteWishlist(wishlistId, productId, e)}
+                      ></i>
                       <div className="product-content">
                         <h5>{product.name || "Product"}</h5>
                         <div className="product-price">

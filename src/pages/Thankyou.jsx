@@ -131,7 +131,6 @@ const ThankYouPage = () => {
   const order = getOrder();
   const totalSummary = getTotalSummary();
 
-  // ✅ ONLY CHANGED: Sirf quantity set ki hai, UI bilkul same hai
   const groupedItems = () => {
     if (!order?.items) return [];
 
@@ -140,20 +139,21 @@ const ThankYouPage = () => {
 
     order.items.forEach((item) => {
       if (item.group_uuid) {
-        // Suit item
         if (!groups[item.group_uuid]) {
+          const firstVariant = item.variants?.[0];
+          const itemQuantity = firstVariant?.quantity || item.quantity || 1;
+          
           groups[item.group_uuid] = {
             group_uuid: item.group_uuid,
             product_name: item.product_name || "Suit",
             items: [],
-            quantity: 1, // ✅ Sirf quantity 1 set ki
+            quantity: itemQuantity, 
             total_price: 0,
           };
         }
         groups[item.group_uuid].items.push(item);
         groups[item.group_uuid].total_price += item.total_price || item.unit_price * item.quantity || 0;
       } else {
-        // Regular item
         standaloneItems.push(item);
       }
     });
@@ -316,7 +316,7 @@ const ThankYouPage = () => {
                           </div>
                           <div className="item-meta">
                             <span className="item-quantity">
-                              Qty: {item.quantity}
+                              Qty: {item.quantity} 
                             </span>
                           </div>
                         </div>
@@ -350,7 +350,7 @@ const ThankYouPage = () => {
                           </div>
                           <div className="item-meta">
                             <span className="item-quantity">
-                              Qty: {item.quantity}
+                              Qty: {item.quantity || 1} 
                             </span>
                           </div>
                         </div>

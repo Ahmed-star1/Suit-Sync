@@ -18,6 +18,7 @@ const MyAccountTab = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isEdited, setIsEdited] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     dispatch(getUserProfile());
@@ -61,6 +62,7 @@ const MyAccountTab = () => {
         });
 
         setIsEdited(false);
+        setImageError(false);
       } catch (error) {
         Swal.fire({
           icon: "error",
@@ -73,7 +75,6 @@ const MyAccountTab = () => {
         });
       }
     },
-
   });
 
   useEffect(() => {
@@ -86,9 +87,10 @@ const MyAccountTab = () => {
         profile_image: null,
       });
 
-      // ✅ FIXED: image_url se preview set karo
+      // ✅ Image URL set karo, error flag reset karo
       if (user.image_url) {
         setImagePreview(user.image_url);
+        setImageError(false);
       }
     }
   }, [user]);
@@ -104,11 +106,17 @@ const MyAccountTab = () => {
     reader.readAsDataURL(file);
 
     setIsEdited(true);
+    setImageError(false);
   };
 
   const handleInputChange = (e) => {
     formik.handleChange(e);
     setIsEdited(true);
+  };
+
+  // ✅ Image error handle karne ka function
+  const handleImageError = () => {
+    setImageError(true);
   };
 
   return (
@@ -132,19 +140,23 @@ const MyAccountTab = () => {
                 <div
                   className="placeholder-box"
                   onClick={() => fileInputRef.current.click()}
-                  style={{
-                    // ✅ FIXED: imagePreview ya user.image_url dono mein se jo available ho use karo
-                    backgroundImage: imagePreview 
-                      ? `url(${imagePreview})` 
-                      : user?.image_url 
-                        ? `url(${user.image_url})` 
-                        : "none",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    border:"none",
-                  }}
                 >
-                  {!imagePreview && !user?.image_url && <FaPlus />}
+                  {/* ✅ Image show karne ke liye img tag use karo */}
+                  {imagePreview && !imageError ? (
+                    <img
+                      src={imagePreview}
+                      alt="Profile"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "inherit",
+                      }}
+                      onError={handleImageError}
+                    />
+                  ) : (
+                    <FaPlus />
+                  )}
                 </div>
               </div>
 

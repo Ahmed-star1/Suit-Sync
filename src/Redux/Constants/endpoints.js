@@ -22,6 +22,7 @@ export const API_ENDPOINTS = Object.freeze({
   DELETE_EVENT: (eventId) => `events/delete/${eventId}`,
   ASSIGN_LOOK: "events/assign-looks",
   GET_EVENT_LOOKS: (eventId) => `events/${eventId}/looks`,
+  DELETE_LOOK: (eventId, lookId) => `events/${eventId}/looks/${lookId}`,
   SEND_FREE_TAPE: "send-free-tape",
 
   GET_PRODUCTS: "products",
@@ -30,12 +31,16 @@ export const API_ENDPOINTS = Object.freeze({
   GET_PRODUCT_BY_ID: (id) => `products/${id}`,
   GET_WISHLIST: "user/wishlist",
   ADD_WISHLIST: (productId) => `user/wishlist/${productId}`,
+  DELETE_WISHLIST: (productId) => `user/wishlist/${productId}`,
+  GET_WISHLIST_COUNT: "user/wishlist/count",
 
   ADD_TO_CART: "cart/add",
   GET_CART: "cart",
-  REMOVE_CART_ITEM: (itemId) => `cart/subtract/${itemId}`,
-  UPDATE_CART_ITEM: (itemId) => `cart/update/${itemId}`,
+  SUB_CART_ITEM: (itemId) => `cart/subtract/${itemId}`,
+  ADD_CART_ITEM: (itemId) => `cart/update/${itemId}`,
+  DELETE_CART_ITEM: (itemId) => `cart/delete/${itemId}`,
   GET_CART_RELATED_PRODUCTS: "products/related",
+  GET_CART_COUNT: "cart/count",
 
   SUBMIT_CHECKOUT: "checkout/process",
   GET_ORDER_SUMMARY: "checkout/summary",

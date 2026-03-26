@@ -44,7 +44,6 @@ export const fetchApi = async ({
 
     return response.data;
   } catch (error) {
-    // 👇 Only error log
     console.log("API ERROR:", error.response?.data || error.message);
 
     throw error;

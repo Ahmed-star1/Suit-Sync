@@ -150,11 +150,6 @@ const CreateEventForm = () => {
     location: Yup.string()
       .required("Event location is required"),
 
-    description: Yup.string()
-      .required("Description is required")
-      .min(10, "Minimum 10 characters")
-      .max(2000, "Maximum 2000 characters"),
-
     image: Yup.mixed()
       .required("Image is required")
       .test(
@@ -275,7 +270,6 @@ const CreateEventForm = () => {
                   placeholder="Write Event Description Here..."
                   rows="4"
                 />
-                <ErrorMessage name="description" component="div" className="text-danger" />
               </div>
 
               <div className="profile-image">

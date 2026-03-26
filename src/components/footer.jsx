@@ -6,7 +6,7 @@ const Footer = () => {
     { name: "Home", to: "/" },
     { name: "About Us", to: "/about-us" },
     { name: "Shop", to: "/shop" },
-    { name: "How It Works", to: "#" },
+    // { name: "How It Works", to: "#" },
   ];
 
   const supportLinks = [

@@ -9,9 +9,11 @@ import CartRelatedProducts from "../components/CartRelatedProducts";
 import Loader from "../components/Loader";
 import {
   getCart,
-  removeCartItem,
+  subCartItem,
   getCartRelatedProducts,
   updateCartItemQuantity,
+  deleteCartItem,
+  getCartCount
 } from "../Redux/Reducers/productSlice";
 
 const CartPage = () => {
@@ -22,7 +24,7 @@ const CartPage = () => {
   const [refreshingCart, setRefreshingCart] = useState(false);
   const [userId, setUserId] = useState(null);
   const [quantities, setQuantities] = useState({});
-  const [updatingItems, setUpdatingItems] = useState({}); // Track updating items
+  const [updatingItems, setUpdatingItems] = useState({}); 
 
   const {
     cart,
@@ -61,25 +63,37 @@ const CartPage = () => {
   };
 
   const removeItem = async (itemId) => {
-    setRemovingItems((prev) => [...prev, itemId]);
-    setRefreshingCart(true);
+  setRemovingItems((prev) => [...prev, itemId]);
+  setRefreshingCart(true);
 
-    try {
-      await dispatch(removeCartItem(itemId)).unwrap();
-      
-      setQuantities((prev) => {
-        const newQuantities = { ...prev };
-        delete newQuantities[itemId];
-        return newQuantities;
-      });
-      
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setRemovingItems((prev) => prev.filter((id) => id !== itemId));
-      setRefreshingCart(false);
+  try {
+    const cartItem = cartItems.find(item => item.id === itemId);
+    
+    if (cartItem?.items && cartItem.items.length > 0) {
+      for (const nestedItem of cartItem.items) {
+        await dispatch(deleteCartItem(nestedItem.id)).unwrap();
+      }
+    } else {
+      await dispatch(deleteCartItem(itemId)).unwrap();
     }
-  };
+    
+    setQuantities((prev) => {
+      const newQuantities = { ...prev };
+      if (cartItem) {
+        delete newQuantities[cartItem.id];
+      }
+      return newQuantities;
+    });
+    
+    await dispatch(getCart()).unwrap();
+    await dispatch(getCartCount()).unwrap();
+    dispatch(getCartRelatedProducts());
+    
+  } finally {
+    setRemovingItems((prev) => prev.filter((id) => id !== itemId));
+    setRefreshingCart(false);
+  }
+};
 
   const handleCheckout = () => {
     const finalUserId = userId || localStorage.getItem("cart_user_id");
@@ -96,15 +110,30 @@ const CartPage = () => {
     setQuantities((prev) => ({ ...prev, [itemId]: newQuantity }));
 
     try {
-      if (action === 'decrement') {
-        await dispatch(removeCartItem(item.product_variant_id)).unwrap();
+      if (item.items && item.items.length > 0) {
+        const firstItem = item.items[0];
+        
+        if (action === 'decrement') {
+          await dispatch(subCartItem(firstItem.product_variant_id)).unwrap();
+        } else {
+          await dispatch(
+            updateCartItemQuantity({ 
+              itemId: firstItem.id, 
+              quantity: newQuantity 
+            })
+          ).unwrap();
+        }
       } else {
-        await dispatch(
-          updateCartItemQuantity({ 
-            itemId: item.id, 
-            quantity: newQuantity 
-          })
-        ).unwrap();
+        if (action === 'decrement') {
+          await dispatch(subCartItem(item.product_variant_id)).unwrap();
+        } else {
+          await dispatch(
+            updateCartItemQuantity({ 
+              itemId: item.id, 
+              quantity: newQuantity 
+            })
+          ).unwrap();
+        }
       }
 
       await dispatch(getCart()).unwrap();
@@ -132,18 +161,33 @@ const CartPage = () => {
   };
 
   const getProductPrice = (item) => {
-    const product = item.product;
-    const buyType = item.buy_type;
+    let basePrice = 0;
+    let quantity = 1;
 
-    if (item.items?.length) {
-      return item.items[0]?.buy_type === "buy"
-        ? product?.buy_price
-        : product?.rent_price;
+    if (item.items && item.items.length > 0) {
+      const firstItem = item.items[0];
+      const product = firstItem?.product;
+      const buyType = firstItem?.buy_type;
+      quantity = firstItem?.quantity || 1;
+
+      if (buyType === "buy") {
+        basePrice = product?.buy_price || 0;
+      } else if (buyType === "rent") {
+        basePrice = product?.rent_price || 0;
+      }
+    } else {
+      const product = item.product;
+      const buyType = item.buy_type;
+      quantity = item.quantity || 1;
+
+      if (buyType === "buy") {
+        basePrice = product?.buy_price || 0;
+      } else if (buyType === "rent") {
+        basePrice = product?.rent_price || 0;
+      }
     }
     
-    if (buyType === "buy") return product?.buy_price || 0;
-    if (buyType === "rent") return product?.rent_price || 0;
-    return 0;
+    return basePrice * quantity;
   };
 
   const getProductBuyType = (item) => item.items?.length ? item.items[0]?.buy_type : item.buy_type;
@@ -156,10 +200,42 @@ const CartPage = () => {
   const getProductName = (item) => item.product?.name || "Product";
 
   const total = cartItems.reduce((sum, item) => {
-    const price = getProductPrice(item);
-    const quantity = quantities[item.id] || 1;
-    return sum + price * quantity;
+    if (item.items && item.items.length > 0) {
+      const firstItem = item.items[0];
+      const product = firstItem?.product;
+      const buyType = firstItem?.buy_type;
+      const quantity = firstItem?.quantity || 1;
+      
+      let price = 0;
+      if (buyType === "buy") {
+        price = product?.buy_price || 0;
+      } else if (buyType === "rent") {
+        price = product?.rent_price || 0;
+      }
+      
+      return sum + (price * quantity);
+    } else {
+      const product = item.product;
+      const buyType = item.buy_type;
+      const quantity = item.quantity || 1;
+      
+      let price = 0;
+      if (buyType === "buy") {
+        price = product?.buy_price || 0;
+      } else if (buyType === "rent") {
+        price = product?.rent_price || 0;
+      }
+      
+      return sum + (price * quantity);
+    }
   }, 0);
+
+  const getProductQuantity = (item) => {
+    if (item.items && item.items.length > 0) {
+      return item.items[0]?.quantity || 1;
+    }
+    return item.quantity || 1;
+  };
 
   if ((initialLoad && cartLoading) || refreshingCart) {
     return (
@@ -200,7 +276,7 @@ const CartPage = () => {
                   {cartItems.map((item) => {
                     const price = getProductPrice(item);
                     const suitItems = item.items || [];
-                    const variantId = item.product_variant_id || suitItems?.[0]?.product_variant_id;
+                    const variantId = item.id || suitItems?.[0]?.id;
                     const isRemoving = removingItems.includes(variantId);
                     const isUpdating = updatingItems[item.id];
 
@@ -228,14 +304,14 @@ const CartPage = () => {
                             {getProductBuyType(item) === "buy" && (
                               <div className="qty-box">
                                 <button
-                                  onClick={() => updateQuantity(item.id, (quantities[item.id] || 1) - 1, item, 'decrement')}
-                                  disabled={(quantities[item.id] || 1) <= 1 || isUpdating}
+                                  onClick={() => updateQuantity(item.id, (getProductQuantity(item)) - 1, item, 'decrement')}
+                                  disabled={getProductQuantity(item) <= 1 || isUpdating}
                                 >
                                   {isUpdating ? "..." : "-"}
                                 </button>
-                                <span>{quantities[item.id] || 1}</span>
+                                <span>{getProductQuantity(item)}</span>
                                 <button
-                                  onClick={() => updateQuantity(item.id, (quantities[item.id] || 1) + 1, item, 'increment')}
+                                  onClick={() => updateQuantity(item.id, (getProductQuantity(item)) + 1, item, 'increment')}
                                   disabled={isUpdating}
                                 >
                                   {isUpdating ? "..." : "+"}
@@ -253,7 +329,7 @@ const CartPage = () => {
                         </div>
 
                         <div className="item-total">
-                          {formatPrice(price * (quantities[item.id] || 1))}
+                          {formatPrice(getProductPrice(item))} 
                         </div>
                       </div>
                     );

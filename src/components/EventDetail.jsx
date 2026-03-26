@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { getEventDetails } from "../Redux/Reducers/eventSlice";
+import { getEventDetails, deleteLook } from "../Redux/Reducers/eventSlice";
 import Loader from "../components/Loader";
+import Swal from "sweetalert2";
 
 const EventDetails = () => {
   const { eventId } = useParams();
@@ -40,7 +41,6 @@ const EventDetails = () => {
     return eventData.event.user_id === user.id;
   };
 
-  // ✅ Get look image with fallback to dummy
   const getLookImage = (look) => {
     if (look.image && look.image !== null) {
       return look.image;
@@ -51,6 +51,40 @@ const EventDetails = () => {
   const handleLookClick = (look) => {
     if (look.id) {
       navigate(`/shop/product/${look.id}`);
+    }
+  };
+
+  const handleDeleteLook = async (lookId, e) => {
+    e.stopPropagation();
+    
+    const result = await Swal.fire({
+      title: 'Delete Look?',
+      text: "Are you sure you want to delete this look?",
+      icon: 'warning',
+      confirmButtonColor: '#000',
+      cancelButtonColor: '#000',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await dispatch(deleteLook({ 
+          eventId: eventId, 
+          lookId: lookId 
+        })).unwrap();
+        
+        Swal.fire(
+          'Deleted!',
+          'Look has been deleted.',
+          'success'
+        );
+      } catch (error) {
+        Swal.fire(
+          'Error!',
+          'Failed to delete look.',
+          'error'
+        );
+      }
     }
   };
 
@@ -177,6 +211,10 @@ const EventDetails = () => {
                         e.target.src = "/Images/suit1.png";
                       }}
                     />
+                    <i 
+                      className="fa-solid fa-trash-can delete-look-icon"
+                      onClick={(e) => handleDeleteLook(look.id, e)}
+                    ></i>
                     <p>{look.name}</p>
                   </div>
                 ))}

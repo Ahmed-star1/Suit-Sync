@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getProductsService, getProductByIdService, getFeaturedProductsService, getWishlistService, addToCartService, getCartService, removeCartItemService, updateCartItemQuantityService, submitCheckoutService, getOrderSummaryService, getRelatedProductsService, getCartRelatedProductsService, storeMeasurementService, getMeasurementsService, getCategoriesService, addToWishlistService } from "../Services/productServices";
+import { getProductsService, getProductByIdService, getFeaturedProductsService, getWishlistService, deleteToWishlistService, getWishlistCountService, addToCartService, getCartService, subCartItemService, updateCartItemQuantityService, deleteCartItemService, getCartCountService, submitCheckoutService, getOrderSummaryService, getRelatedProductsService, getCartRelatedProductsService, storeMeasurementService, getMeasurementsService, getCategoriesService, addToWishlistService } from "../Services/productServices";
 
 // Get Products Thunk
 export const getProducts = createAsyncThunk(
@@ -79,6 +79,32 @@ export const addToWishlist = createAsyncThunk(
   }
 );
 
+// Delete Wishlist Thunk 
+export const deleteWishlist = createAsyncThunk(
+  "products/deleteWishlist",
+  async (itemId, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await deleteToWishlistService(itemId);
+      return { itemId, response }
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to delete item from wishlist");
+    }
+  }
+);
+
+// Get Wishlist Count Thunk
+export const getWishlistCount = createAsyncThunk(
+  "wishlist/getWishlistCount",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getWishlistCountService();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to fetch wishlist count");
+    }
+  }
+);
+
 // Add to Cart Thunk
 export const addToCart = createAsyncThunk(
   "products/addToCart",
@@ -105,12 +131,12 @@ export const getCart = createAsyncThunk(
   }
 );
 
-// Remove Cart Item Thunk
-export const removeCartItem = createAsyncThunk(
-  "products/removeCartItem",
+// Sub Cart Item Thunk
+export const subCartItem = createAsyncThunk(
+  "products/subCartItem",
   async (itemId, { rejectWithValue, dispatch }) => {
     try {
-      const response = await removeCartItemService(itemId);
+      const response = await subCartItemService(itemId);
       return { itemId, response }
     } catch (error) {
       return rejectWithValue(error?.message || "Failed to remove item from cart");
@@ -127,6 +153,32 @@ export const updateCartItemQuantity = createAsyncThunk(
       return { itemId, quantity, response };
     } catch (error) {
       return rejectWithValue(error?.message || "Failed to update quantity");
+    }
+  }
+);
+
+// Delete Cart Item Thunk 
+export const deleteCartItem = createAsyncThunk(
+  "products/deleteCartItem",
+  async (itemId, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await deleteCartItemService(itemId);
+      return { itemId, response }
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to delete item from cart");
+    }
+  }
+);
+
+// Get Cart Count Thunk
+export const getCartCount = createAsyncThunk(
+  "cart/getCartCount",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getCartCountService();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to fetch cart count");
     }
   }
 );
@@ -242,6 +294,10 @@ const productSlice = createSlice({
     checkoutResponse: null,
     orderSummary: null,
     selectedProductForLook: null,
+    wishlistCount: 0,
+    wishlistCountLoading: false,
+    cartCount: 0,
+    cartCountLoading: false,
     error: null,
     pagination: {
       current_page: 1,
@@ -428,6 +484,46 @@ const productSlice = createSlice({
         state.error = action.payload;
       })
 
+      // Remove Wishlist
+      .addCase(deleteWishlist.pending, (state) => {
+        state.removeLoading = true;
+        state.error = null;
+      })
+      .addCase(deleteWishlist.fulfilled, (state, action) => {
+        state.wishlistLoading = false;
+        const itemId = action.payload.itemId;
+        
+        if (Array.isArray(state.wishlist)) {
+          state.wishlist = state.wishlist.filter(item => 
+            item.id !== itemId && item.product?.id !== itemId
+          );
+        } else if (state.wishlist?.wishlist) {
+          state.wishlist.wishlist = state.wishlist.wishlist.filter(item => 
+            item.id !== itemId && item.product?.id !== itemId
+          );
+        }
+      })
+      .addCase(deleteWishlist.rejected, (state, action) => {
+        state.removeLoading = false;
+        state.error = action.payload;
+      })
+
+      // Wishlist Count Cases
+      .addCase(getWishlistCount.pending, (state) => {
+        state.wishlistCountLoading = true;
+        state.error = null;
+      })
+      .addCase(getWishlistCount.fulfilled, (state, action) => {
+        state.wishlistCountLoading = false;
+        const responseData = action.payload?.data || action.payload;
+        state.wishlistCount = responseData?.count || responseData || 0;
+      })
+      .addCase(getWishlistCount.rejected, (state, action) => {
+        state.wishlistCountLoading = false;
+        state.error = action.payload;
+        state.wishlistCount = 0;
+      })
+
       // Add to Cart
       .addCase(addToCart.pending, (state) => {
         state.cartLoading = true;
@@ -459,12 +555,12 @@ const productSlice = createSlice({
         state.cart = [];
       })
 
-      // Remove from Cart
-      .addCase(removeCartItem.pending, (state) => {
+      // Sub from Cart
+      .addCase(subCartItem.pending, (state) => {
       state.removeLoading = true;
       state.error = null;
       })
-      .addCase(removeCartItem.fulfilled, (state, action) => {
+      .addCase(subCartItem.fulfilled, (state, action) => {
         state.removeLoading = false;
 
         const itemId = action.payload.itemId;
@@ -494,12 +590,37 @@ const productSlice = createSlice({
           state.cart.cart_items = decrementItemList(state.cart.cart_items);
         }
       })
-      .addCase(removeCartItem.rejected, (state, action) => {
+      .addCase(subCartItem.rejected, (state, action) => {
         state.removeLoading = false;
         state.error = action.payload;
       })
 
-      // Get Cart Related Products (NEW)
+      // Remove Cart Item
+      .addCase(deleteCartItem.pending, (state) => {
+        state.removeLoading = true;
+        state.error = null;
+      })
+      .addCase(deleteCartItem.fulfilled, (state, action) => {
+        state.removeLoading = false;
+        
+        const itemId = action.payload.itemId;
+        
+        if (Array.isArray(state.cart)) {
+          state.cart = state.cart.filter(item => 
+            item.product_variant_id !== itemId && item.id !== itemId
+          );
+        } else if (state.cart?.cart_items) {
+          state.cart.cart_items = state.cart.cart_items.filter(
+            item => item.product_variant_id !== itemId && item.id !== itemId
+          );
+        }
+      })
+      .addCase(deleteCartItem.rejected, (state, action) => {
+        state.removeLoading = false;
+        state.error = action.payload;
+      })
+
+      // Get Cart Related Products
       .addCase(getCartRelatedProducts.pending, (state) => {
         state.cartRelatedProductsLoading = true;
         state.error = null;
@@ -513,6 +634,22 @@ const productSlice = createSlice({
         state.cartRelatedProductsLoading = false;
         state.error = action.payload;
         state.cartRelatedProducts = [];
+      })
+
+      // Cart Count Cases
+      .addCase(getCartCount.pending, (state) => {
+        state.cartCountLoading = true;
+        state.error = null;
+      })
+      .addCase(getCartCount.fulfilled, (state, action) => {
+        state.cartCountLoading = false;
+        const responseData = action.payload?.data || action.payload;
+        state.cartCount = responseData?.count || responseData || 0;
+      })
+      .addCase(getCartCount.rejected, (state, action) => {
+        state.cartCountLoading = false;
+        state.error = action.payload;
+        state.cartCount = 0;
       })
 
       // Checkout cases
@@ -595,7 +732,7 @@ const productSlice = createSlice({
         state.categoriesError = action.payload;
       })
   },
-});
+}); 
 
 export const { clearProductsState, setCurrentPage, clearSelectedProduct, clearWishlist, resetCheckoutState, clearOrderSummary, setSelectedProductForLook, clearSelectedProductForLook, clearCartRelatedProducts } = productSlice.actions;
 export default productSlice.reducer;

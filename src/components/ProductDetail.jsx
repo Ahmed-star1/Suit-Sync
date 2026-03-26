@@ -7,7 +7,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import SizeChartModal from "../components/SizeChartModal";
 import { getProductsService } from "../Redux/Services/productServices";
-import { addToCart, getMeasurements, addToWishlist } from "../Redux/Reducers/productSlice";
+import { addToCart, getMeasurements, addToWishlist, getWishlistCount } from "../Redux/Reducers/productSlice";
 import Swal from "sweetalert2";
 
 const ProductDetail = ({ product }) => {
@@ -39,6 +39,8 @@ const ProductDetail = ({ product }) => {
   const [selectedPantType, setSelectedPantType] = useState("");
   const [selectedPantMeasurement, setSelectedPantMeasurement] = useState("");
   const [isMeasurementLoading, setIsMeasurementLoading] = useState(false);
+  const [isMeasurementMissingModalOpen, setIsMeasurementMissingModalOpen] = useState(false);
+  const [missingCategory, setMissingCategory] = useState("");
 
   // generic (non-suit) size state
   const [genericSizes, setGenericSizes] = useState([]);
@@ -134,20 +136,34 @@ const ProductDetail = ({ product }) => {
     try {
       const result = await dispatch(addToWishlist(product.id)).unwrap();
       
+      await dispatch(getWishlistCount()).unwrap();
+      
       Swal.fire({
         icon: 'success',
         title: 'Success!',
         text: 'Product added to wishlist successfully',
         timer: 2000,
-        showConfirmButton: true,
+        showConfirmButton: false,
         confirmButtonColor: '#000',
       });
       
     } catch (error) {
+      console.error("Add to wishlist error:", error);
+      
+      let errorMessage = "Product already in wishlist";
+      
+      if (error?.response?.data?.data?.error) {
+        errorMessage = error.response.data.data.error;
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       Swal.fire({
         icon: 'error',
         title: 'Error!',
-        text: error || 'Failed to add to wishlist',
+        text: errorMessage,
         confirmButtonColor: '#000',
       });
     }
@@ -447,6 +463,38 @@ const ProductDetail = ({ product }) => {
 
   const handleAddToCart = async () => {
     const isSuit = coatSizeTypes.length || pantSizeTypes.length;
+    const isStandardSize = isStandardSizeProduct();
+
+    if (isStandardSize) {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        setIsLoginModalOpen(true);
+        setShowLoginModal(true);
+        document.body.style.overflow = "hidden";
+        return;
+      }
+
+      if (!selectedPriceType) return;
+
+      const cartData = {
+        product_id: product.id,
+        color: product.color_name || product.color_code,
+        buy_type: selectedPriceType.toLowerCase(),
+        size_type: "Standard"
+      };
+
+      try {
+        setIsAddingToCart(true);
+        const result = await dispatch(addToCart(cartData)).unwrap();
+        setTimeout(() => {
+          setIsAddingToCart(false);
+          navigate("/cart");
+        }, 1500);
+      } catch (error) {
+        setIsAddingToCart(false);
+      }
+      return;
+    }
 
     if (isSuit) {
       if (
@@ -522,11 +570,10 @@ const ProductDetail = ({ product }) => {
         try {
           setIsAddingToCart(true);
           const result = await dispatch(addToCart(cartData)).unwrap();
-          
           setTimeout(() => {
             setIsAddingToCart(false);
             navigate("/cart");
-          }, 1000);
+          }, 1500);
         } catch (error) {
           setIsAddingToCart(false);
         }
@@ -578,7 +625,7 @@ const ProductDetail = ({ product }) => {
       setTimeout(() => {
         setIsAddingToCart(false);
         navigate("/cart");
-      }, 1000);
+      }, 1500);
     } catch (error) {
       setIsAddingToCart(false);
     }
@@ -818,7 +865,7 @@ const ProductDetail = ({ product }) => {
         size_measurement: selectedShoesSize,
         color: selectedShoesProduct.color_name || selectedShoesProduct.color_code,
         buy_type: "rent",
-        override_price: selectedShoesProduct.rent_price
+        override_price: selectedShoesProduct.override_price
       });
     }
 
@@ -898,10 +945,48 @@ const ProductDetail = ({ product }) => {
     try {
       const result = await dispatch(getMeasurements()).unwrap();
       
-      if (result?.data) {
-        const measurements = result.data;
-        
+      const hasMeasurements = result?.data && Object.keys(result.data).length > 0;
+      const isNoMeasurementsFound = result?.data === null && result?.message === "No measurements found";
+      
+      if (isNoMeasurementsFound || !hasMeasurements) {
+        // No measurements found in profile
         if (coatSizeTypes.length || pantSizeTypes.length) {
+          setMissingCategory("suit:all");
+        } else if (product?.category?.slug === "shoes") {
+          setMissingCategory("shoe");
+        } else if (product?.category?.slug === "ties") {
+          setMissingCategory("tie");
+        } else if (product?.category?.slug === "shirts") {
+          setMissingCategory("shirt");
+        } else if (product?.category?.slug === "belts") {
+          setMissingCategory("belt");
+        } else {
+          setMissingCategory(product?.category?.slug || "product");
+        }
+        setIsMeasurementMissingModalOpen(true);
+        document.body.style.overflow = "hidden";
+        return;
+      }
+      
+      const measurements = result.data;
+      
+      if (coatSizeTypes.length || pantSizeTypes.length) {
+        let missingMeasurements = [];
+        
+        if (!measurements.coat_fit || !measurements.coat_size) {
+          missingMeasurements.push("Coat");
+        }
+        
+        if (!measurements.pant_fit || !measurements.pant_size) {
+          missingMeasurements.push("Pant");
+        }
+        
+        if (missingMeasurements.length > 0) {
+          const missingText = missingMeasurements.join(" & ");
+          setMissingCategory(`suit:${missingText}`);
+          setIsMeasurementMissingModalOpen(true);
+          document.body.style.overflow = "hidden";
+        } else {
           if (measurements.coat_fit) {
             setSelectedCoatType(measurements.coat_fit);
           }
@@ -917,21 +1002,96 @@ const ProductDetail = ({ product }) => {
               setSelectedPantMeasurement(measurements.pant_size);
             }
           }, 100);
-        } else if (product?.category?.slug === "shoes") {
-          if (measurements.shoe_size) setSelectedGenericSize(measurements.shoe_size.toString());
-        } else if (product?.category?.slug === "ties") {
-          if (measurements.tie_size) setSelectedGenericSize(measurements.tie_size);
-        } else if (product?.category?.slug === "shirts") {
-          if (measurements.shirt_size) setSelectedGenericSize(measurements.shirt_size);
-        } else if (product?.category?.slug === "belts") {
-          if (measurements.belt_size) setSelectedGenericSize(measurements.belt_size);
-        } 
+        }
+      } 
+      else if (product?.category?.slug === "shoes") {
+        if (measurements.shoe_size) {
+          setSelectedGenericSize(measurements.shoe_size.toString());
+        } else {
+          setMissingCategory("shoe");
+          setIsMeasurementMissingModalOpen(true);
+          document.body.style.overflow = "hidden";
+        }
+      } 
+      else if (product?.category?.slug === "ties") {
+        if (measurements.tie_size) {
+          setSelectedGenericSize(measurements.tie_size);
+        } else {
+          setMissingCategory("tie");
+          setIsMeasurementMissingModalOpen(true);
+          document.body.style.overflow = "hidden";
+        }
+      } 
+      else if (product?.category?.slug === "shirts") {
+        if (measurements.shirt_size) {
+          setSelectedGenericSize(measurements.shirt_size);
+        } else {
+          setMissingCategory("shirt");
+          setIsMeasurementMissingModalOpen(true);
+          document.body.style.overflow = "hidden";
+        }
+      } 
+      else if (product?.category?.slug === "belts") {
+        if (measurements.belt_size) {
+          setSelectedGenericSize(measurements.belt_size);
+        } else {
+          setMissingCategory("belt");
+          setIsMeasurementMissingModalOpen(true);
+          document.body.style.overflow = "hidden";
+        }
+      }
+      else {
+        setMissingCategory(product?.category?.slug || "product");
+        setIsMeasurementMissingModalOpen(true);
+        document.body.style.overflow = "hidden";
       }
     } catch (error) {
       console.error("Failed to load measurements:", error);
+      if (coatSizeTypes.length || pantSizeTypes.length) {
+        setMissingCategory("suit:all");
+      } else {
+        setMissingCategory(product?.category?.slug || "product");
+      }
+      setIsMeasurementMissingModalOpen(true);
+      document.body.style.overflow = "hidden";
     } finally {
       setIsMeasurementLoading(false);
     }
+  };
+
+  // Close missing measurement modal
+  const closeMissingMeasurementModal = () => {
+    setIsMeasurementMissingModalOpen(false);
+    document.body.style.overflow = "auto";
+  };
+
+  // Get display category name
+  const getDisplayCategory = () => {
+    if (missingCategory.startsWith("suit:")) {
+      const parts = missingCategory.split(":");
+      const missing = parts[1];
+      
+      if (missing === "all") {
+        return "Suit (Coat & Pant)";
+      } else if (missing === "Coat & Pant") {
+        return "Coat & Pant";
+      } else if (missing === "Coat") {
+        return "Coat";
+      } else if (missing === "Pant") {
+        return "Pant";
+      } else {
+        return "Suit";
+      }
+    }
+    
+    const categoryMap = {
+      shirt: "Shirt",
+      shoes: "Shoes",
+      tie: "Tie",
+      belt: "Belt",
+      product: "Product"
+    };
+    return categoryMap[missingCategory] || missingCategory.charAt(0).toUpperCase() + missingCategory.slice(1);
   };
 
   // Filter functions
@@ -1771,7 +1931,7 @@ const ProductDetail = ({ product }) => {
                   )}
                 </div>
               )}
-              <h3 className="addon-section-heading">SHOES</h3>
+              <h3 className="addon-section-heading">SHOES <span>(Additional Charges)</span></h3>
               <div className="product-with-size">
                 <div className="custom-select-wrapper product-select-wrapper">
                   <div
@@ -1983,6 +2143,48 @@ const ProductDetail = ({ product }) => {
                 >
                   Login / Register
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isMeasurementMissingModalOpen && (
+          <div
+            className={`rent-modal-overlay ${
+              isMeasurementMissingModalOpen ? "fade-in" : "fade-out"
+            }`}
+            onClick={closeMissingMeasurementModal}
+          >
+            <div
+              className={`rent-modal ${isMeasurementMissingModalOpen ? "modal-in" : "modal-out"}`}
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: "450px" }}
+            >
+
+              <div className="conflict-modal-content">
+                <h2>Measurements Not Found</h2>
+                <p className="conflict-description">
+                  No <strong>{getDisplayCategory()}</strong> measurements found in your profile.
+                  <br />
+                  Please add your measurements first to use this feature.
+                </p>
+                <div className="buttons-row">
+                  <button
+                    className="designBtn2 secondary"
+                    onClick={closeMissingMeasurementModal}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="designBtn2"
+                    onClick={() => {
+                      closeMissingMeasurementModal();
+                      navigate("/measurement");
+                    }}
+                  >
+                    Add Measurements
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -70,6 +70,38 @@ export const addToWishlistService = async (productId) => {
   }
 };
 
+// Delete Wishlist Service
+export const deleteToWishlistService = async (itemId) => {
+  try {
+    const response = await fetchApi({
+      method: "DELETE", 
+      endPoint: API_ENDPOINTS.DELETE_WISHLIST(itemId),
+      token: true,
+    });
+    
+    return response;
+  } catch (error) {
+    console.error("deleteToWishlistService error", error);
+    throw error;
+  }
+};
+
+// Get Wishlist Count Service
+export const getWishlistCountService = async () => {
+  try {
+    const response = await fetchApi({
+      method: "GET",
+      endPoint: API_ENDPOINTS.GET_WISHLIST_COUNT,
+      token: true,
+    });
+    
+    return response;
+  } catch (error) {
+    console.error("getWishlistCountService error", error);
+    throw error;
+  }
+};
+
 // Get Featured Products
 export const getFeaturedProductsService = async () => {
   try {
@@ -136,12 +168,12 @@ export const getCartService = async () => {
   }
 };
 
-// Remove Cart Item Service
-export const removeCartItemService = async (itemId) => {
+// Sub Cart Item Service
+export const subCartItemService = async (itemId) => {
   try {
     const response = await fetchApi({
       method: "POST",
-      endPoint: API_ENDPOINTS.REMOVE_CART_ITEM(itemId),
+      endPoint: API_ENDPOINTS.SUB_CART_ITEM(itemId),
       token: true,
     });
     
@@ -157,7 +189,7 @@ export const updateCartItemQuantityService = async (itemId, quantity) => {
   try {
     const response = await fetchApi({
       method: "POST",
-      endPoint: API_ENDPOINTS.UPDATE_CART_ITEM(itemId),
+      endPoint: API_ENDPOINTS.ADD_CART_ITEM(itemId),
       token: true,
       data: { quantity },
     });
@@ -165,6 +197,38 @@ export const updateCartItemQuantityService = async (itemId, quantity) => {
     return response;
   } catch (error) {
     console.error("updateCartItemQuantityService error", error);
+    throw error;
+  }
+};
+
+// Delete Cart Item Service
+export const deleteCartItemService = async (itemId) => {
+  try {
+    const response = await fetchApi({
+      method: "DELETE", 
+      endPoint: API_ENDPOINTS.DELETE_CART_ITEM(itemId),
+      token: true,
+    });
+    
+    return response;
+  } catch (error) {
+    console.error("deleteCartItemService error", error);
+    throw error;
+  }
+};
+
+// Get Cart Count Service
+export const getCartCountService = async () => {
+  try {
+    const response = await fetchApi({
+      method: "GET",
+      endPoint: API_ENDPOINTS.GET_CART_COUNT,
+      token: true,
+    });
+    
+    return response;
+  } catch (error) {
+    console.error("getCartCountService error", error);
     throw error;
   }
 };

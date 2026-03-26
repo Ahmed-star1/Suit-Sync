@@ -16,7 +16,8 @@ const MeasurementTabsBar = () => {
   const [measurements, setMeasurements] = useState({});
   const [originalMeasurements, setOriginalMeasurements] = useState({});
   const [hasChanges, setHasChanges] = useState(false);
-   const [saveTriggered, setSaveTriggered] = useState(false);
+  const [saveTriggered, setSaveTriggered] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   const { 
     measurementLoading, 
@@ -82,9 +83,10 @@ const MeasurementTabsBar = () => {
     dispatch(getMeasurements());
   }, [dispatch]);
 
-  // Show success message when measurement is saved
+  // Show success message only when measurement is successfully stored
   useEffect(() => {
-    if (measurementSuccess) {
+    if (measurementSuccess && saveTriggered && !showSuccessAlert) {
+      setShowSuccessAlert(true);
       Swal.fire({
         icon: 'success',
         title: 'Success!',
@@ -94,14 +96,16 @@ const MeasurementTabsBar = () => {
         confirmButtonColor: '#000',
       }).then(() => {
         setSaveTriggered(false);
+        setShowSuccessAlert(false);
+        // Refresh measurements after successful save
         dispatch(getMeasurements());
       });
     }
-  }, [measurementSuccess, saveTriggered, dispatch]);
+  }, [measurementSuccess, saveTriggered, showSuccessAlert, dispatch]);
 
   // Show error message if save fails
   useEffect(() => {
-    if (measurementError) {
+    if (measurementError && saveTriggered) {
       Swal.fire({
         icon: 'error',
         title: 'Error!',
@@ -111,9 +115,9 @@ const MeasurementTabsBar = () => {
         setSaveTriggered(false);
       });
     }
-  }, [measurementError, saveTriggered, dispatch]);
+  }, [measurementError, saveTriggered]);
 
-  // Populate measurements from API response
+  // Populate measurements from API response - NO ALERT HERE
   useEffect(() => {
     if (savedMeasurements && Object.keys(savedMeasurements).length > 0) {
       const transformedMeasurements = {
@@ -201,15 +205,7 @@ const MeasurementTabsBar = () => {
       measurements: apiMeasurements
     };
     setSaveTriggered(true);
-    dispatch(storeMeasurement(measurementPayload)).then(() => {
-      setOriginalMeasurements(prev => ({
-        ...prev,
-        [activeTab]: { ...measurements[activeTab] }
-      }));
-      setHasChanges(false);
-    }).catch((error) => {
-      console.error("Save error:", error);
-    });
+    dispatch(storeMeasurement(measurementPayload));
   };
 
   return (

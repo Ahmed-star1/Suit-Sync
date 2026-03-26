@@ -7,7 +7,8 @@ import { store } from "./Redux/Store/store";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./index.css";
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
   <Provider store={store}>
     <BrowserRouter>
       <App />

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getProducts } from "../Redux/Reducers/productSlice";
-import { getProductsService } from "../Redux/Services/productServices"; // ✅ Direct service import for all products
+import { getProductsService } from "../Redux/Services/productServices";
 
 const SearchModal = ({
   isOpen,
@@ -12,15 +11,14 @@ const SearchModal = ({
 }) => {
   const dispatch = useDispatch();
   const [searchResults, setSearchResults] = useState([]);
-  const [allProducts, setAllProducts] = useState([]); // ✅ Store all products
-  const [loading, setLoading] = useState(false);
+  const [allProducts, setAllProducts] = useState([]);
+  const [isFetchingProducts, setIsFetchingProducts] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
   const { products, loading: productsLoading } = useSelector(
     (state) => state.products,
   );
 
-  // ✅ Debounce search query (0.5 sec delay)
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
@@ -29,30 +27,26 @@ const SearchModal = ({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // ✅ Fetch ALL products when modal opens (once)
   useEffect(() => {
     if (isOpen && allProducts.length === 0) {
       fetchAllProducts();
     }
   }, [isOpen]);
 
-  // ✅ Filter products locally based on search query
   useEffect(() => {
     if (allProducts.length > 0) {
       filterProducts(debouncedQuery);
     }
   }, [debouncedQuery, allProducts]);
 
-  // ✅ Function to fetch ALL products (handle pagination)
   const fetchAllProducts = async () => {
-    setLoading(true);
+    setIsFetchingProducts(true);
     try {
       let allFetchedProducts = [];
       let currentPage = 1;
       let totalPages = 1;
 
-      // First request to get total pages
-      const firstResponse = await getProductsService(currentPage, 50, {}); // Per page 100
+      const firstResponse = await getProductsService(currentPage, 50, {});
       const firstData = firstResponse?.data || firstResponse;
 
       if (firstData?.products) {
@@ -60,7 +54,6 @@ const SearchModal = ({
         totalPages = firstData.pagination?.total_pages || 1;
       }
 
-      // Fetch remaining pages
       for (let page = 2; page <= totalPages; page++) {
         const response = await getProductsService(page, 50, {});
         const data = response?.data || response;
@@ -75,34 +68,30 @@ const SearchModal = ({
     } catch (error) {
       console.error("Error fetching all products:", error);
     } finally {
-      setLoading(false);
+      setIsFetchingProducts(false);
     }
   };
 
-  // ✅ Filter products based on search query
+  // Filter products based on search query
   const filterProducts = (query) => {
     if (!query || query.trim() === "") {
-      setSearchResults([]); // ✅ Empty search shows no results (as per your requirement)
+      setSearchResults([]);
       return;
     }
 
     const filtered = allProducts.filter((product) => {
       const searchTerm = query.toLowerCase().trim();
 
-      // Search in product name
       const nameMatch = product.name?.toLowerCase().includes(searchTerm);
 
-      // Search in product description
       const descriptionMatch = product.description
         ?.toLowerCase()
         .includes(searchTerm);
 
-      // Search in category name
       const categoryMatch = product.category?.name
         ?.toLowerCase()
         .includes(searchTerm);
 
-      // Search in SKU
       const skuMatch = product.sku?.toLowerCase().includes(searchTerm);
 
       return nameMatch || descriptionMatch || categoryMatch || skuMatch;
@@ -133,6 +122,15 @@ const SearchModal = ({
     return "/Images/suit1.png";
   };
 
+  const shouldShowLoading = () => {
+    return (
+      debouncedQuery &&
+      debouncedQuery.trim() !== "" &&
+      allProducts.length === 0 &&
+      isFetchingProducts
+    );
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -144,7 +142,6 @@ const SearchModal = ({
 
         <h2>Search Products</h2>
 
-        {/* Search Input */}
         <div className="search-input-wrapper">
           <input
             type="text"
@@ -155,10 +152,10 @@ const SearchModal = ({
           />
         </div>
 
-        {/* Search Results */}
         <div className="search-results">
-          {loading ? (
+          {shouldShowLoading() ? (
             <div className="search-loading-state">
+              <p>Loading products...</p>
             </div>
           ) : searchResults.length > 0 ? (
             searchResults.map((product) => (
@@ -166,7 +163,7 @@ const SearchModal = ({
                 key={product.id}
                 className="search-result-item"
                 onClick={() => {
-                  window.location.href = `/product/${product.id}`;
+                  window.location.href = `/shop/product/${product.id}`;
                   onClose();
                 }}
               >
@@ -201,9 +198,14 @@ const SearchModal = ({
                 </div>
               </div>
             ))
-          ) : (
-            <div className="no-results"></div>
-          )}
+          ) : debouncedQuery &&
+            debouncedQuery.trim() !== "" &&
+            allProducts.length > 0 &&
+            !isFetchingProducts ? (
+            <div className="no-results">
+              <p>No products found</p>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

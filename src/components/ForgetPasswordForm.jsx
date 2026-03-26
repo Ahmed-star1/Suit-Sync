@@ -1,9 +1,7 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, Link } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-
 import { useDispatch, useSelector } from "react-redux";
 import { forgetPassword } from "../Redux/Reducers/authSlice";
 
@@ -39,7 +37,9 @@ const ForgetPasswordForm = () => {
 
       <div className="right-form-column col-md-6" data-aos="fade-left">
         <div className="logo">
-          <img src="/Images/blackLogo.png" alt="Logo" />
+          <Link to="/">
+            <img src="/Images/blackLogo.png" alt="Logo" />
+          </Link>
         </div>
 
         <div className="box">

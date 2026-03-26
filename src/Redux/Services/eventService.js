@@ -308,6 +308,22 @@ export const getEventLooksService = async (eventId) => {
   }
 };
 
+// Delete Look Service
+export const deleteLookService = async (eventId, lookId) => {
+  try {
+    const response = await fetchApi({
+      method: "DELETE",
+      endPoint: API_ENDPOINTS.DELETE_LOOK(eventId, lookId),
+      token: true,
+    });
+    
+    return response;
+  } catch (error) {
+    console.error("deleteLookService error", error);
+    throw error;
+  }
+};
+
 // Free Tailor's Tape Service
 export const sendFreeTapeService = async (addressData) => {
   try {

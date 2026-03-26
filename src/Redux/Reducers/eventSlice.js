@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { setEventData, getEventData, clearEventData } from "../Utils/localStore";
-import { createEventService, getEventsService, getInvitedEventsService, declineEventInviteService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService, assignLookToEventService, sendFreeTapeService, checkTapeStatusService, getEventLooksService } from "../Services/eventService";
+import { createEventService, getEventsService, getInvitedEventsService, declineEventInviteService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService, assignLookToEventService, deleteLookService, sendFreeTapeService, checkTapeStatusService, getEventLooksService } from "../Services/eventService";
 
 // Async thunk to create an event
 export const createEvent = createAsyncThunk(
@@ -182,6 +182,19 @@ export const getEventLooks = createAsyncThunk(
       return response;
     } catch (error) {
       return rejectWithValue(error?.message || "Failed to fetch event looks");
+    }
+  }
+);
+
+// Delete Look Thunk
+export const deleteLook = createAsyncThunk(
+  "events/deleteLook",
+  async ({ eventId, lookId }, { rejectWithValue }) => {
+    try {
+      const response = await deleteLookService(eventId, lookId);
+      return { response, eventId, lookId };
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to delete look");
     }
   }
 );
@@ -465,6 +478,24 @@ const eventSlice = createSlice({
         state.eventLooksLoading = false;
         state.error = action.payload;
         state.eventLooks = [];
+      })
+
+      // Extra reducers mein add karo:
+      .addCase(deleteLook.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteLook.fulfilled, (state, action) => {
+        state.loading = false;
+        if (state.eventData?.looks) {
+          state.eventData.looks = state.eventData.looks.filter(
+            look => look.id !== action.payload.lookId
+          );
+        }
+      })
+      .addCase(deleteLook.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
 
       // Send Free Tape
