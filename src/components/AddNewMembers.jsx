@@ -17,16 +17,14 @@ const AddNewMember = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
 
-  const roleOptions = [
-    { value: "groomsmen", label: "Groomsmen" },
-  ];
+  const roleOptions = [{ value: "groomsmen", label: "Groomsmen" }];
 
   useEffect(() => {
     if (!eventId) {
       Swal.fire(
         "Error",
         "Event ID missing. Please select an event first.",
-        "error"
+        "error",
       );
       navigate(-1);
     }
@@ -37,31 +35,25 @@ const AddNewMember = () => {
     const handleClickOutside = () => {
       setActiveDropdown(null);
     };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Name is required"),
     role: Yup.string().required("Role is required"),
-    email: Yup.string()
-      .email("Invalid email")
-      .required("Email is required"),
+    email: Yup.string().email("Invalid email").required("Email is required"),
     phone: Yup.string().required("Phone is required"),
     image: Yup.mixed()
-      .required("Image is required")
-      .test(
-        "fileType",
-        "Only PNG, JPG or JPEG allowed",
-        (value) =>
-          value &&
-          ["image/png", "image/jpeg", "image/jpg"].includes(value.type)
-      )
-      .test(
-        "fileSize",
-        "Image must be less than 5MB",
-        (value) => value && value.size <= 5 * 1024 * 1024
-      ),
+      .nullable()
+      .test("fileType", "Only PNG, JPG or JPEG allowed", (value) => {
+        if (!value) return true;
+        return ["image/png", "image/jpeg", "image/jpg"].includes(value.type);
+      })
+      .test("fileSize", "Image must be less than 100MB", (value) => {
+        if (!value) return true;
+        return value.size <= 100 * 1024 * 1024;
+      }),
   });
 
   const handleDropdownClick = (dropdownName, e) => {
@@ -89,11 +81,21 @@ const AddNewMember = () => {
           }}
           validationSchema={validationSchema}
           onSubmit={async (values, { resetForm }) => {
+            const { image, ...formData } = values;
+            if (image && image !== undefined) {
+              formData.image = image;
+            }
+            const cleanData = Object.fromEntries(
+              Object.entries(formData).filter(
+                ([_, value]) => value !== undefined,
+              ),
+            );
+            console.log("Submitting data:", cleanData);
             const result = await dispatch(
               addNewMember({
-                eventId, 
-                memberData: values,
-              })
+                eventId,
+                memberData: cleanData,
+              }),
             );
 
             if (addNewMember.fulfilled.match(result)) {
@@ -104,7 +106,7 @@ const AddNewMember = () => {
               Swal.fire(
                 "Error",
                 result.payload || "Failed to add member",
-                "error"
+                "error",
               );
             }
           }}
@@ -171,22 +173,25 @@ const AddNewMember = () => {
                       <div className="custom-select-wrapper">
                         <div
                           className="custom-select"
-                          onClick={(e) => handleDropdownClick('role', e)}
+                          onClick={(e) => handleDropdownClick("role", e)}
                         >
                           <span className="selected-value">
-                            {values.role 
-                              ? roleOptions.find(r => r.value === values.role)?.label || values.role 
+                            {values.role
+                              ? roleOptions.find((r) => r.value === values.role)
+                                  ?.label || values.role
                               : "Select Role"}
                           </span>
                           <i className="fa-solid fa-chevron-down"></i>
                         </div>
 
-                        {activeDropdown === 'role' && (
+                        {activeDropdown === "role" && (
                           <ul className="custom-select-dropdown">
                             {roleOptions.map((role, index) => (
                               <li
                                 key={index}
-                                className={values.role === role.value ? 'active' : ''}
+                                className={
+                                  values.role === role.value ? "active" : ""
+                                }
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleRoleSelect(role.value, setFieldValue);
@@ -249,11 +254,7 @@ const AddNewMember = () => {
                   Back
                 </button>
 
-                <button
-                  className="designBtn2"
-                  type="submit"
-                  disabled={loading}
-                >
+                <button className="designBtn2" type="submit" disabled={loading}>
                   {loading ? "Adding..." : "Add Member"}
                 </button>
               </div>

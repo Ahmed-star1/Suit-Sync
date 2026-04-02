@@ -218,7 +218,6 @@ const CheckoutPage = () => {
         total_amount: calculateTotal(),
       };
 
-      console.log("Submitting checkout data:", checkoutData);
       const result = await dispatch(submitCheckout(checkoutData)).unwrap();
       navigate("/thank-you");
     } catch (error) {}

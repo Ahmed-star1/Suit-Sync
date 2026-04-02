@@ -194,7 +194,10 @@ export const addNewMemberService = async (eventId, memberData) => {
   formData.append("members[0][email]", memberData.email);
   formData.append("members[0][phone]", memberData.phone);
   formData.append("members[0][role]", memberData.role);
-  formData.append("members[0][image]", memberData.image);
+  if (memberData.image != null && memberData.image !== undefined) {
+    formData.append("members[0][image]", memberData.image);
+    
+  }
 
   return await fetchApi({
     method: "POST",

@@ -56,7 +56,6 @@ const CartPage = () => {
       });
       setQuantities(initialQuantities);
     } catch (error) {
-      console.error("Error fetching cart:", error);
     } finally {
       setInitialLoad(false);
     }
@@ -139,7 +138,6 @@ const CartPage = () => {
       await dispatch(getCart()).unwrap();
       
     } catch (error) {
-      console.error("Error updating quantity:", error);
       setQuantities((prev) => ({ ...prev, [itemId]: item.quantity || 1 }));
     } finally {
       setUpdatingItems((prev) => ({ ...prev, [itemId]: false }));

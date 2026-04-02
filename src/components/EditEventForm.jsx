@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaPlus, FaPen } from "react-icons/fa";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { Formik, Form, ErrorMessage, Field } from "formik";
+import { Formik, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { getEventData, clearEventData } from "../Redux/Utils/localStore";
 import { setEvents } from "../Redux/Reducers/eventSlice";
 import { fileToBase64 } from "../Redux/Utils/helper";
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;   
 const SUPPORTED_FORMATS = ["image/png", "image/jpg", "image/jpeg"];
 
 const EditEventForm = () => {
@@ -19,6 +19,7 @@ const EditEventForm = () => {
   const dispatch = useDispatch();
 
   const [currentEventId, setCurrentEventId] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   const [name, setEventName] = useState("");
   const [type, setEventType] = useState("");
@@ -28,16 +29,40 @@ const EditEventForm = () => {
   const [imagePreview, setImagePreview] = useState("");
   const [eventImageFile, setEventImageFile] = useState(null);
 
+  const eventTypes = [
+    { value: "Wedding Ceremony", label: "Wedding Ceremony" },
+    { value: "Wedding Reception", label: "Wedding Reception" },
+    { value: "Bachelor Party", label: "Bachelor Party" },
+    { value: "Rehearsal Dinner", label: "Rehearsal Dinner" },
+  ];
+
   const validationSchema = Yup.object({
     name: Yup.string().required("Event name is required"),
     type: Yup.string().required("Event type is required"),
     date: Yup.string().required("Event date is required"),
     location: Yup.string().required("Event location is required"),
-    description: Yup.string()
-      .required("Description is required")
-      .min(10, "Minimum 10 characters")
-      .max(2000, "Maximum 2000 characters"),
-    image: Yup.mixed(),
+    image: Yup.mixed()
+      .required("Image is required")
+      .test(
+        "fileType",
+        "Image must be PNG, JPG or JPEG format",
+        (value) => {
+          if (value && value instanceof File) {
+            return ["image/png", "image/jpeg", "image/jpg"].includes(value.type);
+          }
+          return !!value;
+        }
+      )
+      .test(
+        "fileSize",
+        "Image size must be less than 2MB",
+        (value) => {
+          if (value && value instanceof File) {
+            return value.size <= 2 * 1024 * 1024;
+          }
+          return !!value;
+        }
+      ),
   });
 
   useEffect(() => {
@@ -90,6 +115,15 @@ const EditEventForm = () => {
     }
   }, [location.pathname]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveDropdown(null);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   const formatDateForInput = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -115,9 +149,20 @@ const EditEventForm = () => {
     reader.readAsDataURL(file);
   };
 
+  const handleDropdownClick = (dropdownName, e) => {
+    e.stopPropagation();
+    setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
+  };
+
+  const handleEventTypeSelect = (value, setFieldValue) => {
+    setFieldValue("type", value);
+    setEventType(value);
+    setActiveDropdown(null);
+  };
+
   const handleNext = async (values, { setSubmitting, setErrors }) => {
 
-    // imge validation start
+    // image validation start
     const hasExistingImage = Boolean(imagePreview);
     const hasNewImageFile = eventImageFile instanceof File;
     
@@ -140,7 +185,7 @@ const EditEventForm = () => {
         return;
       }
     }
-    // imge validation end
+    // image validation end
 
     let eventImageFile_base64 = null;
     if (eventImageFile instanceof File) {
@@ -211,25 +256,39 @@ const EditEventForm = () => {
                   )}
                 </div>
 
-                <div className="input-group">
+                <div className="input-group select-field product-detail-page">
                   <label>Select Event Type</label>
-                  <div className="select-field">
-                    <select
-                      value={values.type}
-                      onChange={(e) => setFieldValue("type", e.target.value)}
-                      onBlur={() => setFieldTouched("type", true)}
+                  <div className="custom-select-wrapper">
+                    <div
+                      className="custom-select"
+                      onClick={(e) => handleDropdownClick('eventType', e)}
                     >
-                      <option value="Wedding Ceremony">Wedding Ceremony</option>
-                      <option value="Wedding Reception">
-                        Wedding Reception
-                      </option>
-                      <option value="Bachelor Party">Bachelor Party</option>
-                      <option value="Rehearsal Dinner">Rehearsal Dinner</option>
-                    </select>
-                    {touched.type && errors.type && (
-                      <div className="text-danger">{errors.type}</div>
+                      <span className="selected-value">
+                        {values.type || "Select Event Type"}
+                      </span>
+                      <i className="fa-solid fa-chevron-down"></i>
+                    </div>
+
+                    {activeDropdown === 'eventType' && (
+                      <ul className="custom-select-dropdown">
+                        {eventTypes.map((type, index) => (
+                          <li
+                            key={index}
+                            className={values.type === type.value ? 'active' : ''}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEventTypeSelect(type.value, setFieldValue);
+                            }}
+                          >
+                            {type.label}
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
+                  {touched.type && errors.type && (
+                    <div className="text-danger">{errors.type}</div>
+                  )}
                 </div>
               </div>
 
@@ -257,7 +316,6 @@ const EditEventForm = () => {
                     onChange={(e) => setFieldValue("location", e.target.value)}
                     onBlur={() => setFieldTouched("location", true)}
                   />
-                  <i className="fa-solid fa-location-crosshairs"></i>
                   {touched.location && errors.location && (
                     <div className="text-danger">{errors.location}</div>
                   )}
@@ -272,10 +330,8 @@ const EditEventForm = () => {
                   value={values.description}
                   onChange={(e) => setFieldValue("description", e.target.value)}
                   onBlur={() => setFieldTouched("description", true)}
+                  placeholder="Write Event Description Here....."
                 />
-                {touched.description && errors.description && (
-                  <div className="text-danger">{errors.description}</div>
-                )}
               </div>
 
               <div className="profile-image">

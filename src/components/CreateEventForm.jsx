@@ -92,6 +92,31 @@ const CreateEventForm = () => {
     setActiveDropdown(null);
   };
 
+  useEffect(() => {
+    const loadLatestEvent = async () => {
+      const savedEvents = await getEventData();
+      if (savedEvents?.length) {
+        const latest = savedEvents[savedEvents.length - 1];
+        
+        setCurrentEventId(latest.id);
+        
+        if (latest.image) setImagePreview(latest.image);
+        if (latest.imageFile) setImageFile(latest.imageFile);
+        
+        setFormValues({
+          name: latest.name || "",
+          type: latest.type || "",
+          date: latest.date || "",
+          location: latest.location || "",
+          description: latest.description || "",
+          image: latest.imageFile || ""
+        });
+      }
+    };
+    
+    loadLatestEvent();
+  }, []);
+
   const saveEventToLocalStorage = (values) => {
     const events = getEventData() || [];
     
@@ -164,10 +189,10 @@ const CreateEventForm = () => {
       )
       .test(
         "fileSize",
-        "Image size must be less than 5MB",
+        "Image size must be less than 2MB",
         (value) => {
           if (value && value instanceof File) {
-            return value.size <= 5 * 1024 * 1024;
+            return value.size <= 2 * 1024 * 1024;
           }
           return !!value;
         }

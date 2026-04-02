@@ -20,6 +20,7 @@ const EditEventMembers = () => {
   const dispatch = useDispatch();
   const [event_member, setMembersList] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeRoleDropdown, setActiveRoleDropdown] = useState(null);
   const [currentEventId, setCurrentEventId] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [editingMemberIndex, setEditingMemberIndex] = useState(null);
@@ -30,6 +31,10 @@ const EditEventMembers = () => {
   const fileInputRef = useRef(null);
 
   const { loading, events } = useSelector((state) => state.events);
+
+  const roleOptions = [
+    { value: "groomsmen", label: "Groomsmen" },
+  ];
 
   useEffect(() => {
     dispatch(getEvents());
@@ -112,6 +117,7 @@ const EditEventMembers = () => {
         return;
       }
       setActiveDropdown(null);
+      setActiveRoleDropdown(null);
     };
 
     document.addEventListener("click", handleDocClick);
@@ -125,8 +131,12 @@ const EditEventMembers = () => {
     email: Yup.string()
       .email("Invalid email format")
       .required("Email is required"),
-    image: Yup.mixed().required("Member image is required"),
   });
+
+  const handleRoleSelect = (value, setFieldValue) => {
+    setFieldValue("role", value);
+    setActiveRoleDropdown(null);
+  };
 
   const handleSaveMember = async (values, { resetForm, setFieldValue }) => {
     if (editingMemberIndex !== null) {
@@ -160,6 +170,9 @@ const EditEventMembers = () => {
           setEditingMemberIndex(null);
           setEditingInitialValues(null);
           resetForm();
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
         };
         reader.readAsDataURL(file);
       } else {
@@ -185,6 +198,9 @@ const EditEventMembers = () => {
         setEditingMemberIndex(null);
         setEditingInitialValues(null);
         resetForm();
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       }
     } else {
       const reader = new FileReader();
@@ -194,7 +210,7 @@ const EditEventMembers = () => {
           name: values.name,
           phone: values.phone,
           email: values.email,
-          image: reader.result,
+          image: reader.result || "/Images/camera.png",
           isNewMember: true,
         };
 
@@ -211,9 +227,18 @@ const EditEventMembers = () => {
         setEventData(updatedEvents);
         setImagePreview(null);
         resetForm();
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       };
 
+      if (values.image instanceof File) {
       reader.readAsDataURL(values.image);
+    } else {
+      reader.onloadend();
+      reader.result = "/Images/camera.png";
+      reader.onloadend();
+    }
     }
   };
 
@@ -235,6 +260,9 @@ const EditEventMembers = () => {
     setEditingMemberIndex(null);
     setEditingInitialValues(null);
     setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleRemoveMember = (id, index) => {
@@ -381,22 +409,43 @@ const EditEventMembers = () => {
                             <img src="/Images/camera.png" alt="Upload" />
                           </div>
                         )}
-
-                        <ErrorMessage
-                          name="image"
-                          component="div"
-                          className="text-danger"
-                        />
                       </div>
 
                       <div className="member-form-fields">
                         <div className="field">
                           <label>Select Role</label>
-                          <div className="select-field">
-                            <Field as="select" name="role">
-                              <option value="">Select Role</option>
-                              <option value="groomsmen">groomsmen</option>
-                            </Field>
+                          <div className="select-field product-detail-page">
+                            <div className="custom-select-wrapper">
+                              <div
+                                className="custom-select"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveRoleDropdown(activeRoleDropdown === 'role' ? null : 'role');
+                                }}
+                              >
+                                <span className="selected-value">
+                                  {roleOptions.find(opt => opt.value === values.role)?.label || "Select Role"}
+                                </span>
+                                <i className="fa-solid fa-chevron-down"></i>
+                              </div>
+
+                              {activeRoleDropdown === 'role' && (
+                                <ul className="custom-select-dropdown">
+                                  {roleOptions.map((option) => (
+                                    <li
+                                      key={option.value}
+                                      className={values.role === option.value ? 'active' : ''}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRoleSelect(option.value, setFieldValue);
+                                      }}
+                                    >
+                                      {option.label}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
                           </div>
                           <ErrorMessage
                             name="role"

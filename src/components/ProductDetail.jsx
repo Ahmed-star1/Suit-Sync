@@ -99,9 +99,7 @@ const ProductDetail = ({ product }) => {
         });
         
         setCategoryIds(ids);
-        console.log("Category IDs fetched:", ids);
       } catch (error) {
-        console.error("Failed to fetch category IDs:", error);
       }
     };
 
@@ -148,7 +146,6 @@ const ProductDetail = ({ product }) => {
       });
       
     } catch (error) {
-      console.error("Add to wishlist error:", error);
       
       let errorMessage = "Product already in wishlist";
       
@@ -730,7 +727,6 @@ const ProductDetail = ({ product }) => {
     const categoryId = categoryIds[categorySlug];
 
     if (!categoryId) {
-      console.error(`Category ID not found for ${dropdownType} (slug: ${categorySlug})`);
       return;
     }
 
@@ -1046,7 +1042,6 @@ const ProductDetail = ({ product }) => {
         document.body.style.overflow = "hidden";
       }
     } catch (error) {
-      console.error("Failed to load measurements:", error);
       if (coatSizeTypes.length || pantSizeTypes.length) {
         setMissingCategory("suit:all");
       } else {

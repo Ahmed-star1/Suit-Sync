@@ -148,7 +148,7 @@ const EventDetails = () => {
                   <div className="member-row">
                     <div className="member-info">
                       <div className="member-image">
-                        <img src={member.image_url} alt={member.name} />
+                        <img src={member.image_url || "/Images/camera.png"} alt={member.name} />
                       </div>
                       <div className="member-center">
                         <h4>{member.name}</h4>

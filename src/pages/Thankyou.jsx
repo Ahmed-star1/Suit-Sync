@@ -73,28 +73,9 @@ const ThankYouPage = () => {
 
   // Get product image
   const getProductImage = (item) => {
-    if (item.image) {
-      return item.image;
+    if (item.image_url) {
+      return item.image_url;
     }
-
-    if (item.images && Array.isArray(item.images) && item.images.length > 0) {
-      const featuredImage = item.images.find((img) => img.is_featured === true);
-      if (featuredImage?.image_url) {
-        return featuredImage.image_url;
-      }
-      return item.images[0].image_url;
-    }
-
-    if (item.product?.images && Array.isArray(item.product.images)) {
-      const featuredImage = item.product.images.find(
-        (img) => img.is_featured === true,
-      );
-      if (featuredImage?.image_url) {
-        return featuredImage.image_url;
-      }
-      return item.product.images[0]?.image_url;
-    }
-
     return "/Images/suit1.png";
   };
 

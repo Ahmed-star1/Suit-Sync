@@ -27,9 +27,7 @@ const AddEventMember = () => {
 
   const { loading } = useSelector((state) => state.events);
 
-  const roleOptions = [
-    { value: "groomsmen", label: "Groomsmen" },
-  ];
+  const roleOptions = [{ value: "groomsmen", label: "Groomsmen" }];
 
   useEffect(() => {
     const events = getEventData();
@@ -49,9 +47,16 @@ const AddEventMember = () => {
 
   // Clear event data when navigating away from event-related pages
   useEffect(() => {
-    const eventPaths = ["/create-event", "/add-event-member", "/edit-event", "/edit-event-members"];
-    const isEventRoute = eventPaths.some(path => location.pathname.startsWith(path));
-    
+    const eventPaths = [
+      "/create-event",
+      "/add-event-member",
+      "/edit-event",
+      "/edit-event-members",
+    ];
+    const isEventRoute = eventPaths.some((path) =>
+      location.pathname.startsWith(path),
+    );
+
     if (!isEventRoute) {
       clearEventData();
     }
@@ -63,8 +68,8 @@ const AddEventMember = () => {
       setActiveDropdown(null);
       setActiveRoleDropdown(null);
     };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   const convertToBase64 = (file) =>
@@ -76,8 +81,7 @@ const AddEventMember = () => {
     });
 
   const validationSchema = Yup.object({
-    role: Yup.string()
-      .required("Role is required"),
+    role: Yup.string().required("Role is required"),
 
     name: Yup.string()
       .required("Member name is required")
@@ -93,23 +97,21 @@ const AddEventMember = () => {
       .max(255, "Max 255 characters"),
 
     image: Yup.mixed()
-      .required("Member image is required")
-      .test(
-        "fileType",
-        "Only PNG, JPG or JPEG allowed",
-        (value) =>
-          value &&
-          ["image/png", "image/jpeg", "image/jpg"].includes(value.type)
-      )
-      .test(
-        "fileSize",
-        "Image must be less than 5MB",
-        (value) => value && value.size <= 5 * 1024 * 1024
-      ),
+      .nullable()
+      .test("fileType", "Only PNG, JPG or JPEG allowed", (value) => {
+        if (!value) return true; 
+        return ["image/png", "image/jpeg", "image/jpg"].includes(value.type);
+      })
+      .test("fileSize", "Image must be less than 100MB", (value) => {
+        if (!value) return true; 
+        return value.size <= 100 * 1024 * 1024;
+      }),
   });
 
   const handleSaveMember = async (values, { resetForm }) => {
-    const base64 = await convertToBase64(values.image);
+    const base64 = values.image
+      ? await convertToBase64(values.image)
+      : "/Images/camera.png";
 
     const newMember = {
       id: Date.now().toString(),
@@ -127,7 +129,7 @@ const AddEventMember = () => {
     const updatedEvents = events.map((event) =>
       event.id === currentEventId
         ? { ...event, event_member: updatedMembers }
-        : event
+        : event,
     );
 
     setEventData(updatedEvents);
@@ -145,7 +147,7 @@ const AddEventMember = () => {
     const updatedEvents = events.map((event) =>
       event.id === currentEventId
         ? { ...event, event_member: updatedMembers }
-        : event
+        : event,
     );
 
     setEventData(updatedEvents);
@@ -163,7 +165,7 @@ const AddEventMember = () => {
         ...latestEvent,
         image: latestEvent.image || latestEvent.imageFile,
         event_member,
-      })
+      }),
     );
 
     if (createEvent.fulfilled.match(result)) {
@@ -218,7 +220,10 @@ const AddEventMember = () => {
                         />
 
                         {imagePreview ? (
-                          <div className="image-container" style={{ position: "relative" }}>
+                          <div
+                            className="image-container"
+                            style={{ position: "relative" }}
+                          >
                             <img
                               src={imagePreview}
                               alt="member"
@@ -241,7 +246,11 @@ const AddEventMember = () => {
                             <img src="/Images/camera.png" alt="Upload" />
                           </div>
                         )}
-                        <ErrorMessage name="image" component="div" className="text-danger" />
+                        <ErrorMessage
+                          name="image"
+                          component="div"
+                          className="text-danger"
+                        />
                       </div>
 
                       <div className="member-form-fields product-detail-page">
@@ -252,24 +261,35 @@ const AddEventMember = () => {
                               className="custom-select"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setActiveRoleDropdown(activeRoleDropdown === 'role' ? null : 'role');
+                                setActiveRoleDropdown(
+                                  activeRoleDropdown === "role" ? null : "role",
+                                );
                               }}
                             >
                               <span className="selected-value">
-                                {values.role ? roleOptions.find(r => r.value === values.role)?.label || values.role : "Select Role"}
+                                {values.role
+                                  ? roleOptions.find(
+                                      (r) => r.value === values.role,
+                                    )?.label || values.role
+                                  : "Select Role"}
                               </span>
                               <i className="fa-solid fa-chevron-down"></i>
                             </div>
 
-                            {activeRoleDropdown === 'role' && (
+                            {activeRoleDropdown === "role" && (
                               <ul className="custom-select-dropdown">
                                 {roleOptions.map((role, index) => (
                                   <li
                                     key={index}
-                                    className={values.role === role.value ? 'active' : ''}
+                                    className={
+                                      values.role === role.value ? "active" : ""
+                                    }
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleRoleSelect(role.value, setFieldValue);
+                                      handleRoleSelect(
+                                        role.value,
+                                        setFieldValue,
+                                      );
                                     }}
                                   >
                                     {role.label}
@@ -278,7 +298,11 @@ const AddEventMember = () => {
                               </ul>
                             )}
                           </div>
-                          <ErrorMessage name="role" component="div" className="text-danger" />
+                          <ErrorMessage
+                            name="role"
+                            component="div"
+                            className="text-danger"
+                          />
                         </div>
 
                         <div className="field">
@@ -289,7 +313,11 @@ const AddEventMember = () => {
                             name="name"
                             placeholder="Enter member name"
                           />
-                          <ErrorMessage name="name" component="div" className="text-danger" />
+                          <ErrorMessage
+                            name="name"
+                            component="div"
+                            className="text-danger"
+                          />
                         </div>
 
                         <div className="field">
@@ -300,7 +328,11 @@ const AddEventMember = () => {
                             name="phone"
                             placeholder="000-000-0000"
                           />
-                          <ErrorMessage name="phone" component="div" className="text-danger" />
+                          <ErrorMessage
+                            name="phone"
+                            component="div"
+                            className="text-danger"
+                          />
                         </div>
 
                         <div className="field">
@@ -311,7 +343,11 @@ const AddEventMember = () => {
                             name="email"
                             placeholder="abc@example.com"
                           />
-                          <ErrorMessage name="email" component="div" className="text-danger" />
+                          <ErrorMessage
+                            name="email"
+                            component="div"
+                            className="text-danger"
+                          />
                         </div>
 
                         <button type="submit" className="designBtn2">
@@ -330,8 +366,15 @@ const AddEventMember = () => {
                       <div className="camera-box">
                         <FaUser />
                       </div>
-                      <h3>You Don't Have Any<br />Members Yet</h3>
-                      <p>Please add the member to the form with the complete details.</p>
+                      <h3>
+                        You Don't Have Any
+                        <br />
+                        Members Yet
+                      </h3>
+                      <p>
+                        Please add the member to the form with the complete
+                        details.
+                      </p>
                     </div>
                   ) : (
                     <div className="members-list">
@@ -340,9 +383,13 @@ const AddEventMember = () => {
                         {event_member.map((member) => (
                           <div key={member.id} className="member-row">
                             <div className="member-left">
-                              <img 
-                                src={member.image || member.image_url || "/Images/suit1.png"} 
-                                className="member-thumb" 
+                              <img
+                                src={
+                                  member.image ||
+                                  member.image_url ||
+                                  "/Images/suit1.png"
+                                }
+                                className="member-thumb"
                                 alt={member.name}
                                 onError={(e) => {
                                   e.target.src = "/Images/suit1.png";
@@ -358,7 +405,11 @@ const AddEventMember = () => {
                                 className="dots-btn"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setActiveDropdown(activeDropdown === member.id ? null : member.id);
+                                  setActiveDropdown(
+                                    activeDropdown === member.id
+                                      ? null
+                                      : member.id,
+                                  );
                                 }}
                               >
                                 <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -367,7 +418,9 @@ const AddEventMember = () => {
                                 <div className="dropdown-menu">
                                   <button
                                     className="remove-btn"
-                                    onClick={() => handleRemoveMember(member.id)}
+                                    onClick={() =>
+                                      handleRemoveMember(member.id)
+                                    }
                                   >
                                     Remove Member
                                   </button>
@@ -382,8 +435,8 @@ const AddEventMember = () => {
                 </div>
 
                 <div className="buttons-row">
-                  <button 
-                    className="designBtn2" 
+                  <button
+                    className="designBtn2"
                     onClick={() => {
                       clearEventData();
                       navigate("/create-event");
@@ -391,13 +444,14 @@ const AddEventMember = () => {
                   >
                     Back
                   </button>
-                  <button 
-                    className="designBtn2" 
+                  <button
+                    className="designBtn2"
                     onClick={handleCreateEvent}
                     disabled={event_member.length === 0}
                     style={{
                       opacity: event_member.length === 0 ? 0.5 : 1,
-                      cursor: event_member.length === 0 ? 'not-allowed' : 'pointer'
+                      cursor:
+                        event_member.length === 0 ? "not-allowed" : "pointer",
                     }}
                   >
                     Create Event
