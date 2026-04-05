@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { clearEventData } from '../Redux/Utils/localStore';
+import { useDispatch } from 'react-redux';
+import { clearInProgressEvent } from '../Redux/Reducers/eventSlice';
 
 /**
- * Custom hook that clears event data from localStorage when user navigates away from event flow
+ * Custom hook that clears inProgressEvent from Redux when user navigates away from event flow
  * This ensures event data is only kept while user is in event creation/editing process
  */
 export const useEventFlowCleanup = () => {
   const location = useLocation();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     // Event-related routes where data should be preserved
@@ -25,7 +27,7 @@ export const useEventFlowCleanup = () => {
 
     // If not in event flow, clear the event data
     if (!isEventRoute) {
-      clearEventData();
+      dispatch(clearInProgressEvent());
     }
-  }, [location.pathname]);
+  }, [location.pathname, dispatch]);
 };

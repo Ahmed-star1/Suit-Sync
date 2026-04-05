@@ -40,9 +40,9 @@ const ShowMyEvents = () => {
   const closeModal = () => {
     setAnimateModal(false);
     setIsDeleting(false);
+    setSelectedEvent(null);
     setTimeout(() => {
       setShowDeleteModal(false);
-      setSelectedEvent(null);
       document.body.style.overflow = "";
     }, 300);
   };

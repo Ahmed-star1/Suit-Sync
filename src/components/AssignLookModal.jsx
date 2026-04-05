@@ -127,35 +127,6 @@ const AssignLookModal = ({ isOpen, onClose, order }) => {
       .join(" ");
   };
 
-  // Get product image from order/item
-  const getProductImage = (item) => {
-    if (!item) return "/Images/suit1.png";
-
-    if (item.image) {
-      return item.image;
-    }
-
-    if (item.images && Array.isArray(item.images) && item.images.length > 0) {
-      const featuredImage = item.images.find((img) => img.is_featured === true);
-      if (featuredImage?.image_url) {
-        return featuredImage.image_url;
-      }
-      return item.images[0].image_url;
-    }
-
-    if (item.product?.images && Array.isArray(item.product.images)) {
-      const featuredImage = item.product.images.find(
-        (img) => img.is_featured === true,
-      );
-      if (featuredImage?.image_url) {
-        return featuredImage.image_url;
-      }
-      return item.product.images[0]?.image_url;
-    }
-
-    return "/Images/suit1.png";
-  };
-
   // Get item title
   const getItemTitle = (item) => {
     if (!item) return "Product";
@@ -263,13 +234,9 @@ const AssignLookModal = ({ isOpen, onClose, order }) => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="row">
-                <div className="modal-left col-md-5">
+                <div className="modal-left modal-assign-left col-md-5">
                   <img
-                    src={getProductImage(order)}
-                    alt={getItemTitle(order)}
-                    onError={(e) => {
-                      e.target.src = "/Images/suit1.png";
-                    }}
+                    src="/Images/suitsyncfooter.svg"
                   />
                 </div>
                 <div className="modal-right col-md-7">

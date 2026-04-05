@@ -4,11 +4,10 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Formik, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { getEventData, clearEventData } from "../Redux/Utils/localStore";
-import { setEvents } from "../Redux/Reducers/eventSlice";
+import { setInProgressEvent, clearInProgressEvent } from "../Redux/Reducers/eventSlice";
 import { fileToBase64 } from "../Redux/Utils/helper";
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;   
+const MAX_IMAGE_SIZE = 100 * 1024 * 1024;   
 const SUPPORTED_FORMATS = ["image/png", "image/jpg", "image/jpeg"];
 
 const EditEventForm = () => {
@@ -55,10 +54,10 @@ const EditEventForm = () => {
       )
       .test(
         "fileSize",
-        "Image size must be less than 2MB",
+        "Image size must be less than 100MB",
         (value) => {
           if (value && value instanceof File) {
-            return value.size <= 2 * 1024 * 1024;
+            return value.size <= 100 * 1024 * 1024;
           }
           return !!value;
         }
@@ -68,36 +67,20 @@ const EditEventForm = () => {
   useEffect(() => {
     const eventFromState = location?.state?.event;
 
-    if (eventFromState) {
-      const ev = eventFromState;
-      setCurrentEventId(ev.id || null);
-      setEventName(ev.name || "");
-      setEventType(ev.type || "");
-      setEventDate(formatDateForInput(ev.date) || "");
-      setEventLocation(ev.location || "");
-      setEventDescription(ev.description || "");
-      setImagePreview(ev.image_url || ev.image || "");
-      return;
-    }
-
-    const events = getEventData() || [];
-    const event = events.find(
-      (e) => e.id === id || String(e.id) === String(id),
-    );
-
-    if (!event) {
+    if (!eventFromState) {
       navigate("/events");
       return;
     }
 
-    setCurrentEventId(event.id || null);
-    setEventName(event.name || "");
-    setEventType(event.type || "");
-    setEventDate(formatDateForInput(event.date) || "");
-    setEventLocation(event.location || "");
-    setEventDescription(event.description || "");
-    setImagePreview(event.image_url || event.image || "");
-  }, [id, location, navigate]);
+    const ev = eventFromState;
+    setCurrentEventId(ev.id || null);
+    setEventName(ev.name || "");
+    setEventType(ev.type || "");
+    setEventDate(formatDateForInput(ev.date) || "");
+    setEventLocation(ev.location || "");
+    setEventDescription(ev.description || "");
+    setImagePreview(ev.image_url || ev.image || "");
+  }, [location, navigate]);
 
   useEffect(() => {
     const eventPaths = [
@@ -111,9 +94,9 @@ const EditEventForm = () => {
     );
 
     if (!isEventRoute) {
-      clearEventData();
+      dispatch(clearInProgressEvent());
     }
-  }, [location.pathname]);
+  }, [location.pathname, dispatch]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -200,22 +183,10 @@ const EditEventForm = () => {
       location: values.location || "",
       description: values.description || "",
       image: eventImageFile_base64 || imagePreview || "",
-      event_member: [],
+      event_member: location?.state?.event?.event_member || [],
     };
 
-    const events = getEventData() || [];
-    const idx = events.findIndex(
-      (e) => String(e.id) === String(updatedEvent.id),
-    );
-    let updatedEvents;
-    if (idx !== -1) {
-      updatedEvent.event_member = events[idx].event_member || [];
-      updatedEvents = [...events];
-      updatedEvents[idx] = { ...events[idx], ...updatedEvent };
-    } else {
-      updatedEvents = [...events, updatedEvent];
-    }
-    await dispatch(setEvents(updatedEvents));
+    dispatch(setInProgressEvent(updatedEvent));
 
     navigate(`/edit-event-members/${updatedEvent.id}`);
 
@@ -386,7 +357,7 @@ const EditEventForm = () => {
                   className="designBtn2"
                   type="button"
                   onClick={() => {
-                    clearEventData();
+                    dispatch(clearInProgressEvent());
                     navigate("/events");
                   }}
                 >

@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { setEventData, getEventData, clearEventData } from "../Utils/localStore";
 import { createEventService, getEventsService, getInvitedEventsService, declineEventInviteService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService, assignLookToEventService, deleteLookService, sendFreeTapeService, checkTapeStatusService, getEventLooksService } from "../Services/eventService";
 
 // Async thunk to create an event
@@ -9,7 +8,6 @@ export const createEvent = createAsyncThunk(
     try {
       const response = await createEventService(eventData);
       if (response && response.data) {
-        setEventData([response.data]);
         return response.data;
       } else {
         throw new Error("Failed to create event");
@@ -20,12 +18,11 @@ export const createEvent = createAsyncThunk(
   }
 );
 
-// Async thunk to save events in localStorage
+// Async thunk to set events
 export const setEvents = createAsyncThunk(
   "events/setEvents",
   async (events, { rejectWithValue }) => {
     try {
-      setEventData(events); 
       return events; 
     } catch (error) {
       return rejectWithValue(error.message); 
@@ -45,7 +42,6 @@ export const setMembers = createAsyncThunk(
         }
         return event;
       });
-      setEventData(updatedEvents); 
       return updatedEvents;
     } catch (error) {
       return rejectWithValue(error.message); 
@@ -229,7 +225,7 @@ export const checkTapeStatus = createAsyncThunk(
 const eventSlice = createSlice({
   name: "events",
   initialState: {
-    events: getEventData(),
+    events: [],
     loading: false,
     error: null,
     assignLookLoading: false,
@@ -238,14 +234,15 @@ const eventSlice = createSlice({
     eventLooksLoading: false,
     selectedEvent: {
       id: null,
-    }
+    },
+    inProgressEvent: null
   },
   reducers: {
     clearEventsState: (state) => {
       state.loading = false;
       state.error = null;
       state.events = [];
-      clearEventData(); 
+      state.events = [];
     },
      setSelectedEvent: (state, action) => {
       state.selectedEvent = {
@@ -267,6 +264,27 @@ const eventSlice = createSlice({
     },
     setTapeRequested: (state, action) => {
       state.tapeRequested = action.payload;
+    },
+    setInProgressEvent: (state, action) => {
+      state.inProgressEvent = action.payload;
+    },
+    clearInProgressEvent: (state) => {
+      state.inProgressEvent = null;
+    },
+    addMemberToInProgressEvent: (state, action) => {
+      if (state.inProgressEvent) {
+        if (!state.inProgressEvent.event_member) {
+          state.inProgressEvent.event_member = [];
+        }
+        state.inProgressEvent.event_member.push(action.payload);
+      }
+    },
+    removeMemberFromInProgressEvent: (state, action) => {
+      if (state.inProgressEvent && state.inProgressEvent.event_member) {
+        state.inProgressEvent.event_member = state.inProgressEvent.event_member.filter(
+          member => member.id !== action.payload
+        );
+      }
     },
   },
   extraReducers: (builder) => {
@@ -304,7 +322,7 @@ const eventSlice = createSlice({
       })
       .addCase(createEvent.fulfilled, (state, action) => {
         state.loading = false;
-        state.events = [action.payload]; 
+        state.events.push(action.payload); 
       })
       .addCase(createEvent.rejected, (state, action) => {
         state.loading = false;
@@ -444,7 +462,6 @@ const eventSlice = createSlice({
         state.loading = false;
         const deletedEventId = action.payload.eventId;
         state.events = state.events.filter(event => event.id !== deletedEventId);
-        setEventData(state.events);
       })
       .addCase(deleteEvent.rejected, (state, action) => {
         state.loading = false;
@@ -508,7 +525,6 @@ const eventSlice = createSlice({
         state.loading = false;
         state.success = true;
         state.tapeRequested = true;
-        localStorage.setItem('free_tape_requested', 'true');
         console.log("Free tape request sent successfully:", action.payload);
       })
       .addCase(sendFreeTape.rejected, (state, action) => {
@@ -532,5 +548,5 @@ const eventSlice = createSlice({
     },
 });
 
-export const { clearEventsState, setSelectedEvent, clearSelectedEvent, resetTapeState, setTapeRequested  } = eventSlice.actions;
+export const { clearEventsState, setSelectedEvent, clearSelectedEvent, resetTapeState, setTapeRequested, setInProgressEvent, clearInProgressEvent, addMemberToInProgressEvent, removeMemberFromInProgressEvent  } = eventSlice.actions;
 export default eventSlice.reducer;

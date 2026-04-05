@@ -4,19 +4,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import {
-  getEventData,
-  setEventData,
-  clearEventData,
-} from "../Redux/Utils/localStore";
-import { createEvent } from "../Redux/Reducers/eventSlice";
+import { createEvent, addMemberToInProgressEvent, removeMemberFromInProgressEvent, clearInProgressEvent } from "../Redux/Reducers/eventSlice";
 import Loader from "../components/Loader";
 
 const AddEventMember = () => {
   const [event_member, setMembersList] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeRoleDropdown, setActiveRoleDropdown] = useState(null);
-  const [currentEventId, setCurrentEventId] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageBase64, setImageBase64] = useState(null);
 
@@ -24,26 +18,34 @@ const AddEventMember = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-
-  const { loading } = useSelector((state) => state.events);
+  const { loading, events } = useSelector((state) => state.events);
+  const inProgressEvent = useSelector((state) => state.events.inProgressEvent);
 
   const roleOptions = [{ value: "groomsmen", label: "Groomsmen" }];
 
   useEffect(() => {
-    const events = getEventData();
-    if (events?.length) {
-      const latest = events[events.length - 1];
-      setCurrentEventId(latest.id);
-      setMembersList(latest.event_member || []);
+    if (inProgressEvent) {
+      setMembersList(inProgressEvent.event_member || []);
     }
-  }, []);
+  }, [inProgressEvent]);
+
+  // If page reloaded and no inProgressEvent, redirect based on events existence
+  useEffect(() => {
+    if (!inProgressEvent && location.pathname === "/add-event-member") {
+      if (events && events.length > 0) {
+        navigate("/events");
+      } else {
+        navigate("/create-event");
+      }
+    }
+  }, [inProgressEvent, location.pathname, navigate, events]);
 
   // Cleanup on unmount - clear all event data
   useEffect(() => {
     return () => {
-      clearEventData();
+      dispatch(clearInProgressEvent());
     };
-  }, []);
+  }, [dispatch]);
 
   // Clear event data when navigating away from event-related pages
   useEffect(() => {
@@ -58,9 +60,9 @@ const AddEventMember = () => {
     );
 
     if (!isEventRoute) {
-      clearEventData();
+      dispatch(clearInProgressEvent());
     }
-  }, [location.pathname]);
+  }, [location.pathname, dispatch]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -125,51 +127,37 @@ const AddEventMember = () => {
     const updatedMembers = [...event_member, newMember];
     setMembersList(updatedMembers);
 
-    const events = getEventData();
-    const updatedEvents = events.map((event) =>
-      event.id === currentEventId
-        ? { ...event, event_member: updatedMembers }
-        : event,
-    );
-
-    setEventData(updatedEvents);
+    dispatch(addMemberToInProgressEvent(newMember));
 
     setImagePreview(null);
     setImageBase64(null);
     resetForm();
+     if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleRemoveMember = (id) => {
     const updatedMembers = event_member.filter((m) => m.id !== id);
     setMembersList(updatedMembers);
 
-    const events = getEventData();
-    const updatedEvents = events.map((event) =>
-      event.id === currentEventId
-        ? { ...event, event_member: updatedMembers }
-        : event,
-    );
-
-    setEventData(updatedEvents);
+    dispatch(removeMemberFromInProgressEvent(id));
     setActiveDropdown(null);
   };
 
   const handleCreateEvent = async () => {
-    const events = getEventData();
-    const latestEvent = events[events.length - 1];
-
-    if (!latestEvent || (!latestEvent.image && !latestEvent.imageFile)) return;
+    if (!inProgressEvent || (!inProgressEvent.image && !inProgressEvent.imageFile)) return;
 
     const result = await dispatch(
       createEvent({
-        ...latestEvent,
-        image: latestEvent.image || latestEvent.imageFile,
+        ...inProgressEvent,
+        image: inProgressEvent.image || inProgressEvent.imageFile,
         event_member,
       }),
     );
 
-    if (createEvent.fulfilled.match(result)) {
-      clearEventData();
+    if (result.meta.requestStatus === "fulfilled") {
+      dispatch(clearInProgressEvent());
       navigate("/events");
     }
   };
@@ -177,6 +165,13 @@ const AddEventMember = () => {
   const handleRoleSelect = (value, setFieldValue) => {
     setFieldValue("role", value);
     setActiveRoleDropdown(null);
+  };
+   const handleImageChange = (e, setFieldValue) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setFieldValue("image", file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   return (
@@ -211,12 +206,7 @@ const AddEventMember = () => {
                           type="file"
                           accept="image/*"
                           style={{ display: "none" }}
-                          onChange={(e) => {
-                            const file = e.target.files[0];
-                            if (!file) return;
-                            setFieldValue("image", file);
-                            setImagePreview(URL.createObjectURL(file));
-                          }}
+                          onChange={(e) => handleImageChange(e, setFieldValue)}
                         />
 
                         {imagePreview ? (
@@ -434,8 +424,8 @@ const AddEventMember = () => {
                   )}
                 </div>
 
-                <div className="buttons-row">
-                  <button
+                <div className="buttons-row d-flex justify-content-end">
+                  {/* <button
                     className="designBtn2"
                     onClick={() => {
                       clearEventData();
@@ -443,7 +433,7 @@ const AddEventMember = () => {
                     }}
                   >
                     Back
-                  </button>
+                  </button> */}
                   <button
                     className="designBtn2"
                     onClick={handleCreateEvent}

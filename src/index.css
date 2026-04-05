@@ -580,7 +580,7 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .assign-modal-wrapper {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgb(0 0 0 / 83%); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 1000;}
 .assign-modal-wrapper .assign-modal {width: 900px; background: #fff; border-radius: 20px; display: flex; padding: 25px;}
 .assign-modal-wrapper .assign-modal .row{width: 100%;}
-.assign-modal-wrapper .modal-left img {width: 100%;object-fit: cover; border-radius: 20px; object-position: top; height: 400px;}
+.assign-modal-wrapper .modal-left img {width: 290px;}
 .assign-modal-wrapper .modal-right h2 {margin: 0; font-size: 42px; font-weight: 600; color: #000; text-transform: capitalize;}
 .assign-modal-wrapper .modal-right p {font-size: 18px; color: #000; margin-bottom: 20px; line-height: 30px; border-bottom: 2px solid #EBEBEB; padding-bottom: 20px; margin-bottom: 20px;}
 .assign-modal-wrapper .modal-buttons{display: flex; justify-content: space-between; margin-top:74px;}
@@ -775,7 +775,7 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .event-details-container .look-item{position: relative;}
 .event-details-container .look-items img{width: 100%; height: 200px; object-fit: cover; object-position: top;}
 .event-details-container .look-items p{color: #000; text-align: center; margin-top: 10px; margin-bottom: 0px;}
-.event-details-container .look-items i{color: #000; background: #afa6a6; border-radius: 50%; padding: 10px; position: absolute; top: 10px; right: 20px;}
+.event-details-container .look-items i{color: #000; background: #fff; border-radius: 50%; padding: 10px; position: absolute; top: 10px; right: 20px;}
 
 .delete-event-modal .rent-modal{width: 400px !important; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 30px 70px !important;}
 .delete-event-modal .delete-icon{width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: #f6f8fa; border-radius: 50%;}
@@ -864,6 +864,8 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .thankyou-page .contact-label { width: 60px; color: #999999; font-size: 0.9em; } 
 .thankyou-page .contact-value { color: #333333; font-weight: 500; }
 .thankyou-page .buttons-row{justify-content: center; gap: 20px;}
+.modal-assign-left{background: #000; border-radius: 20px; display: flex; align-items: center; justify-content: center;}
+
 
 /* Responsive  */
 @media (max-width: 768px) {
@@ -1136,7 +1138,7 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
   /* Assign Modal  */
   .assign-modal-wrapper .assign-modal{width: 100% !important; padding: 15px !important;}
   .assign-modal-wrapper .modal-left{width: 100% !important;}
-  .assign-modal-wrapper .modal-left img{height: 250px !important; width: 100% !important;}
+  .assign-modal-wrapper .modal-left img{width: 100%;}
   .assign-modal-wrapper .assign-modal .row{width: auto !important;}
   .assign-modal-wrapper .modal-right h2{margin-top: 20px !important;}
   .assign-modal-wrapper .modal-buttons{margin-top: 34px !important;}

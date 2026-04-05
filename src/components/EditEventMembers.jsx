@@ -4,12 +4,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import {
-  getEventData,
-  setEventData,
-  clearEventData,
-} from "../Redux/Utils/localStore";
-import { getEvents, updateEvent } from "../Redux/Reducers/eventSlice";
+import { setInProgressEvent, clearInProgressEvent, addMemberToInProgressEvent, removeMemberFromInProgressEvent, getEvents, updateEvent } from "../Redux/Reducers/eventSlice";
 import Loader from "../components/Loader";
 import { base64ToFile } from "../Redux/Utils/helper";
 
@@ -31,6 +26,7 @@ const EditEventMembers = () => {
   const fileInputRef = useRef(null);
 
   const { loading, events } = useSelector((state) => state.events);
+  const inProgressEvent = useSelector((state) => state.events.inProgressEvent);
 
   const roleOptions = [
     { value: "groomsmen", label: "Groomsmen" },
@@ -52,13 +48,11 @@ const EditEventMembers = () => {
     );
 
     if (!isEventRoute) {
-      clearEventData();
+      dispatch(clearInProgressEvent());
     }
-  }, [location.pathname]);
+  }, [location.pathname, dispatch]);
 
   useEffect(() => {
-    if (!id) return;
-
     if (events && events.length > 0) {
       const currentEvent = events.find(
         (event) => String(event.id) === String(id),
@@ -74,37 +68,21 @@ const EditEventMembers = () => {
         }));
         setMembersList(normalizedMembers);
 
-        if (members.length > 0) {
-          const localEvents = getEventData() || [];
-          const updatedEvents = localEvents.map((event) =>
-            event.id === currentEvent.id
-              ? { ...event, event_member: normalizedMembers }
-              : event,
-          );
-          setEventData(updatedEvents);
-        }
-        return;
+        // Always set inProgressEvent from latest API data
+        dispatch(setInProgressEvent({
+          ...currentEvent,
+          event_member: normalizedMembers
+        }));
       }
     }
+  }, [events, id, dispatch]);
 
-    const localEvents = getEventData();
-    if (!localEvents || !localEvents.length) return;
-
-    const currentEvent = localEvents.find(
-      (event) => String(event.id) === String(id),
-    );
-
-    if (currentEvent) {
-      setCurrentEventId(currentEvent.id);
-      const members = currentEvent.event_member || currentEvent.members || [];
-      const normalizedMembers = members.map((member) => ({
-        ...member,
-        image: member.image || member.image_url,
-        image_url: member.image_url || member.image,
-      }));
-      setMembersList(normalizedMembers);
+  // If page reloaded and no inProgressEvent, redirect to edit event
+  useEffect(() => {
+    if (!inProgressEvent && location.pathname === "/edit-event-members") {
+      navigate("/edit-event");
     }
-  }, [id, events]);
+  }, [inProgressEvent, location.pathname, navigate]);
 
   useEffect(() => {
     const handleDocClick = (e) => {
@@ -158,14 +136,7 @@ const EditEventMembers = () => {
           };
 
           setMembersList(updatedMembers);
-          const events = getEventData();
-          const updatedEvents = events.map((event) =>
-            event.id === currentEventId
-              ? { ...event, event_member: updatedMembers }
-              : event,
-          );
-
-          setEventData(updatedEvents);
+          dispatch(setInProgressEvent({ ...inProgressEvent, event_member: updatedMembers }));
           setImagePreview(null);
           setEditingMemberIndex(null);
           setEditingInitialValues(null);
@@ -186,14 +157,7 @@ const EditEventMembers = () => {
 
         setMembersList(updatedMembers);
 
-        const events = getEventData();
-        const updatedEvents = events.map((event) =>
-          event.id === currentEventId
-            ? { ...event, event_member: updatedMembers }
-            : event,
-        );
-
-        setEventData(updatedEvents);
+        dispatch(setInProgressEvent({ ...inProgressEvent, event_member: updatedMembers }));
         setImagePreview(null);
         setEditingMemberIndex(null);
         setEditingInitialValues(null);
@@ -217,14 +181,7 @@ const EditEventMembers = () => {
         const updatedMembers = [...event_member, newMember];
         setMembersList(updatedMembers);
 
-        const events = getEventData();
-        const updatedEvents = events.map((event) =>
-          event.id === currentEventId
-            ? { ...event, event_member: updatedMembers }
-            : event,
-        );
-
-        setEventData(updatedEvents);
+        dispatch(setInProgressEvent({ ...inProgressEvent, event_member: updatedMembers }));
         setImagePreview(null);
         resetForm();
         if (fileInputRef.current) {
@@ -269,25 +226,14 @@ const EditEventMembers = () => {
     const updatedMembers = event_member.filter((_, i) => i !== index);
     setMembersList(updatedMembers);
 
-    const events = getEventData();
-    const updatedEvents = events.map((event) =>
-      event.id === currentEventId
-        ? { ...event, event_member: updatedMembers }
-        : event,
-    );
-
-    setEventData(updatedEvents);
+    dispatch(setInProgressEvent({ ...inProgressEvent, event_member: updatedMembers }));
     setActiveDropdown(null);
   };
 
   const handleUpdateEvent = async () => {
-    if (!currentEventId) return;
+    if (!inProgressEvent) return;
 
-    const events = getEventData();
-
-    let eventToUpdate = events.find(
-      (e) => String(e.id) === String(currentEventId),
-    );
+    let eventToUpdate = { ...inProgressEvent };
 
     // Change Event Image base64ToFile
     if (
@@ -300,7 +246,6 @@ const EditEventMembers = () => {
         `event-${currentEventId}-image.png`,
       );
     }
-    if (!eventToUpdate) return;
 
     // Change New Member Image base64ToFile
     const membersForAPI = event_member.map(member => {
@@ -330,7 +275,7 @@ const EditEventMembers = () => {
     );
 
     if (updateEvent.fulfilled.match(result)) {
-      clearEventData();
+      dispatch(clearInProgressEvent());
       navigate("/events");
     }
   };

@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../Redux/Reducers/authSlice";
-import { clearEventData } from "../Redux/Utils/localStore";
 
 const LogoutModal = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
@@ -24,7 +23,6 @@ const LogoutModal = ({ isOpen, onClose }) => {
     setLoading(true);
 
     await dispatch(logoutUser());
-    clearEventData();
 
     document.body.style.overflow = "auto";
 

@@ -42,8 +42,8 @@ const EventDetails = () => {
   };
 
   const getLookImage = (look) => {
-    if (look.image && look.image !== null) {
-      return look.image;
+    if (look.image_url) {
+      return look.image_url;
     }
     return "/Images/suit1.png";
   };
@@ -205,11 +205,7 @@ const EventDetails = () => {
                 {looks.map((look, index) => (
                   <div key={index} className="look-item col-md-4" onClick={() => handleLookClick(look)} style={{ cursor: "pointer" }}>
                     <img 
-                      src={getLookImage(look)} 
-                      alt={look.name}
-                      onError={(e) => {
-                        e.target.src = "/Images/suit1.png";
-                      }}
+                      src={getLookImage(look)}
                     />
                     <i 
                       className="fa-solid fa-trash-can delete-look-icon"

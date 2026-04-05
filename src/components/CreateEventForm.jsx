@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaPlus, FaPen } from "react-icons/fa";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getEventData, setEventData, clearEventData } from "../Redux/Utils/localStore";
+import { useDispatch, useSelector } from "react-redux";
+import { setInProgressEvent, clearInProgressEvent } from "../Redux/Reducers/eventSlice";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
@@ -9,10 +10,11 @@ const CreateEventForm = () => {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
+  const inProgressEvent = useSelector(state => state.events.inProgressEvent);
 
   const [imagePreview, setImagePreview] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
-  const [currentEventId, setCurrentEventId] = useState(null);
+  const [imageFile, setImageFile] = useState(null); // Only for local usage, not Redux
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [formValues, setFormValues] = useState({
     name: "",
@@ -31,34 +33,27 @@ const CreateEventForm = () => {
   ];
 
   useEffect(() => {
-    const savedEvents = getEventData();
-    if (savedEvents?.length) {
-      const latest = savedEvents[savedEvents.length - 1];
-      
-      setCurrentEventId(latest.id);
-      
-      if (latest.image) setImagePreview(latest.image);
-      if (latest.imageFile) setImageFile(latest.imageFile);
-      
+    if (inProgressEvent) {
+      setImagePreview(inProgressEvent.image || null);
       setFormValues({
-        name: latest.name || "",
-        type: latest.type || "",
-        date: latest.date || "",
-        location: latest.location || "",
-        description: latest.description || "",
-        image: latest.imageFile || ""
+        name: inProgressEvent.name || "",
+        type: inProgressEvent.type || "",
+        date: inProgressEvent.date || "",
+        location: inProgressEvent.location || "",
+        description: inProgressEvent.description || "",
+        image: inProgressEvent.image || ""
       });
     }
-  }, []);
+  }, [inProgressEvent]);
 
   useEffect(() => {
     const eventPaths = ["/create-event", "/add-event-member", "/edit-event", "/edit-event-members"];
     const isEventRoute = eventPaths.some(path => location.pathname.startsWith(path));
     
     if (!isEventRoute) {
-      clearEventData();
+      dispatch(clearInProgressEvent());
     }
-  }, [location.pathname]);
+  }, [location.pathname, dispatch]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -92,64 +87,17 @@ const CreateEventForm = () => {
     setActiveDropdown(null);
   };
 
-  useEffect(() => {
-    const loadLatestEvent = async () => {
-      const savedEvents = await getEventData();
-      if (savedEvents?.length) {
-        const latest = savedEvents[savedEvents.length - 1];
-        
-        setCurrentEventId(latest.id);
-        
-        if (latest.image) setImagePreview(latest.image);
-        if (latest.imageFile) setImageFile(latest.imageFile);
-        
-        setFormValues({
-          name: latest.name || "",
-          type: latest.type || "",
-          date: latest.date || "",
-          location: latest.location || "",
-          description: latest.description || "",
-          image: latest.imageFile || ""
-        });
-      }
+  const saveEventToRedux = (values) => {
+    const eventData = {
+      name: values.name,
+      type: values.type,
+      date: values.date,
+      location: values.location,
+      description: values.description,
+      image: imagePreview, // Only serializable value
+      event_member: []
     };
-    
-    loadLatestEvent();
-  }, []);
-
-  const saveEventToLocalStorage = (values) => {
-    const events = getEventData() || [];
-    
-    if (currentEventId) {
-      const eventIndex = events.findIndex(event => event.id === currentEventId);
-      if (eventIndex !== -1) {
-        events[eventIndex] = {
-          ...events[eventIndex],
-          name: values.name,
-          type: values.type,
-          date: values.date,
-          location: values.location,
-          description: values.description,
-          image: imagePreview,
-          imageFile: imageFile
-        };
-      }
-    } else {
-      const eventData = {
-        id: Date.now().toString(),
-        name: values.name,
-        type: values.type,
-        date: values.date,
-        location: values.location,
-        description: values.description,
-        image: imagePreview,
-        imageFile: imageFile,
-        event_member: []
-      };
-      events.push(eventData);
-    }
-    
-    setEventData(events);
+    dispatch(setInProgressEvent(eventData));
   };
 
   const validationSchema = Yup.object({
@@ -189,10 +137,10 @@ const CreateEventForm = () => {
       )
       .test(
         "fileSize",
-        "Image size must be less than 2MB",
+        "Image size must be less than 100MB",
         (value) => {
           if (value && value instanceof File) {
-            return value.size <= 2 * 1024 * 1024;
+            return value.size <= 100 * 1024 * 1024;
           }
           return !!value;
         }
@@ -209,7 +157,7 @@ const CreateEventForm = () => {
           enableReinitialize={true}
           validationSchema={validationSchema}
           onSubmit={(values) => {
-            saveEventToLocalStorage(values);
+            saveEventToRedux(values);
             navigate("/add-event-member");
           }}
         >
@@ -333,7 +281,7 @@ const CreateEventForm = () => {
                   className="designBtn2"
                   type="button"
                   onClick={() => {
-                    clearEventData();
+                    dispatch(clearInProgressEvent());
                     navigate(-1);
                   }}
                 >

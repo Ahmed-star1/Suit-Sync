@@ -347,7 +347,8 @@ export const sendFreeTapeService = async (addressData) => {
 // Check if user has already requested free tape
 export const checkTapeStatusService = async () => {
   try {
-    return localStorage.getItem('free_tape_requested') === 'true';
+    // Since localStorage is removed, return false to always allow request
+    return false;
   } catch (error) {
     console.error("checkTapeStatusService error", error);
     return false;
