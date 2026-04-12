@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getProducts, setCurrentPage } from "../Redux/Reducers/productSlice";
@@ -10,6 +10,7 @@ const ShopProducts = ({ selectedFilters }) => {
   const dispatch = useDispatch();
   const [isPageChanging, setIsPageChanging] = useState(false);
   const [isFilterChanging, setIsFilterChanging] = useState(false);
+  const filterTimeoutRef = useRef(null);
 
   const { products, pagination, loading, filters } = useSelector(
     (state) => state.products,

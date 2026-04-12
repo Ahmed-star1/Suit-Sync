@@ -108,7 +108,7 @@ const EventDetails = () => {
       >
         {isInvitedEvent && (
           <div className="invited-name">
-            <img src={event.organizer?.image_url} alt="Creator" />
+            <img src={event.organizer?.image_url || "/Images/camera.png"} alt="Creator" />
             <div>
               Created By
               <h4>{event.organizer?.name}</h4>
@@ -202,6 +202,15 @@ const EventDetails = () => {
 
             {looks && looks.length > 0 ? (
               <div className="look-items row">
+                {!isInvitedEvent && (
+                  <div 
+                    className="look-item-add col-md-4"
+                    onClick={() => navigate("/shop")}
+                    style={{ cursor: "pointer" }}
+                  >
+                      <i className="fa-solid fa-plus"></i>
+                  </div>
+                )}
                 {looks.map((look, index) => (
                   <div key={index} className="look-item col-md-4" onClick={() => handleLookClick(look)} style={{ cursor: "pointer" }}>
                     <img 
@@ -232,7 +241,7 @@ const EventDetails = () => {
                     </p>
                     <button
                       className="designBtn2 assign-link"
-                      onClick={() => navigate("/my-orders")}
+                      onClick={() => navigate("/shop")}
                     >
                       Assign Look
                     </button>

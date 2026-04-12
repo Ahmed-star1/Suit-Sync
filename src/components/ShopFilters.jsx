@@ -4,12 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const ShopFilters = ({ selectedFilters, onFilterChange }) => {
   const [tabState, setTabState] = useState({
-    category: false,
+    category: true,
     "rent-buy": false,
   });
   const [mobileTabState, setMobileTabState] = useState({
-    category: true,  // Open by default on mobile
-    "rent-buy": true, // Open by default on mobile
+    category: true,
+    "rent-buy": true, 
   });
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 

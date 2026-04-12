@@ -6,8 +6,9 @@ import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import SizeChartModal from "../components/SizeChartModal";
+import AssignLookModal from "../components/AssignLookModal";
 import { getProductsService } from "../Redux/Services/productServices";
-import { addToCart, getMeasurements, addToWishlist, getWishlistCount } from "../Redux/Reducers/productSlice";
+import { addToCart, getMeasurements, addToWishlist, getWishlistCount, setSelectedProductForLook, clearSelectedProductForLook } from "../Redux/Reducers/productSlice";
 import Swal from "sweetalert2";
 
 const ProductDetail = ({ product }) => {
@@ -27,6 +28,13 @@ const ProductDetail = ({ product }) => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearSelectedProductForLook());
+    };
+  }, [dispatch]);
 
   // Product Selection State
   const [selectedPriceType, setSelectedPriceType] = useState("");
@@ -909,6 +917,28 @@ const ProductDetail = ({ product }) => {
     return true;
   };
 
+  const openModal = () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      setIsLoginModalOpen(true);
+      setShowLoginModal(true);
+      document.body.style.overflow = "hidden";
+      return;
+    }
+
+    const orderData = {
+      product_id: product.id,
+      category_id: product.category.id,
+    };
+    
+    dispatch(setSelectedProductForLook(orderData));
+    console.log("Selected product for look:", orderData);
+    setModalOpen(true);
+  };
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
   // Auto-select price based on available options
   useEffect(() => {
     if (!product) return;
@@ -1458,17 +1488,22 @@ const ProductDetail = ({ product }) => {
               </div>
             </div>
             <div className="product-actions">
-              <button 
-                className="save-look-btn" 
-                onClick={handleSaveLook}
-                disabled={wishlistLoading}
-                style={{
-                  opacity: wishlistLoading ? 0.7 : 1,
-                  cursor: wishlistLoading ? "not-allowed" : "pointer"
-                }}
-              >
-                {wishlistLoading ? "SAVING..." : "SAVE LOOK"}
-              </button>
+              <div className="buttons">
+                <button 
+                  className="save-look-btn" 
+                  onClick={handleSaveLook}
+                  disabled={wishlistLoading}
+                  style={{
+                    opacity: wishlistLoading ? 0.7 : 1,
+                    cursor: wishlistLoading ? "not-allowed" : "pointer"
+                  }}
+                >
+                  {wishlistLoading ? "SAVING..." : "SAVE LOOK"}
+                </button>
+                <button className="designBtn" onClick={openModal}>
+                  Assign Look
+                </button>
+              </div>
               <button
                 className={`add-to-cart-btn ${!isFormValid() || isAddingToCart ? "disabled" : ""}`}
                 onClick={handleAddToCart}
@@ -1514,6 +1549,10 @@ const ProductDetail = ({ product }) => {
         <SizeChartModal
           isOpen={isSizeModalOpen}
           onClose={() => setIsSizeModalOpen(false)}
+        />
+        <AssignLookModal
+          isOpen={modalOpen}
+          onClose={closeModal}
         />
 
         {isRentModalOpen && (

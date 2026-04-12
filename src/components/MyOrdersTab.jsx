@@ -86,16 +86,11 @@ const MyOrdersTab = () => {
     
     const productData = {
       product_id: item.product_id,
-      product_name: item.product_name,
-      image: getProductImage(item),
-      unit_price: item.unit_price,
-      quantity: item.quantity,
-      order_number: item.order_number,
-      size: item.size,
-      buy_type: getBuyType(item)
+      category_id: item.category_id,
     };
     
     dispatch(setSelectedProductForLook(productData));
+    console.log("Selected product for look:", productData);
     setModalOpen(true);
   };
 

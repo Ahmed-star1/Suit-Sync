@@ -16,10 +16,9 @@ export const getProductsService = async (page = 1, perPage = 12, filters = {}) =
     }
     
     // Rent/Buy filter - use buy_type parameter
-    if (filters['rent-buy'] && filters['rent-buy'].length > 0) {
-      filters['rent-buy'].forEach(type => {
-        const typeValue = type.toLowerCase();
-        queryParams.append('buy_type', typeValue);
+    if (filters.buy_type && filters.buy_type.length > 0) {
+      filters.buy_type.forEach(type => {
+        queryParams.append('buy_type', type);
       });
     }
     
