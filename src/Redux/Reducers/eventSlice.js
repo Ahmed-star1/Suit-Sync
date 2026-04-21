@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { createEventService, getEventsService, getInvitedEventsService, declineEventInviteService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService, assignLookToEventService, deleteLookService, sendFreeTapeService, checkTapeStatusService, getEventLooksService } from "../Services/eventService";
+import { createEventService, getEventsService, getInvitedEventsService, getFreeTapeStatusService, declineEventInviteService, resendInviteService, acceptEventInviteService, addNewMemberService, updateEventService, getEventDetailsService, deleteEventService, assignLookToEventService, deleteLookService, sendFreeTapeService, getEventLooksService } from "../Services/eventService";
 
 // Async thunk to create an event
 export const createEvent = createAsyncThunk(
@@ -208,15 +208,28 @@ export const sendFreeTape = createAsyncThunk(
   }
 );
 
-// Check Tape Status Thunk
-export const checkTapeStatus = createAsyncThunk(
-  "tape/checkTapeStatus",
+// Get Free Tape Status Thunk
+export const getFreeTapeStatus = createAsyncThunk(
+  "tape/getFreeTapeStatus",
   async (_, { rejectWithValue }) => {
     try {
-      const status = await checkTapeStatusService();
-      return { requested: status };
+      const response = await getFreeTapeStatusService();
+      return response;
     } catch (error) {
-      return rejectWithValue(error?.message || "Failed to check tape status");
+      return rejectWithValue(error?.message || "Failed to fetch free tape status");
+    }
+  }
+);
+
+// Resend Invite Thunk
+export const resendInvite = createAsyncThunk(
+  "events/resendInvite",
+  async ({ eventId, email }, { rejectWithValue }) => {
+    try {
+      const response = await resendInviteService(eventId, email);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error?.message || "Failed to resend invitation");
     }
   }
 );
@@ -227,11 +240,14 @@ const eventSlice = createSlice({
   initialState: {
     events: [],
     loading: false,
+    tapeLoading: false,
     error: null,
     assignLookLoading: false,
     tapeRequested: false,
     eventLooks: [],
     eventLooksLoading: false,
+    freeTapeStatus: false,
+    success: false,
     selectedEvent: {
       id: null,
     },
@@ -258,7 +274,7 @@ const eventSlice = createSlice({
       };
     },
     resetTapeState: (state) => {
-      state.loading = false;
+      state.tapeLoading = false;
       state.success = false;
       state.error = null;
     },
@@ -517,34 +533,49 @@ const eventSlice = createSlice({
 
       // Send Free Tape
       .addCase(sendFreeTape.pending, (state) => {
-        state.loading = true;
+        state.tapeLoading = true;
         state.error = null;
         state.success = false;
       })
       .addCase(sendFreeTape.fulfilled, (state, action) => {
-        state.loading = false;
+        state.tapeLoading = false;
         state.success = true;
         state.tapeRequested = true;
-        console.log("Free tape request sent successfully:", action.payload);
       })
       .addCase(sendFreeTape.rejected, (state, action) => {
-        state.loading = false;
+        state.tapeLoading = false;
         state.error = action.payload;
         state.success = false;
       })
 
-      // Check Tape Status
-      .addCase(checkTapeStatus.pending, (state) => {
+      // Get Free Tape Status cases
+      .addCase(getFreeTapeStatus.pending, (state) => {
+        state.tapeLoading = true;
+        state.error = null;
+      })
+      .addCase(getFreeTapeStatus.fulfilled, (state, action) => {
+        state.tapeLoading = false;
+        state.freeTapeStatus = action.payload?.data?.is_sent || false;
+      })
+      .addCase(getFreeTapeStatus.rejected, (state, action) => {
+        state.tapeLoading = false;
+        state.error = action.payload;
+        state.freeTapeStatus = false;
+      })
+
+      // Resend Invite cases
+      .addCase(resendInvite.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-      .addCase(checkTapeStatus.fulfilled, (state, action) => {
+      .addCase(resendInvite.fulfilled, (state, action) => {
         state.loading = false;
-        state.tapeRequested = action.payload.requested;
+        console.log("Invitation resent successfully:", action.payload);
       })
-      .addCase(checkTapeStatus.rejected, (state, action) => {
+      .addCase(resendInvite.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
     },
 });
 

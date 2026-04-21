@@ -27,7 +27,7 @@ const LeftColumnTabs = () => {
 
   const menuItems = [
     { path: "/my-account", icon: "/Images/account.png", label: "My Account" },
-    { path: "/events", icon: "/Images/events.png", label: "My Events" },
+    { path: "/events", icon: "/Images/events.png", label: "Events" },
     { path: "/measurement", icon: "/Images/measurement.png", label: "Measurement" },
     { path: "/my-orders", icon: "/Images/orders.png", label: "My Orders" },
     { path: "/support", icon: "/Images/support.png", label: "Support" },
@@ -56,7 +56,7 @@ const LeftColumnTabs = () => {
           </li>
           <li>
             <NavLink to="/events" className="sidebar-item">
-              <img src="/Images/events.png" /> My Events
+              <img src="/Images/events.png" /> Events
             </NavLink>
           </li>
           <li>

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -13,11 +13,9 @@ import {
 
 const ThankYouPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useDispatch();
-  const { message } = location.state || {};
 
-  const { orderSummary, orderSummaryLoading, error } = useSelector(
+  const { orderSummary, orderSummaryLoading } = useSelector(
     (state) => state.products,
   );
 
@@ -86,6 +84,58 @@ const ThankYouPage = () => {
     if (buyType === "rent") return "Rent";
     if (buyType === "buy") return "Buy";
     return "Rent";
+  };
+
+  const getDisplaySourceItem = (item) => {
+    return item.items?.[0] || item;
+  };
+
+  const getProductSku = (item) => {
+    const sourceItem = getDisplaySourceItem(item);
+
+    return (
+      sourceItem.sku ||
+      sourceItem.product_sku ||
+      sourceItem.product?.sku ||
+      sourceItem.variant?.sku ||
+      ""
+    );
+  };
+
+  const getProductStyle = (item) => {
+    const sourceItem = getDisplaySourceItem(item);
+    const buyType = (
+      sourceItem.buy_type ||
+      sourceItem.type ||
+      sourceItem.product?.buy_type ||
+      ""
+    ).toLowerCase();
+
+    if (buyType === "buy") {
+      return (
+        sourceItem.product_buy_style ||
+        sourceItem.buy_style ||
+        sourceItem.product?.buy_style ||
+        ""
+      );
+    }
+
+    if (buyType === "rent") {
+      return (
+        sourceItem.product_rent_style ||
+        sourceItem.rent_style ||
+        sourceItem.product?.rent_style ||
+        ""
+      );
+    }
+
+    return (
+      sourceItem.product_buy_style ||
+      sourceItem.product_rent_style ||
+      sourceItem.buy_style ||
+      sourceItem.rent_style ||
+      ""
+    );
   };
 
   // Extract order from API response
@@ -166,6 +216,99 @@ const ThankYouPage = () => {
     
     return total;
   };
+
+ const getProductSize = (item) => {
+  if (item.items && item.items.length > 0) {
+    const sizes = item.items.map(nestedItem => {
+      if (nestedItem.size) return nestedItem.size;
+      if (nestedItem.variants && nestedItem.variants.length > 0) {
+        return nestedItem.variants.map(v => v.size).filter(s => s).join(', ');
+      }
+      if (nestedItem.main_size) return nestedItem.main_size;
+      return null;
+    }).filter(s => s);
+    
+    return sizes.length > 0 ? sizes.join(' + ') : '';
+  }
+  
+  // 2️⃣ For Shoes & Single Products (direct size field on item)
+  if (item.size) {
+    return item.size;
+  }
+  
+  // 3️⃣ For products with variants array
+  if (item.variants && item.variants.length > 0) {
+    const sizes = item.variants.map(v => v.size).filter(s => s);
+    if (sizes.length > 0) return sizes.join(', ');
+  }
+  
+  // 4️⃣ Fallback to main_size
+  if (item.main_size) return item.main_size;
+  
+  // 5️⃣ Fallback to size_type or size_measurement
+  if (item.size_type) return item.size_type;
+  if (item.size_measurement) return item.size_measurement;
+  
+  return '';
+};
+
+const getSuitGroupSizeDetails = (item) => {
+  if (!item.items || item.items.length === 0) return null;
+
+  const sizeDetails = {
+    coat: null,
+    pant: null,
+  };
+
+  const normalizeText = (text) => text.toString().trim().toLowerCase();
+  const isCoat = (text) => /coat|jacket/.test(text);
+  const isPant = (text) => /pant|pants|trouser/.test(text);
+
+  const extractSizeValue = (text) => {
+    if (text.includes(':')) {
+      return text.split(':')[1].trim();
+    }
+    return text;
+  };
+
+  const addSize = (text) => {
+    if (!text) return;
+    const normalized = normalizeText(text);
+    const sizeValue = extractSizeValue(text);
+    
+    if (isCoat(normalized)) {
+      sizeDetails.coat = sizeValue;
+    } else if (isPant(normalized)) {
+      sizeDetails.pant = sizeValue;
+    } else if (!sizeDetails.coat) {
+      sizeDetails.coat = sizeValue;
+    }
+  };
+
+  item.items.forEach((nestedItem) => {
+    const sizeCandidates = [];
+
+    if (nestedItem.main_size) sizeCandidates.push(nestedItem.main_size);
+    if (nestedItem.size) sizeCandidates.push(nestedItem.size);
+    if (nestedItem.variants && nestedItem.variants.length > 0) {
+      nestedItem.variants.forEach((variant) => {
+        if (variant.size) sizeCandidates.push(variant.size);
+      });
+    }
+
+    sizeCandidates.forEach((candidate) => addSize(candidate));
+
+    if (!nestedItem.main_size && !nestedItem.size && nestedItem.product_name) {
+      addSize(nestedItem.product_name);
+    }
+  });
+
+  // Return object with coat and pant separately
+  return {
+    coat: sizeDetails.coat,
+    pant: sizeDetails.pant
+  };
+};
 
   const subtotal =
     order?.summary?.subtotal || totalSummary?.subtotal || calculateItemTotal();
@@ -273,6 +416,9 @@ const ThankYouPage = () => {
               <div className="items-list">
                 {displayItems.map((item, index) => {
                   if (isSuitGroup(item)) {
+                    const productSize = getProductSize(item);
+                    const productSku = getProductSku(item);
+                    const productStyle = getProductStyle(item);
                     return (
                       <div
                         className="list-item with-image"
@@ -297,8 +443,38 @@ const ThankYouPage = () => {
                           </div>
                           <div className="item-meta">
                             <span className="item-quantity">
-                              Qty: {item.quantity} 
+                              <strong>Qty:</strong> {item.quantity} 
                             </span>
+                            {productSku && (
+                              <p className="item-detail">
+                                SKU: {productSku}
+                              </p>
+                            )}
+                            {productStyle && (
+                              <p className="item-detail">
+                                <strong>SKU:</strong> {productStyle}
+                              </p>
+                            )}
+                            {(() => {
+                              const sizeDetails = getSuitGroupSizeDetails(item);
+                              if (!sizeDetails || (!sizeDetails.coat && !sizeDetails.pant)) return null;
+                                  
+                                  return (
+                                    <div className="suit-sizes">
+                                      {sizeDetails.coat && (
+                                        <span className="item-size coat-size">
+                                          <strong>Coat:</strong> {sizeDetails.coat}
+                                        </span>
+                                      )}
+                                      <br/>
+                                      {sizeDetails.pant && (
+                                        <span className="item-size pant-size">
+                                          <strong>Pant:</strong> {sizeDetails.pant}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
                           </div>
                         </div>
                         <div className="item-price">
@@ -307,6 +483,9 @@ const ThankYouPage = () => {
                       </div>
                     );
                   } else {
+                    const productSize = getProductSize(item);
+                    const productSku = getProductSku(item);
+                    const productStyle = getProductStyle(item);
                     return (
                       <div
                         className="list-item with-image"
@@ -333,6 +512,21 @@ const ThankYouPage = () => {
                             <span className="item-quantity">
                               Qty: {item.quantity || 1} 
                             </span>
+                            {productSku && (
+                              <p className="item-detail">
+                                SKU: {productSku}
+                              </p>
+                            )}
+                            {productStyle && (
+                              <p className="item-detail">
+                                <strong>SKU:</strong> {productStyle}
+                              </p>
+                            )}
+                            {productSize && (
+                              <p className="item-size">
+                                <strong>Size:</strong> {productSize}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="item-price">
@@ -419,9 +613,9 @@ const ThankYouPage = () => {
           <button className="designBtn2" onClick={() => navigate("/shop")}>
             Continue Shopping
           </button>
-          <button className="designBtn2" onClick={() => window.print()}>
+          {/* <button className="designBtn2" onClick={() => window.print()}>
             Print Receipt
-          </button>
+          </button> */}
         </div>
       </div>
 

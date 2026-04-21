@@ -2,17 +2,17 @@ import React from "react";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import LeftColumnTabs from "../components/LeftColumnTabs";
-import CreateEventForm from "../components/CreateEventForm";
+import ChangePassword from "../components/ChangePassword";
 
-const CreatEventPage = () => {
+const MyAccountPge = () => {
   return (
     <div className="main-page">
-      <Header />
+        <Header />
       <section className="main-section">
         <div className="container">
           <div className="row">
             <LeftColumnTabs />
-            <CreateEventForm />
+            <ChangePassword />
           </div>
         </div>
       </section>
@@ -21,4 +21,4 @@ const CreatEventPage = () => {
   );
 };
 
-export default CreatEventPage;
+export default MyAccountPge;

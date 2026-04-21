@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { getEventDetails, deleteLook } from "../Redux/Reducers/eventSlice";
+import { getEventDetails, deleteLook, resendInvite } from "../Redux/Reducers/eventSlice";
 import Loader from "../components/Loader";
+import FreeTapeModal from "../components/FreeTapeModal";
 import Swal from "sweetalert2";
 
 const EventDetails = () => {
@@ -35,11 +36,41 @@ const EventDetails = () => {
     }).format(new Date(dateString));
   };
 
-  // Check if current user is the event creator
-  const isEventCreator = () => {
-    if (!eventData?.event || !user) return false;
-    return eventData.event.user_id === user.id;
-  };
+  const handleResendInvite = async (memberId, email, e) => {
+  e.stopPropagation();
+  
+  const result = await Swal.fire({
+    title: 'Resend Invitation?',
+    text: `Are you sure you want to resend invitation to ${email}?`,
+    icon: 'question',
+    confirmButtonColor: '#000',
+    confirmButtonText: 'Yes, Resend',
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await dispatch(resendInvite({ 
+        eventId: eventId, 
+        email: email 
+      })).unwrap();
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Invitation Resent!',
+        text: `Invitation has been resent to ${email}`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed!',
+        text: error || 'Failed to resend invitation',
+        confirmButtonColor: '#000'
+      });
+    }
+  }
+};
 
   const getLookImage = (look) => {
     if (look.image_url) {
@@ -97,7 +128,6 @@ const EventDetails = () => {
   const members = eventData.members || [];
   const looks = eventData.looks || [];
   const event = eventData.event;
-  const isCreator = isEventCreator();
 
   return (
     <div className="event-details-container">
@@ -151,8 +181,18 @@ const EventDetails = () => {
                         <img src={member.image_url || "/Images/camera.png"} alt={member.name} />
                       </div>
                       <div className="member-center">
-                        <h4>{member.name}</h4>
-                        <p>{member.role}</p>
+                        <div className="member-name">
+                          <h4>{member.name}</h4>
+                          <p>{member.role}</p>
+                        </div>
+                        {!isInvitedEvent && (member.status === "invited" || member.status === "declined") && (
+                          <button 
+                            className="designBtn" 
+                            onClick={(e) => handleResendInvite(member.id, member.email, e)}
+                          >
+                            Resend Invite
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -161,14 +201,18 @@ const EventDetails = () => {
                         <span>Invite Accept</span>
                         <div
                           className={`step-circle ${
-                            member.status === "accepted"
+                            member.status === "accepted" ||
+                            member.status === "order_purchased" ||
+                            member.status === "delivered"
                               ? "completed"
                               : member.status === "declined"
                                 ? "declined"
                                 : "pending"
                           }`}
                         >
-                          {member.status === "accepted" && (
+                          {(member.status === "accepted" ||
+                            member.status === "order_purchased" ||
+                            member.status === "delivered") && (
                             <i className="fa-solid fa-check"></i>
                           )}
                           {member.status === "declined" && (
@@ -178,14 +222,32 @@ const EventDetails = () => {
                       </div>
                       <div className="progress-step">
                         <span>Order Placed</span>
-                        <div className="step-circle pending">
-                          <i className="fa-solid fa-check"></i>
+                        <div
+                          className={`step-circle ${(
+                            member.status === "order_purchased" ||
+                            member.status === "delivered"
+                          ) ? "completed" : "pending"}`}
+                        >
+                          {(
+                            member.status === "order_purchased" ||
+                            member.status === "delivered"
+                          ) && (
+                            <i className="fa-solid fa-check"></i>
+                          )}
                         </div>
                       </div>
                       <div className="progress-step">
                         <span>Suit Delivered</span>
-                        <div className="step-circle pending">
-                          <i className="fa-solid fa-check"></i>
+                        <div
+                          className={`step-circle ${
+                            member.status === "delivered"
+                              ? "completed"
+                              : "pending"
+                          }`}
+                        >
+                          {member.status === "delivered" && (
+                            <i className="fa-solid fa-check"></i>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -252,6 +314,7 @@ const EventDetails = () => {
           </div>
         </div>
       </div>
+      <FreeTapeModal shouldShow={isInvitedEvent} />
     </div>
   );
 };

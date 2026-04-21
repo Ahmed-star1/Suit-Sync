@@ -107,11 +107,11 @@ const VerifyCodeForm = () => {
           </Formik>
         </div>
 
-        <div className="auth-link">
+        {/* <div className="auth-link">
           <p>
             Don’t get a code <a href="#">Send Again</a>
           </p>
-        </div>
+        </div> */}
       </div>
     </>
   );

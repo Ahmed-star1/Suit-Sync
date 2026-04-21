@@ -14,7 +14,7 @@ const CreateEventForm = () => {
   const inProgressEvent = useSelector(state => state.events.inProgressEvent);
 
   const [imagePreview, setImagePreview] = useState(null);
-  const [imageFile, setImageFile] = useState(null); // Only for local usage, not Redux
+  const [imageFile, setImageFile] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [formValues, setFormValues] = useState({
     name: "",

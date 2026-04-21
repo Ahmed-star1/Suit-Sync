@@ -52,7 +52,7 @@ const VerifyOtpForm = () => {
       localStorage.removeItem('redirectAfterLogin');
       navigate(redirectPath);
     } else {
-      navigate("/my-account");
+      navigate("/events");
     }
   };
 

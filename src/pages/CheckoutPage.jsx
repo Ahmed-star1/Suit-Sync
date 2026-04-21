@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import {
+  CitySelect,
+  CountrySelect,
+  StateSelect,
+} from "react-country-state-city";
+import "react-country-state-city/dist/react-country-state-city.css";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -24,16 +30,11 @@ const CheckoutPage = () => {
   const {
     checkoutLoading: submitting,
     checkoutSuccess: success,
-    error,
   } = useSelector((state) => state.products);
 
   const [pageLoading, setPageLoading] = useState(true);
-
-  // ✅ Custom dropdown state
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedState, setSelectedState] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedCountryId, setSelectedCountryId] = useState(0);
+  const [selectedStateId, setSelectedStateId] = useState(0);
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -51,8 +52,7 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     if (success) {
-      navigate("/thank-you", {
-      });
+      navigate("/thank-you", {});
     }
   }, [success, navigate]);
 
@@ -87,26 +87,6 @@ const CheckoutPage = () => {
     },
   });
 
-  const countries = [
-    { value: "US", label: "United States" },
-    { value: "CA", label: "Canada" },
-  ];
-
-  const statesByCountry = {
-    US: ["California", "Texas", "Florida", "New York"],
-    CA: ["Ontario", "Quebec", "British Columbia"],
-  };
-
-  const citiesByState = {
-    California: ["Los Angeles", "San Francisco", "San Diego"],
-    Texas: ["Houston", "Austin", "Dallas"],
-    Florida: ["Miami", "Orlando", "Tampa"],
-    "New York": ["New York City", "Buffalo"],
-    Ontario: ["Toronto", "Ottawa"],
-    Quebec: ["Montreal", "Quebec City"],
-    "British Columbia": ["Vancouver", "Victoria"],
-  };
-
   const cartItems = Array.isArray(cart)
     ? cart
     : cart?.cart_items
@@ -120,60 +100,30 @@ const CheckoutPage = () => {
         const product = firstItem?.product;
         const buyType = firstItem?.buy_type;
         const quantity = firstItem?.quantity || 1;
-        
+
         let price = 0;
         if (buyType === "buy") {
           price = product?.buy_price || 0;
         } else if (buyType === "rent") {
           price = product?.rent_price || 0;
         }
-        
-        return sum + (price * quantity);
-        
-      } else {
-        const product = item.product;
-        const buyType = item.buy_type;
-        const quantity = item.quantity || 1;
-        
-        let price = 0;
-        if (buyType === "buy") {
-          price = product?.buy_price || 0;
-        } else if (buyType === "rent") {
-          price = product?.rent_price || 0;
-        }
-        
-        return sum + (price * quantity);
+
+        return sum + price * quantity;
       }
+
+      const product = item.product;
+      const buyType = item.buy_type;
+      const quantity = item.quantity || 1;
+
+      let price = 0;
+      if (buyType === "buy") {
+        price = product?.buy_price || 0;
+      } else if (buyType === "rent") {
+        price = product?.rent_price || 0;
+      }
+
+      return sum + price * quantity;
     }, 0);
-  };
-
-  // Custom dropdown handlers
-  const handleDropdownClick = (dropdownName) => {
-    setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
-  };
-
-  const handleCountrySelect = (countryValue, countryLabel) => {
-    setSelectedCountry(countryValue);
-    setSelectedState("");
-    setSelectedCity("");
-    formik.setFieldValue("country", countryLabel);
-    formik.setFieldValue("state", "");
-    formik.setFieldValue("city", "");
-    setActiveDropdown(null);
-  };
-
-  const handleStateSelect = (stateValue) => {
-    setSelectedState(stateValue);
-    setSelectedCity("");
-    formik.setFieldValue("state", stateValue);
-    formik.setFieldValue("city", "");
-    setActiveDropdown(null);
-  };
-
-  const handleCitySelect = (cityValue) => {
-    setSelectedCity(cityValue);
-    formik.setFieldValue("city", cityValue);
-    setActiveDropdown(null);
   };
 
   const handleSubmitCheckout = async (formValues) => {
@@ -204,32 +154,32 @@ const CheckoutPage = () => {
                 price: getProductPrice(nestedItem),
               })),
             };
-          } else {
-            return {
-              id: item.id,
-              product_id: item.product_id,
-              product_variant_id: item.product_variant_id,
-              quantity: item.quantity,
-              buy_type: item.buy_type,
-              price: getProductPrice(item),
-            };
           }
+
+          return {
+            id: item.id,
+            product_id: item.product_id,
+            product_variant_id: item.product_variant_id,
+            quantity: item.quantity,
+            buy_type: item.buy_type,
+            price: getProductPrice(item),
+          };
         }),
         total_amount: calculateTotal(),
       };
 
-      const result = await dispatch(submitCheckout(checkoutData)).unwrap();
+      await dispatch(submitCheckout(checkoutData)).unwrap();
       navigate("/thank-you");
-    } catch (error) {}
+    } catch (checkoutError) {
+      console.error("Checkout failed:", checkoutError);
+    }
   };
 
   const getProductImage = (item) => {
     const product = item.product;
     if (product?.primary_image_url) return product.primary_image_url;
     if (product?.images && product.images.length > 0) {
-      const primaryImage = product.images.find(
-        (img) => img.is_primary === true,
-      );
+      const primaryImage = product.images.find((img) => img.is_primary === true);
       if (primaryImage?.image_url) return primaryImage.image_url;
       return product.images[0].image_url;
     }
@@ -253,7 +203,7 @@ const CheckoutPage = () => {
   const getProductPrice = (item) => {
     let basePrice = 0;
     let quantity = 1;
-    
+
     if (item.items && Array.isArray(item.items) && item.items.length > 0) {
       const firstItem = item.items[0];
       const product = firstItem?.product;
@@ -276,7 +226,7 @@ const CheckoutPage = () => {
         basePrice = product?.rent_price || 0;
       }
     }
-    
+
     return basePrice * quantity;
   };
 
@@ -297,14 +247,6 @@ const CheckoutPage = () => {
       <div className="error-message">{formik.errors[fieldName]}</div>
     ) : null;
   };
-
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setActiveDropdown(null);
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
 
   if (pageLoading || cartLoading) {
     return (
@@ -352,122 +294,61 @@ const CheckoutPage = () => {
               <h3>Billing address</h3>
 
               <div className="select-field">
-                <div className="custom-select-wrapper">
-                  <div
-                    className="custom-select"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDropdownClick("country");
-                    }}
-                  >
-                    <span className="selected-value">
-                      {formik.values.country || "Select Country"}
-                    </span>
-                    <i className="fa-solid fa-chevron-down"></i>
-                  </div>
-
-                  {activeDropdown === "country" && (
-                    <ul className="custom-select-dropdown">
-                      {countries.map((country, index) => (
-                        <li
-                          key={index}
-                          className={
-                            formik.values.country === country.label
-                              ? "active"
-                              : ""
-                          }
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCountrySelect(country.value, country.label);
-                          }}
-                        >
-                          {country.label}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                <CountrySelect
+                  containerClassName="custom-select-wrapper checkout-location-select"
+                  inputClassName={`input custom-select ${formik.touched.country && formik.errors.country ? "error" : ""}`}
+                  placeHolder="Select Country"
+                  defaultValue={formik.values.country || undefined}
+                  value={formik.values.country}
+                  onChange={(country) => {
+                    setSelectedCountryId(country.id);
+                    setSelectedStateId(0);
+                    formik.setFieldValue("country", country.name);
+                    formik.setFieldValue("state", "");
+                    formik.setFieldValue("city", "");
+                  }}
+                  onBlur={() => formik.setFieldTouched("country", true)}
+                />
                 {getFieldError("country")}
               </div>
 
               <div className="row-fields">
                 <div className="select-field">
-                  <div className="custom-select-wrapper">
-                    <div
-                      className={`custom-select ${!selectedCountry ? "disabled" : ""}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (selectedCountry) {
-                          handleDropdownClick("state");
-                        }
-                      }}
-                    >
-                      <span className="selected-value">
-                        {formik.values.state || "Select State"}
-                      </span>
-                      <i className="fa-solid fa-chevron-down"></i>
-                    </div>
-
-                    {activeDropdown === "state" && selectedCountry && (
-                      <ul className="custom-select-dropdown">
-                        {statesByCountry[selectedCountry]?.map(
-                          (state, index) => (
-                            <li
-                              key={index}
-                              className={
-                                formik.values.state === state ? "active" : ""
-                              }
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStateSelect(state);
-                              }}
-                            >
-                              {state}
-                            </li>
-                          ),
-                        )}
-                      </ul>
-                    )}
-                  </div>
+                  <StateSelect
+                    key={selectedCountryId || "state-empty"}
+                    containerClassName="custom-select-wrapper checkout-location-select"
+                    inputClassName={`input custom-select ${formik.touched.state && formik.errors.state ? "error" : ""}`}
+                    countryid={selectedCountryId}
+                    placeHolder="Select State"
+                    defaultValue={formik.values.state || undefined}
+                    value={formik.values.state}
+                    disabled={!selectedCountryId}
+                    onChange={(state) => {
+                      setSelectedStateId(state.id);
+                      formik.setFieldValue("state", state.name);
+                      formik.setFieldValue("city", "");
+                    }}
+                    onBlur={() => formik.setFieldTouched("state", true)}
+                  />
                   {getFieldError("state")}
                 </div>
 
                 <div className="select-field">
-                  <div className="custom-select-wrapper">
-                    <div
-                      className={`custom-select ${!selectedState ? "disabled" : ""}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (selectedState) {
-                          handleDropdownClick("city");
-                        }
-                      }}
-                    >
-                      <span className="selected-value">
-                        {formik.values.city || "Select City"}
-                      </span>
-                      <i className="fa-solid fa-chevron-down"></i>
-                    </div>
-
-                    {activeDropdown === "city" && selectedState && (
-                      <ul className="custom-select-dropdown">
-                        {citiesByState[selectedState]?.map((city, index) => (
-                          <li
-                            key={index}
-                            className={
-                              formik.values.city === city ? "active" : ""
-                            }
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCitySelect(city);
-                            }}
-                          >
-                            {city}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
+                  <CitySelect
+                    key={`${selectedCountryId}-${selectedStateId}`}
+                    containerClassName="custom-select-wrapper checkout-location-select"
+                    inputClassName={`input custom-select ${formik.touched.city && formik.errors.city ? "error" : ""}`}
+                    countryid={selectedCountryId}
+                    stateid={selectedStateId}
+                    placeHolder="Select City"
+                    defaultValue={formik.values.city || undefined}
+                    value={formik.values.city}
+                    disabled={!selectedCountryId || !selectedStateId}
+                    onChange={(city) => {
+                      formik.setFieldValue("city", city.name);
+                    }}
+                    onBlur={() => formik.setFieldTouched("city", true)}
+                  />
                   {getFieldError("city")}
                 </div>
               </div>
@@ -557,7 +438,7 @@ const CheckoutPage = () => {
               <h3>Payment options</h3>
 
               <div className="payment-error-box">
-                <span>⚠</span>
+                <span>!</span>
                 Demo Mode - No payment will be processed
               </div>
 

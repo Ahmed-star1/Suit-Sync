@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FaPlus, FaEye, FaEyeSlash } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useFormik } from "formik";
 import Swal from "sweetalert2";
@@ -87,7 +88,6 @@ const MyAccountTab = () => {
         profile_image: null,
       });
 
-      // ✅ Image URL set karo, error flag reset karo
       if (user.image_url) {
         setImagePreview(user.image_url);
         setImageError(false);
@@ -114,7 +114,6 @@ const MyAccountTab = () => {
     setIsEdited(true);
   };
 
-  // ✅ Image error handle karne ka function
   const handleImageError = () => {
     setImageError(true);
   };
@@ -141,7 +140,6 @@ const MyAccountTab = () => {
                   className="placeholder-box"
                   onClick={() => fileInputRef.current.click()}
                 >
-                  {/* ✅ Image show karne ke liye img tag use karo */}
                   {imagePreview && !imageError ? (
                     <img
                       src={imagePreview}
@@ -196,7 +194,7 @@ const MyAccountTab = () => {
 
                   <div className="input-group password-field">
                     <label>Password</label>
-                    <input
+                    {/* <input
                       className="input"
                       type={showPassword ? "text" : "password"}
                       name="password"
@@ -208,7 +206,8 @@ const MyAccountTab = () => {
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <FaEyeSlash /> : <FaEye />}
-                    </span>
+                    </span> */}
+                    <Link to="/change-password" className="designBtn">Change Password</Link>
                   </div>
                 </div>
               </div>

@@ -24,6 +24,8 @@ export const API_ENDPOINTS = Object.freeze({
   GET_EVENT_LOOKS: (eventId) => `events/${eventId}/looks`,
   DELETE_LOOK: (eventId, lookId) => `events/${eventId}/looks/${lookId}`,
   SEND_FREE_TAPE: "send-free-tape",
+  GET_FREE_TAPE_STATUS: "get-user-free-tape-status",
+  RESEND_INVITE: (eventId) => `events/resend-invitation-link/${eventId}`,
 
   GET_PRODUCTS: "products",
   GET_FEATURED_PRODUCTS: "products/featured",

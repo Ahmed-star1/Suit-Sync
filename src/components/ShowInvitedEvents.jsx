@@ -47,7 +47,7 @@ const ShowInvitedEvents = () => {
       setTimeout(() => setAnimateModal(true), 10);
     }
 
-    if (status === "accepted") {
+    if (status === "accepted" || status === "order_purchased" || status === "delivered") {
       navigate(`/event/${invite.event.id}`, {
         state: { from: "invited", eventId: invite.event.id },
       });

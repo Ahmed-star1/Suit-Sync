@@ -344,13 +344,35 @@ export const sendFreeTapeService = async (addressData) => {
   }
 };
 
-// Check if user has already requested free tape
-export const checkTapeStatusService = async () => {
+// Get Free Tape Status Service
+export const getFreeTapeStatusService = async () => {
   try {
-    // Since localStorage is removed, return false to always allow request
-    return false;
+    const response = await fetchApi({
+      method: "GET",
+      endPoint: API_ENDPOINTS.GET_FREE_TAPE_STATUS,
+      token: true,
+    });
+    
+    return response;
   } catch (error) {
-    console.error("checkTapeStatusService error", error);
-    return false;
+    console.error("getFreeTapeStatusService error", error);
+    throw error;
+  }
+};
+
+// Resend Invite
+export const resendInviteService = async (eventId, email) => {
+  try {
+    const response = await fetchApi({
+      method: "POST",
+      endPoint: API_ENDPOINTS.RESEND_INVITE(eventId),
+      token: true,
+      data: { email },
+    });
+    
+    return response;
+  } catch (error) {
+    console.error("resendInviteService error", error);
+    throw error;
   }
 };

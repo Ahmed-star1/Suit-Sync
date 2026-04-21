@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import AssignLookModal from "../components/AssignLookModal";
+// import AssignLookModal from "../components/AssignLookModal";
 import Loader from "../components/Loader";
 import { 
   getOrderSummary, 
@@ -195,11 +195,11 @@ const MyOrdersTab = () => {
                     <span>Unit Price</span>
                   </div>
 
-                  <div className="order-button">
+                  {/* <div className="order-button">
                     <button className="designBtn2" onClick={() => openModal(item)}>
                       Assign Look
                     </button>
-                  </div>
+                  </div> */}
                 </div>
               ))}
             </div>
@@ -211,11 +211,11 @@ const MyOrdersTab = () => {
         )}
       </div>
 
-      <AssignLookModal
+      {/* <AssignLookModal
         isOpen={modalOpen}
         onClose={closeModal}
         order={selectedOrder}
-      />
+      /> */}
     </div>
   );
 };

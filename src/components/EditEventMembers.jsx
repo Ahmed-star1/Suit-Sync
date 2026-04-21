@@ -4,7 +4,14 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { setInProgressEvent, clearInProgressEvent, addMemberToInProgressEvent, removeMemberFromInProgressEvent, getEvents, updateEvent } from "../Redux/Reducers/eventSlice";
+import Swal from "sweetalert2";
+import {
+  setInProgressEvent,
+  clearInProgressEvent,
+  getEvents,
+  updateEvent,
+  addNewMember,
+} from "../Redux/Reducers/eventSlice";
 import Loader from "../components/Loader";
 import { base64ToFile } from "../Redux/Utils/helper";
 
@@ -247,37 +254,80 @@ const EditEventMembers = () => {
       );
     }
 
-    // Change New Member Image base64ToFile
-    const membersForAPI = event_member.map(member => {
-      if ((member.isNewMember || member.isNewImage) && 
-          member.image && 
-          typeof member.image === "string" && 
-          member.image.startsWith("data:image/")) {
-        
+    const normalizedMembers = event_member.map((member) => {
+      if (
+        (member.isNewMember || member.isNewImage) &&
+        member.image &&
+        typeof member.image === "string" &&
+        member.image.startsWith("data:image/")
+      ) {
         return {
           ...member,
-          image: base64ToFile(member.image, `member-${member.name}-${Date.now()}.png`),
-          isNewMember: undefined,
-          isNewImage: undefined  
+          image: base64ToFile(
+            member.image,
+            `member-${member.name}-${Date.now()}.png`,
+          ),
         };
       }
+
       return member;
     });
+
+    const existingMembers = normalizedMembers
+      .filter((member) => member.id)
+      .map(({ isNewMember, isNewImage, image_url, ...member }) => member);
+
+    const newMembers = normalizedMembers
+      .filter((member) => !member.id || member.isNewMember)
+      .map(({ id, isNewMember, isNewImage, image_url, ...member }) => {
+        const cleanedMember = { ...member };
+
+        // Do not send the local placeholder path as an uploaded image.
+        if (
+          typeof cleanedMember.image === "string" &&
+          cleanedMember.image === "/Images/camera.png"
+        ) {
+          delete cleanedMember.image;
+        }
+
+        return cleanedMember;
+      });
 
     const result = await dispatch(
       updateEvent({
         eventId: currentEventId,
         eventData: {
           ...eventToUpdate,
-          event_member: membersForAPI,
+          event_member: existingMembers,
         },
       }),
     );
 
-    if (updateEvent.fulfilled.match(result)) {
-      dispatch(clearInProgressEvent());
-      navigate("/events");
+    if (!updateEvent.fulfilled.match(result)) {
+      Swal.fire("Error", result.payload || "Event update failed", "error");
+      return;
     }
+
+    for (const member of newMembers) {
+      const addMemberResult = await dispatch(
+        addNewMember({
+          eventId: currentEventId,
+          memberData: member,
+        }),
+      );
+
+      if (!addNewMember.fulfilled.match(addMemberResult)) {
+        Swal.fire(
+          "Error",
+          addMemberResult.payload || "Member invite could not be sent",
+          "error",
+        );
+        return;
+      }
+    }
+
+    dispatch(clearInProgressEvent());
+    navigate("/events");
   };
 
   return (
