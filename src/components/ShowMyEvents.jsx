@@ -5,6 +5,8 @@ import NoEventsTabBody from "./NoEvents";
 import { getEvents, deleteEvent } from "../Redux/Reducers/eventSlice";
 import Loader from "../components/Loader";
 
+const DEFAULT_EVENT_IMAGE = "/Images/events-detail-image.png";
+
 const ShowMyEvents = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -105,7 +107,7 @@ const ShowMyEvents = () => {
                 style={{ cursor: "pointer" }}
               >
                 <div className="event-image">
-                  <img src={event.image_url} alt={event.name} />
+                  <img src={event.image_url || event.image || DEFAULT_EVENT_IMAGE} alt={event.name} />
                 </div>
 
                 <div className="event-content">

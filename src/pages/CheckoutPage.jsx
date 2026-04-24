@@ -21,6 +21,7 @@ import {
 } from "../Redux/Reducers/productSlice";
 
 const CheckoutPage = () => {
+  const PHONE_NUMBER_LENGTH = 10;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,6 +57,20 @@ const CheckoutPage = () => {
     }
   }, [success, navigate]);
 
+  const formatPhoneNumber = (value) => {
+    const digits = value.replace(/\D/g, "").slice(0, PHONE_NUMBER_LENGTH);
+
+    if (digits.length <= 3) {
+      return digits.length ? `(${digits}` : "";
+    }
+
+    if (digits.length <= 6) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    }
+
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
+
   const formik = useFormik({
     initialValues: {
       first_name: "",
@@ -74,7 +89,12 @@ const CheckoutPage = () => {
       first_name: Yup.string().required("First name is required"),
       last_name: Yup.string().required("Last name is required"),
       email: Yup.string().email("Invalid email").required("Email is required"),
-      phone: Yup.string().required("Phone number is required"),
+      phone: Yup.string()
+        .required("Phone number is required")
+        .matches(
+          /^\(\d{3}\) \d{3}-\d{4}$/,
+          "Phone number must be in (123) 456-7890 format",
+        ),
       address: Yup.string().required("Address is required"),
       city: Yup.string().required("City is required"),
       state: Yup.string().required("State is required"),
@@ -396,11 +416,15 @@ const CheckoutPage = () => {
                 <div className="field">
                   <input
                     className={`input ${formik.touched.phone && formik.errors.phone ? "error" : ""}`}
-                    type="text"
+                    type="tel"
                     name="phone"
                     placeholder="Phone Number"
+                    inputMode="numeric"
+                    maxLength={14}
                     value={formik.values.phone}
-                    onChange={formik.handleChange}
+                    onChange={(e) =>
+                      formik.setFieldValue("phone", formatPhoneNumber(e.target.value))
+                    }
                     onBlur={formik.handleBlur}
                   />
                   {getFieldError("phone")}

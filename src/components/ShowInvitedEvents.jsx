@@ -10,6 +10,8 @@ import {
   declineInvite,
 } from "../Redux/Reducers/eventSlice";
 
+const DEFAULT_EVENT_IMAGE = "/Images/events-detail-image.png";
+
 const ShowInvitedEvents = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -126,7 +128,8 @@ const ShowInvitedEvents = () => {
                     <img
                       src={
                         invite.event.image_url ||
-                        "/Images/default-event.png"
+                        invite.event.image ||
+                        DEFAULT_EVENT_IMAGE
                       }
                       alt={invite.event.name || "Event"}
                     />

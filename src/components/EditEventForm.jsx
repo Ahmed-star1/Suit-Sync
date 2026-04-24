@@ -41,7 +41,7 @@ const EditEventForm = () => {
     date: Yup.string().required("Event date is required"),
     location: Yup.string().required("Event location is required"),
     image: Yup.mixed()
-      .required("Image is required")
+      .nullable()
       .test(
         "fileType",
         "Image must be PNG, JPG or JPEG format",
@@ -49,7 +49,7 @@ const EditEventForm = () => {
           if (value && value instanceof File) {
             return ["image/png", "image/jpeg", "image/jpg"].includes(value.type);
           }
-          return !!value;
+          return true;
         }
       )
       .test(
@@ -59,7 +59,7 @@ const EditEventForm = () => {
           if (value && value instanceof File) {
             return value.size <= 100 * 1024 * 1024;
           }
-          return !!value;
+          return true;
         }
       ),
   });
@@ -144,17 +144,8 @@ const EditEventForm = () => {
   };
 
   const handleNext = async (values, { setSubmitting, setErrors }) => {
-
-    // image validation start
-    const hasExistingImage = Boolean(imagePreview);
     const hasNewImageFile = eventImageFile instanceof File;
-    
-    if (!hasExistingImage && !hasNewImageFile) {
-      setErrors({ image: "Event image is required" });
-      setSubmitting(false);
-      return;
-    }
-    
+
     if (hasNewImageFile) {
       if (eventImageFile.size > MAX_IMAGE_SIZE) {
         setErrors({ image: "Image size must be less than 5MB" });
@@ -182,9 +173,11 @@ const EditEventForm = () => {
       date: values.date || "",
       location: values.location || "",
       description: values.description || "",
-      image: eventImageFile_base64 || imagePreview || "",
       event_member: location?.state?.event?.event_member || [],
     };
+    if (eventImageFile_base64) {
+      updatedEvent.image = eventImageFile_base64;
+    }
 
     dispatch(setInProgressEvent(updatedEvent));
 
@@ -272,6 +265,8 @@ const EditEventForm = () => {
                     value={values.date}
                     onChange={(e) => setFieldValue("date", e.target.value)}
                     onBlur={() => setFieldTouched("date", true)}
+                    onKeyDown={(e) => e.preventDefault()}
+                    onPaste={(e) => e.preventDefault()}
                   />
                   {touched.date && errors.date && (
                     <div className="text-danger">{errors.date}</div>

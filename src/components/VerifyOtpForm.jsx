@@ -6,7 +6,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
-import { verifyOtp } from "../Redux/Reducers/authSlice";
+import { verifyOtp, resendOtp } from "../Redux/Reducers/authSlice";
 
 const OtpSchema = Yup.object().shape({
   otp: Yup.number()
@@ -54,6 +54,16 @@ const VerifyOtpForm = () => {
     } else {
       navigate("/events");
     }
+  };
+
+  const handleResendOtp = () => {
+    if (!emailToUse) return;
+
+    dispatch(
+      resendOtp({
+        email: emailToUse,
+      }),
+    );
   };
 
   return (
@@ -112,6 +122,17 @@ const VerifyOtpForm = () => {
               </Form>
             )}
           </Formik>
+        </div>
+        <div className="auth-link">
+          <p>Don't get a code 
+            <button
+            type="button"
+            disabled={loading}
+            onClick={handleResendOtp}
+          >
+            {loading ? "Loading..." : "Send Again"}
+          </button>
+          </p>
         </div>
       </div>
     </>

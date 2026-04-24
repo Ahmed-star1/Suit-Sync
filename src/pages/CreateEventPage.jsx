@@ -3,6 +3,7 @@ import Header from "../components/header";
 import Footer from "../components/footer";
 import LeftColumnTabs from "../components/LeftColumnTabs";
 import CreateEventForm from "../components/CreateEventForm";
+import FreeTapeModal from "../components/FreeTapeModal";
 
 const CreatEventPage = () => {
   return (
@@ -16,6 +17,7 @@ const CreatEventPage = () => {
           </div>
         </div>
       </section>
+      <FreeTapeModal shouldShow={true} />
       <Footer />
     </div>
   );

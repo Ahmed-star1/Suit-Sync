@@ -8,6 +8,7 @@ import { createEvent, addMemberToInProgressEvent, removeMemberFromInProgressEven
 import Loader from "../components/Loader";
 
 const AddEventMember = () => {
+  const PHONE_NUMBER_LENGTH = 10;
   const [event_member, setMembersList] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeRoleDropdown, setActiveRoleDropdown] = useState(null);
@@ -21,7 +22,13 @@ const AddEventMember = () => {
   const { loading, events } = useSelector((state) => state.events);
   const inProgressEvent = useSelector((state) => state.events.inProgressEvent);
 
-  const roleOptions = [{ value: "groomsmen", label: "Groomsmen" }];
+  const roleOptions = [
+    { value: "Groomsman", label: "Groomsman" },
+    { value: "Father of Groom", label: "Father of Groom" },
+    { value: "Father of Bride", label: "Father of Bride" },
+    { value: "Best Man", label: "Best Man" },
+    { value: "Best Person", label: "Best Person" },
+  ];
 
   useEffect(() => {
     if (inProgressEvent) {
@@ -82,6 +89,20 @@ const AddEventMember = () => {
       reader.onerror = reject;
     });
 
+  const formatPhoneNumber = (value) => {
+    const digits = value.replace(/\D/g, "").slice(0, PHONE_NUMBER_LENGTH);
+
+    if (digits.length <= 3) {
+      return digits.length ? `(${digits}` : "";
+    }
+
+    if (digits.length <= 6) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    }
+
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
+
   const validationSchema = Yup.object({
     role: Yup.string().required("Role is required"),
 
@@ -91,7 +112,10 @@ const AddEventMember = () => {
 
     phone: Yup.string()
       .required("Phone is required")
-      .max(20, "Max 20 characters"),
+      .matches(
+        /^\(\d{3}\) \d{3}-\d{4}$/,
+        "Phone number must be in (123) 456-7890 format",
+      ),
 
     email: Yup.string()
       .required("Email is required")
@@ -146,14 +170,19 @@ const AddEventMember = () => {
   };
 
   const handleCreateEvent = async () => {
-    if (!inProgressEvent || (!inProgressEvent.image && !inProgressEvent.imageFile)) return;
+    if (!inProgressEvent) return;
+
+    const eventPayload = {
+      ...inProgressEvent,
+      event_member,
+    };
+
+    if (inProgressEvent.image || inProgressEvent.imageFile) {
+      eventPayload.image = inProgressEvent.image || inProgressEvent.imageFile;
+    }
 
     const result = await dispatch(
-      createEvent({
-        ...inProgressEvent,
-        image: inProgressEvent.image || inProgressEvent.imageFile,
-        event_member,
-      }),
+      createEvent(eventPayload),
     );
 
     if (result.meta.requestStatus === "fulfilled") {
@@ -317,6 +346,15 @@ const AddEventMember = () => {
                             type="tel"
                             name="phone"
                             placeholder="000-000-0000"
+                            inputMode="numeric"
+                            maxLength={14}
+                            value={values.phone}
+                            onChange={(e) =>
+                              setFieldValue(
+                                "phone",
+                                formatPhoneNumber(e.target.value),
+                              )
+                            }
                           />
                           <ErrorMessage
                             name="phone"

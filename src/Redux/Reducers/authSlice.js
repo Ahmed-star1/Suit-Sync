@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   verifyOtpService,
+  resendOtpService,
   registerService,
   loginService,
   forgetPasswordService,
@@ -38,6 +39,19 @@ export const verifyOtp = createAsyncThunk(
         setAccessToken(token);
       }
 
+      return response;
+    } catch (error) {
+      return rejectWithValue(error?.response?.data);
+    }
+  }
+);
+
+// RESEND OTP THUNK
+export const resendOtp = createAsyncThunk(
+  "auth/resendOtp",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await resendOtpService(payload);
       return response;
     } catch (error) {
       return rejectWithValue(error?.response?.data);
@@ -196,6 +210,20 @@ const authSlice = createSlice({
         }
       })
       .addCase(verifyOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // ---------------- RESEND OTP CASES ----------------
+      .addCase(resendOtp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resendOtp.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(resendOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

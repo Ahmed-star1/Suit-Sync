@@ -2,6 +2,7 @@ export const API_ENDPOINTS = Object.freeze({
   
   REGISTER: "auth/register",
   VERIFY_OTP: "auth/verify-otp",
+  RESEND_OTP: "auth/resend-otp",
   LOGIN: "auth/login",
   FORGET_PASSWORD: "password/send-token",
   VERIFY_TOKEN: "password/verify-token",

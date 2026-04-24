@@ -56,8 +56,6 @@ export const createEventService = async (eventData) => {
       } else {
         throw new Error("Invalid image format");
       }
-    } else {
-      throw new Error("Event image is required");
     }
 
     const members = eventData.members || eventData.event_member || [];

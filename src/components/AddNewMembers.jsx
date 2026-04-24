@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 import { addNewMember } from "../Redux/Reducers/eventSlice";
 
 const AddNewMember = () => {
+  const PHONE_NUMBER_LENGTH = 10;
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -17,7 +18,13 @@ const AddNewMember = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
 
-  const roleOptions = [{ value: "groomsmen", label: "Groomsmen" }];
+  const roleOptions = [
+    { value: "Groomsman", label: "Groomsman" },
+    { value: "Father of Groom", label: "Father of Groom" },
+    { value: "Father of Bride", label: "Father of Bride" },
+    { value: "Best Man", label: "Best Man" },
+    { value: "Best Person", label: "Best Person" },
+  ];
 
   useEffect(() => {
     if (!eventId) {
@@ -39,11 +46,30 @@ const AddNewMember = () => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  const formatPhoneNumber = (value) => {
+    const digits = value.replace(/\D/g, "").slice(0, PHONE_NUMBER_LENGTH);
+
+    if (digits.length <= 3) {
+      return digits.length ? `(${digits}` : "";
+    }
+
+    if (digits.length <= 6) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    }
+
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
+
   const validationSchema = Yup.object({
     name: Yup.string().required("Name is required"),
     role: Yup.string().required("Role is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
-    phone: Yup.string().required("Phone is required"),
+    phone: Yup.string()
+      .required("Phone is required")
+      .matches(
+        /^\(\d{3}\) \d{3}-\d{4}$/,
+        "Phone number must be in (123) 456-7890 format",
+      ),
     image: Yup.mixed()
       .nullable()
       .test("fileType", "Only PNG, JPG or JPEG allowed", (value) => {
@@ -234,6 +260,15 @@ const AddNewMember = () => {
                         type="tel"
                         name="phone"
                         placeholder="000-000-0000"
+                        inputMode="numeric"
+                        maxLength={14}
+                        value={values.phone}
+                        onChange={(e) =>
+                          setFieldValue(
+                            "phone",
+                            formatPhoneNumber(e.target.value),
+                          )
+                        }
                       />
                       <ErrorMessage
                         name="phone"

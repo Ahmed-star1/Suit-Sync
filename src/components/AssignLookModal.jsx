@@ -298,7 +298,8 @@ const AssignLookModal = ({ isOpen, onClose, order }) => {
                                   <img
                                     src={
                                       event.image_url ||
-                                      "/Images/default-event.png"
+                                      event.image ||
+                                      "/Images/events-detail-image.png"
                                     }
                                     alt={event.name || event.title}
                                     onError={(e) => {

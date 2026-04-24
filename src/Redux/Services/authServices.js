@@ -21,6 +21,16 @@ export const verifyOtpService = (data) => {
   });
 };
 
+// Resend OTP
+export const resendOtpService = (data) => {
+  return fetchApi({
+    method: "POST",
+    endPoint: API_ENDPOINTS.RESEND_OTP,
+    token: false,
+    data,
+  });
+};
+
 // Login 
 export const loginService = async (payload) => {
   return await fetchApi({

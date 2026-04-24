@@ -16,6 +16,7 @@ import Loader from "../components/Loader";
 import { base64ToFile } from "../Redux/Utils/helper";
 
 const EditEventMembers = () => {
+  const PHONE_NUMBER_LENGTH = 10;
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,7 +37,11 @@ const EditEventMembers = () => {
   const inProgressEvent = useSelector((state) => state.events.inProgressEvent);
 
   const roleOptions = [
-    { value: "groomsmen", label: "Groomsmen" },
+    { value: "Groomsman", label: "Groomsman" },
+    { value: "Father of Groom", label: "Father of Groom" },
+    { value: "Father of Bride", label: "Father of Bride" },
+    { value: "Best Man", label: "Best Man" },
+    { value: "Best Person", label: "Best Person" },
   ];
 
   useEffect(() => {
@@ -67,7 +72,13 @@ const EditEventMembers = () => {
 
       if (currentEvent) {
         setCurrentEventId(currentEvent.id);
-        const members = currentEvent.members || currentEvent.event_member || [];
+        const members =
+          Array.isArray(inProgressEvent?.event_member) &&
+          inProgressEvent.event_member.length > 0
+            ? inProgressEvent.event_member
+            : currentEvent.members ||
+              currentEvent.event_member ||
+              [];
         const normalizedMembers = members.map((member) => ({
           ...member,
           image: member.image || member.image_url,
@@ -75,11 +86,13 @@ const EditEventMembers = () => {
         }));
         setMembersList(normalizedMembers);
 
-        // Always set inProgressEvent from latest API data
-        dispatch(setInProgressEvent({
-          ...currentEvent,
-          event_member: normalizedMembers
-        }));
+        dispatch(
+          setInProgressEvent({
+            ...currentEvent,
+            ...inProgressEvent,
+            event_member: normalizedMembers,
+          }),
+        );
       }
     }
   }, [events, id, dispatch]);
@@ -109,10 +122,29 @@ const EditEventMembers = () => {
     return () => document.removeEventListener("click", handleDocClick);
   }, []);
 
+  const formatPhoneNumber = (value) => {
+    const digits = value.replace(/\D/g, "").slice(0, PHONE_NUMBER_LENGTH);
+
+    if (digits.length <= 3) {
+      return digits.length ? `(${digits}` : "";
+    }
+
+    if (digits.length <= 6) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    }
+
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
+
   const validationSchema = Yup.object({
     role: Yup.string().required("Role is required"),
     name: Yup.string().required("Member name is required"),
-    phone: Yup.string().required("Phone is required"),
+    phone: Yup.string()
+      .required("Phone is required")
+      .matches(
+        /^\(\d{3}\) \d{3}-\d{4}$/,
+        "Phone number must be in (123) 456-7890 format",
+      ),
     email: Yup.string()
       .email("Invalid email format")
       .required("Email is required"),
@@ -213,7 +245,7 @@ const EditEventMembers = () => {
     setEditingInitialValues({
       role: member.role || "",
       name: member.name || "",
-      phone: member.phone || "",
+      phone: formatPhoneNumber(member.phone || ""),
       email: member.email || "",
       image: img,
     });
@@ -419,7 +451,7 @@ const EditEventMembers = () => {
                                 }}
                               >
                                 <span className="selected-value">
-                                  {roleOptions.find(opt => opt.value === values.role)?.label || "Select Role"}
+                                  {roleOptions.find(opt => opt.value === values.role)?.label || values.role || "Select Role"}
                                 </span>
                                 <i className="fa-solid fa-chevron-down"></i>
                               </div>
@@ -471,6 +503,15 @@ const EditEventMembers = () => {
                             type="tel"
                             name="phone"
                             placeholder="000-000-0000"
+                            inputMode="numeric"
+                            maxLength={14}
+                            value={values.phone}
+                            onChange={(e) =>
+                              setFieldValue(
+                                "phone",
+                                formatPhoneNumber(e.target.value),
+                              )
+                            }
                           />
                           <ErrorMessage
                             name="phone"

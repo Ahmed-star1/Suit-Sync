@@ -94,9 +94,11 @@ const CreateEventForm = () => {
       date: values.date,
       location: values.location,
       description: values.description,
-      image: imagePreview, // Only serializable value
       event_member: []
     };
+    if (imagePreview) {
+      eventData.image = imagePreview;
+    }
     dispatch(setInProgressEvent(eventData));
   };
 
@@ -124,7 +126,6 @@ const CreateEventForm = () => {
       .required("Event location is required"),
 
     image: Yup.mixed()
-      .required("Image is required")
       .test(
         "fileType",
         "Image must be PNG, JPG or JPEG format",
@@ -132,7 +133,7 @@ const CreateEventForm = () => {
           if (value && value instanceof File) {
             return ["image/png", "image/jpeg", "image/jpg"].includes(value.type);
           }
-          return !!value;
+          return true;
         }
       )
       .test(
@@ -142,7 +143,7 @@ const CreateEventForm = () => {
           if (value && value instanceof File) {
             return value.size <= 100 * 1024 * 1024;
           }
-          return !!value;
+          return true;
         }
       ),
   });
@@ -218,6 +219,8 @@ const CreateEventForm = () => {
                     type="date"
                     name="date"
                     min={new Date().toISOString().split("T")[0]}
+                    onKeyDown={(e) => e.preventDefault()}
+                    onPaste={(e) => e.preventDefault()}
                   />
                   <ErrorMessage name="date" component="div" className="text-danger" />
                 </div>

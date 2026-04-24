@@ -527,7 +527,7 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .right-form-column .box .row a{color: #000; font-size: 16px; font-weight: 500;}
 .right-form-column .box .designBtn2{width: 100%;}
 .right-form-column .auth-link p{color: #000; font-size: 16px; font-weight: 400; text-align: center; margin-top: 50px;}
-.right-form-column .auth-link p a{color: #000; font-weight: 600; font-size: 16px; transition: .5s;}
+.right-form-column .auth-link p button{color: #000; font-weight: 600; font-size: 16px; transition: .5s; background: transparent; border:none; padding: 0px; margin-left: 10px;}
 .right-form-column a:hover{color: #757575 !important;}
 .right-form-column .input-group{display: flex; gap: 20px;}
 .right-form-column .input-group .input-field{width: 48%;}
@@ -733,7 +733,7 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .shiping-modal h3{color: #000; font-size: 35px !important; text-transform: uppercase; text-align: center;}
 .shiping-modal p{color: #000; text-align: center; margin-bottom: 30px !important;}
 .shiping-modal img{height: 200px;}
-.shiping-modal form{width: 70%; margin: 0px auto;}
+.shiping-modal form{width: 90%; margin: 0px auto;}
 .shiping-modal button{width: 100%; margin-top: 0px !important; border-radius: 10px !important;}
 .shiping-modal .close-btn{position: absolute; top:-10px; right: -10px; background: #fff !important; border-radius: 50% !important; border: 2px solid #000; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #000;}
 .designBtn2.disabled {opacity: 0.6; cursor: not-allowed; background-color: #000;}
@@ -1051,7 +1051,7 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
   .product-detail-page .product-actions button{padding: 8px 20px !important;}
   .product-detail-page .product-actions{flex-wrap: wrap;}
   .product-detail-page .add-to-cart-btn{width: 100%;}
-  .product-detail-page .product-actions .buttons button{padding: 8px 36px !important;}
+  .product-detail-page .product-actions .buttons button{padding: 8px 28px !important;}
 
   .trending-wrapper{padding-top: 40px !important; margin-top: 40px; padding-bottom: 30px !important;}
   .trending-wrapper h2{margin-bottom: 20px !important;}

@@ -8,6 +8,8 @@ import Loader from "../components/Loader";
 import FreeTapeModal from "../components/FreeTapeModal";
 import Swal from "sweetalert2";
 
+const DEFAULT_EVENT_IMAGE = "/Images/events-detail-image.png";
+
 const EventDetails = () => {
   const { eventId } = useParams();
   const location = useLocation();
@@ -128,13 +130,14 @@ const EventDetails = () => {
   const members = eventData.members || [];
   const looks = eventData.looks || [];
   const event = eventData.event;
+  const eventImage = event.image_url || event.image || DEFAULT_EVENT_IMAGE;
 
   return (
     <div className="event-details-container">
       <div
         data-aos="fade-up"
         className="event-banner"
-        style={{ backgroundImage: `url(${event.image_url})` }}
+        style={{ backgroundImage: `url(${eventImage})` }}
       >
         {isInvitedEvent && (
           <div className="invited-name">

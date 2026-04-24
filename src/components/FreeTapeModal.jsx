@@ -9,7 +9,13 @@ const FreeTapeModal = ({ shouldShow = true }) => {
   const dispatch = useDispatch();
   const [showModal, setShowModal] = useState(false);
   const [fadeIn, setFadeIn] = useState(false);
-  const [shippingAddress, setShippingAddress] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+  });
 
   const { tapeLoading, success } = useSelector((state) => state.tape);
 
@@ -58,26 +64,42 @@ const FreeTapeModal = ({ shouldShow = true }) => {
     setFadeIn(false);
     setTimeout(() => {
       setShowModal(false);
-      setShippingAddress("");
+      setFormData({
+        name: "",
+        address: "",
+        city: "",
+        state: "",
+        zip: "",
+      });
       document.body.style.overflow = "auto";
     }, 300);
   };
 
   const handleConfirm = async () => {
-    if (!shippingAddress.trim()) {
-      alert("Please enter your shipping address");
+    if (
+      !formData.name.trim() ||
+      !formData.address.trim() ||
+      !formData.city.trim() ||
+      !formData.state.trim() ||
+      !formData.zip.trim()
+    ) {
+      alert("All fields are required");
       return;
     }
 
     try {
-      await dispatch(
-        sendFreeTape({
-          address: shippingAddress,
-        })
-      ).unwrap();
+      await dispatch(sendFreeTape(formData)).unwrap();
     } catch (error) {
       alert(error || "Failed to send request. Please try again.");
     }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleOverlayClick = (e) => {
@@ -107,13 +129,61 @@ const FreeTapeModal = ({ shouldShow = true }) => {
         <img src="/Images/tailorTape.png" alt="Tailor's Tape" />
 
         <form onSubmit={(e) => e.preventDefault()}>
+          <div className="row">
+            <div className="form-group col-md-6">
+              <input
+                name="name"
+                className="input"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Enter your name"
+                type="text"
+                disabled={tapeLoading}
+              />
+            </div>
+            <div className="form-group col-md-6">
+              <input
+                name="city"
+                className="input"
+                value={formData.city}
+                onChange={handleInputChange}
+                placeholder="Enter your city"
+                type="text"
+                disabled={tapeLoading}
+              />
+            </div>
+          </div>
+          <div className="row">
+            <div className="form-group col-md-6">
+              <input
+                name="state"
+                className="input"
+                value={formData.state}
+                onChange={handleInputChange}
+                placeholder="Enter your state"
+                type="text"
+                disabled={tapeLoading}
+              />
+            </div>
+            <div className="form-group col-md-6">
+              <input
+                name="zip"
+                className="input"
+                value={formData.zip}
+                onChange={handleInputChange}
+                placeholder="Enter your zip code"
+                type="text"
+                disabled={tapeLoading}
+              />
+            </div>
+          </div>
           <div className="form-group">
             <input
-              id="shippingAddress"
+              name="address"
               className="input"
-              value={shippingAddress}
-              onChange={(e) => setShippingAddress(e.target.value)}
-              placeholder="Enter your complete shipping address"
+              value={formData.address}
+              onChange={handleInputChange}
+              placeholder="Enter your address"
               type="text"
               disabled={tapeLoading}
             />

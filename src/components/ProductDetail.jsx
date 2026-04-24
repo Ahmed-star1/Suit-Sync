@@ -1498,7 +1498,7 @@ const ProductDetail = ({ product }) => {
                     cursor: wishlistLoading ? "not-allowed" : "pointer"
                   }}
                 >
-                  {wishlistLoading ? "SAVING..." : "SAVE LOOK"}
+                  {wishlistLoading ? "SAVING..." : "ADD TO WISHLIST"}
                 </button>
                 <button className="designBtn" onClick={openModal}>
                   Assign Look
