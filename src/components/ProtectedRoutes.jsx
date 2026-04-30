@@ -12,4 +12,14 @@ const PrivateRoute = ({ children }) => {
   return children;
 };
 
+export const PublicRoute = ({ children }) => {
+  const token = getAccessToken();
+
+  if (token) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 export default PrivateRoute;

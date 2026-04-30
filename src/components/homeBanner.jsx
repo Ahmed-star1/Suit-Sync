@@ -23,9 +23,8 @@ const HomeBanner = () => {
               <br /> IN SYNC
             </h1>
             <p>
-              Managing suits for your groomsmen shouldn’t be a hassle. SuitSync
-              gives you full visibility<br/> into every member of your wedding party
-              — who's measured, who’s ordered, and what’s<br/> left to do — all in
+              Managing suits for your groomsman shouldn’t be a hassle. SuitSync
+              gives you full visibility<br/> into every member of your wedding party, who's measured, who’s ordered, and what’s<br/> left to do, all in
               one place.
             </p>
             <Link to={`/events`} className="designBtn">

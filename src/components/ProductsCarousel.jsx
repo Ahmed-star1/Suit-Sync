@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -12,6 +12,7 @@ import { getFeaturedProducts, getRelatedProducts } from "../Redux/Reducers/produ
 const TrendingStyles = ({ type = "featured", data = [], productId = null }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [slidesPerView, setSlidesPerView] = useState(4);
   
   const { featuredProducts, featuredLoading, relatedProducts, relatedProductsLoading } = useSelector((state) => state.products);
   
@@ -25,6 +26,23 @@ const TrendingStyles = ({ type = "featured", data = [], productId = null }) => {
       dispatch(getRelatedProducts(productId));
     }
   }, [dispatch, type, productId]);
+
+  useEffect(() => {
+    const getCurrentSlides = () => {
+      const width = window.innerWidth;
+      if (width >= 1280) return 4;
+      if (width >= 1024) return 3;
+      if (width >= 768) return 2;
+      if (width >= 480) return 1.5;
+      return 1;
+    };
+
+    const updateSlidesPerView = () => setSlidesPerView(getCurrentSlides());
+    updateSlidesPerView();
+
+    window.addEventListener("resize", updateSlidesPerView);
+    return () => window.removeEventListener("resize", updateSlidesPerView);
+  }, []);
 
   const handleDetailpage = (productId) => {
     navigate(`/shop/product/${productId}`);
@@ -75,16 +93,18 @@ const TrendingStyles = ({ type = "featured", data = [], productId = null }) => {
     return null;
   }
 
+  const showNavigation = displayData.length > slidesPerView;
+
   return (
     <section className="trending-wrapper" data-aos="fade-up">
       <h2>{heading}</h2>
       <div className="container">
         <Swiper
           modules={[Navigation]}
-          navigation={true}
+          navigation={showNavigation}
           slidesPerView={4}
           spaceBetween={30}
-          loop={true}
+          loop={showNavigation}
           className="trending-swiper"
           breakpoints={{
             0: { slidesPerView: 1 },

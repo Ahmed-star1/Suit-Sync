@@ -63,6 +63,18 @@ const ThankYouPage = () => {
     return methods[method] || method;
   };
 
+  const getOrderStatus = (status) => {
+    if (!status) return "";
+
+    const normalizedStatus = status.toString().trim().toLowerCase();
+
+    if (normalizedStatus === "delivered") {
+      return "Shipped";
+    }
+
+    return normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1);
+  };
+
   // Format price
   const formatPrice = (price) => {
     if (!price && price !== 0) return "$0.00";
@@ -390,6 +402,10 @@ const getSuitGroupSizeDetails = (item) => {
             <div className="order-info-item">
               <span className="label">Order Date:</span>
               <span className="value">{formatDate(order.created_at)}</span>
+            </div>
+            <div className="order-info-item">
+              <span className="label">Status:</span>
+              <span className="value">{getOrderStatus(order.status)}</span>
             </div>
           </div>
         </div>

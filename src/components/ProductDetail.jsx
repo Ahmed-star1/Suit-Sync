@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import {Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
@@ -890,20 +891,16 @@ const ProductDetail = ({ product }) => {
   };
 
   const isRentFormValid = () => {
-    if (!selectedShirtProduct || !selectedShirtSize) {
+    if (selectedShirtProduct && !selectedShirtSize) {
       return false;
     }
 
-    if (selectedType === "tie") {
-      if (!selectedTieProduct || !selectedTieSize) {
-        return false;
-      }
+    if (selectedType === "tie" && selectedTieProduct && !selectedTieSize) {
+      return false;
     }
 
-    if (selectedType === "bow") {
-      if (!selectedBowProduct || !selectedBowSize) {
-        return false;
-      }
+    if (selectedType === "bow" && selectedBowProduct && !selectedBowSize) {
+      return false;
     }
 
     if (selectedShoesProduct && !selectedShoesSize) {
@@ -2108,7 +2105,7 @@ const ProductDetail = ({ product }) => {
                     setAgreeToTerms(e.target.checked);}}
                 />
                 <label htmlFor="rentalAgreement">
-                  I agree to the terms, and I understand I need to return my
+                  I agree to the <Link to="/terms-and-conditions">terms</Link>, and I understand I need to return my
                   suit within X days.
                 </label>
               </div>

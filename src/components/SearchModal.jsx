@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
 import { getProductsService } from "../Redux/Services/productServices";
 
 const SearchModal = ({
@@ -9,15 +8,10 @@ const SearchModal = ({
   onSearchChange,
   onSearch,
 }) => {
-  const dispatch = useDispatch();
   const [searchResults, setSearchResults] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [isFetchingProducts, setIsFetchingProducts] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState("");
-
-  const { products, loading: productsLoading } = useSelector(
-    (state) => state.products,
-  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -122,15 +116,6 @@ const SearchModal = ({
     return "/Images/suit1.png";
   };
 
-  const shouldShowLoading = () => {
-    return (
-      debouncedQuery &&
-      debouncedQuery.trim() !== "" &&
-      allProducts.length === 0 &&
-      isFetchingProducts
-    );
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -153,11 +138,7 @@ const SearchModal = ({
         </div>
 
         <div className="search-results">
-          {shouldShowLoading() ? (
-            <div className="search-loading-state">
-              <p>Loading products...</p>
-            </div>
-          ) : searchResults.length > 0 ? (
+          {searchResults.length > 0 ? (
             searchResults.map((product) => (
               <div
                 key={product.id}

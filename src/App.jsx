@@ -2,11 +2,14 @@ import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ScrollProvider } from "./components/ScrollContext";
 import { useEventFlowCleanup } from "./hooks/useEventFlowCleanup";
-import ProtectedRoutes from "./components/ProtectedRoutes";
+import ProtectedRoutes, { PublicRoute } from "./components/ProtectedRoutes";
 import EventToggle from "./components/EventToggle";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import ContactUs from "./pages/ContactUs";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ReturnAndExchangePolicy from "./pages/ReturnAndExchangePolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
 import Shop from "./pages/Shop";
 import ShopDetailPage from "./pages/ShopDetailPage";
 import CartPage from "./pages/CartPage";
@@ -26,7 +29,6 @@ import MeasurementPage from "./pages/Measurement";
 // import EventLookPage from "./pages/EventLookPage";
 import MyOrdersPage from "./pages/MyOrdersPage";
 import SupportPage from "./pages/SupportPage";
-import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import CreateEventPage from "./pages/CreateEventPage";
 import AddEventMemberPage from "./pages/AddEventMemberPage";
 import EditEventMembersPage from "./pages/EditEventMembersPage";
@@ -45,6 +47,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about-us" element={<About />} />
         <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/return-exchange-policy" element={<ReturnAndExchangePolicy />} />
 
         {/* Ecommerce Pages */}
         <Route path="/shop" element={<Shop />} />
@@ -55,12 +60,12 @@ function App() {
         <Route path="/thank-you" element={<ThankyouPage />} />
 
         {/* Auth Pages */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/verify-otp" element={<VarifyOtp />} />
-        <Route path="/forget-password" element={<ForgetPassword />} />
-        <Route path="/verify-code" element={<VarifyCode />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+        <Route path="/verify-otp" element={<PublicRoute><VarifyOtp /></PublicRoute>} />
+        <Route path="/forget-password" element={<PublicRoute><ForgetPassword /></PublicRoute>} />
+        <Route path="/verify-code" element={<PublicRoute><VarifyCode /></PublicRoute>} />
+        <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
 
         <Route path="/my-account" element={<ProtectedRoutes><MyAccountPage /></ProtectedRoutes>} />
         <Route path="/change-password" element={<ProtectedRoutes><ChangePasswordPage /></ProtectedRoutes>} />
@@ -70,7 +75,6 @@ function App() {
         <Route path="/my-orders" element={<ProtectedRoutes><MyOrdersPage /></ProtectedRoutes>} />
         <Route path="/wishlist" element={<ProtectedRoutes><WishlistPage /></ProtectedRoutes>} />
         <Route path="/support" element={<ProtectedRoutes><SupportPage /></ProtectedRoutes>} />
-        <Route path="/privacy-policy" element={<ProtectedRoutes><PrivacyPolicyPage /></ProtectedRoutes>} />
         <Route path="/create-event" element={<ProtectedRoutes><CreateEventPage /></ProtectedRoutes>} />
         <Route path="/edit-event/:id" element={<ProtectedRoutes><EditEventPage /></ProtectedRoutes>} />
         <Route path="/add-event-member" element={<ProtectedRoutes><AddEventMemberPage /></ProtectedRoutes>} />

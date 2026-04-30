@@ -10,8 +10,9 @@ const Footer = () => {
   ];
 
   const supportLinks = [
-    { name: "Terms & Conditions", to: "#" },
-    { name: "Privacy Policy", to: "#" },
+    { name: "Terms & Conditions", to: "/terms-and-conditions" },
+    { name: "Return & Exchange Policy", to: "/return-exchange-policy" },
+    { name: "Privacy Policy", to: "/privacy-policy" },
     { name: "Contact Us", to: "/contact-us" },
   ];
 

@@ -167,6 +167,7 @@ header .mobile-menu-overlay, header .mobile-menu-toggle{display: none !important
 .trending-wrapper .trending-card {text-align: center;}
 .trending-wrapper .trending-card img{width: 100%; height: 380px; object-fit: cover;}
 .trending-wrapper .trending-card h3 {font-size: 20px; font-weight: 600; margin-top: 20px; color: #000;}
+/* .trending-wrapper .swiper-wrapper{justify-content: center;} */
 .trending-wrapper .swiper-button-next, .trending-wrapper .swiper-button-prev {transition:.5s; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; width: 55px; height: 55px;}
 .trending-wrapper .swiper-button-next{right: 30px !important;}
 .trending-wrapper .swiper-button-prev{left: 30px !important;}
@@ -284,9 +285,9 @@ header .mobile-menu-overlay, header .mobile-menu-toggle{display: none !important
 .product-detail-page header{position: relative; border-bottom: 1px solid #F0F0F0;}
 .product-detail-page footer{margin-top: 0px;}
 .product-detail-page .product-detail-container{margin-top: 50px;}
-.product-detail-page .main-image img {object-fit: cover; object-position: top; width: 100%; height: 610px;}
+.product-detail-page .main-image img {object-fit: cover; object-position: top; width: 100%;}
 .product-detail-page .image-gallery {margin-top: 10px;}
-.product-detail-page .image-gallery img {width: 100%; height: 100px; object-fit: cover;cursor: pointer;border: 2px solid transparent; transition: .5s;}
+.product-detail-page .image-gallery img {width: 100%; object-fit: cover;cursor: pointer;border: 2px solid transparent; transition: .5s;}
 .product-detail-page .image-gallery img.active, .image-gallery img:hover {border-color: #000;}
 .product-detail-page .product-title {font-size: 42px; font-weight: 800; line-height: 50px;text-transform: uppercase; color: #000000; border-bottom: 1px solid #DBDBDB; padding-bottom: 20px; margin-bottom: 30px;}
 .product-detail-page .product-detail-container h5 {font-size: 18px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; color: #000;}
@@ -920,6 +921,61 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .modal-assign-left{background: #000; border-radius: 20px; display: flex; align-items: center; justify-content: center;}
 
 
+/* Return & Exchange Policy */
+.return-policy-page header{position: relative; border-bottom: 1px solid #f0f0f0;}
+.return-policy-page footer{margin-top: 0px !important;}
+.simple-policy-section{padding: 70px 0; background: #f7f7f7;}
+.simple-policy-card{
+  max-width: 980px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+.simple-policy-section h2{color: #000;}
+.simple-policy-date{
+  color: #555 !important;
+  margin-bottom: 10px;
+}
+.simple-policy-card p,
+.simple-policy-card li{
+  color: #555;
+  font-size: 16px;
+  line-height: 28px;
+  margin-bottom: 10px !important;
+}
+.simple-policy-card a{
+  color: #000;
+  font-size: 16px;
+  font-weight: 600;
+}
+.simple-policy-block{
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 1px solid #ececec;
+}
+.simple-policy-block.no-border{
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+.simple-policy-block h3{
+  color: #000;
+  font-size: 30px;
+  line-height: 38px;
+  margin-bottom: 8px;
+}
+.simple-policy-block ul,
+.simple-policy-block ol{
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+.simple-policy-block li{
+  margin-bottom: 10px;
+}
+
 /* Responsive  */
 @media (max-width: 768px) {
 
@@ -1211,6 +1267,12 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
   .assign-modal-wrapper .modal-buttons{margin-top: 34px !important;}
 
   .support .buttons-row, .support p, .privacy-text{margin-top: 20px !important;}
+
+  .simple-policy-section{padding: 40px 0 !important;}
+  .simple-policy-card{padding: 24px 18px !important; border-radius: 18px !important;}
+  .simple-policy-card h1, .simple-policy-card h2{font-size: 34px !important; line-height: 42px !important;}
+  .simple-policy-block{margin-top: 22px !important; padding-top: 22px !important;}
+  .simple-policy-block h2, .simple-policy-block h3{font-size: 24px !important; line-height: 32px !important;}
 
   /* Logout Modal */
   .logout-modal img{width: 90px !important; margin-bottom: 20px !important;}

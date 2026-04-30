@@ -188,8 +188,8 @@ const RightColumn = () => {
                     }
                   />
                   <label htmlFor="acceptTerms">
-                    By creating an account on SuitSync, you agree to the Terms &
-                    Conditions and Privacy Policy
+                    By creating an account on SuitSync, you agree to the<br/> <Link to="/terms-and-conditions">Terms &
+                    Conditions</Link> and <Link to="/privacy-policy">Privacy Policy</Link>
                   </label>
                 </div>
 
