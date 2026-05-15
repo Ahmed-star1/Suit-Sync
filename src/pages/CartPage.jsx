@@ -148,8 +148,43 @@ const CartPage = () => {
     ? cart
     : cart?.cart_items || [];
 
+  const normalizeColorText = (value) =>
+    value?.toString().toLowerCase().replace(/[^a-z0-9]/g, "") || "";
+
   const getProductImage = (item) => {
-    const product = item.product;
+    const displayItem = item.items?.length ? item.items[0] : item;
+    const product = displayItem?.product || item.product;
+    const itemColorValues = [
+      displayItem?.color,
+      displayItem?.color_code,
+      item?.color,
+      item?.color_code,
+    ]
+      .map(normalizeColorText)
+      .filter(Boolean);
+
+    if (product?.images?.length && itemColorValues.length) {
+      const matchedImage = product.images.find((img) => {
+        const imageColorValues = [
+          img.color,
+          img.color_name,
+          img.color_key,
+          img.name,
+          img.alt,
+          img.title,
+          img.image_url,
+        ]
+          .map(normalizeColorText)
+          .filter(Boolean);
+
+        return itemColorValues.some((colorValue) =>
+          imageColorValues.some((imageValue) => imageValue.includes(colorValue)),
+        );
+      });
+
+      if (matchedImage?.image_url) return matchedImage.image_url;
+    }
+
     if (product?.primary_image_url) return product.primary_image_url;
     if (product?.images?.length) {
       const primaryImage = product.images.find((img) => img.is_primary);
@@ -158,37 +193,54 @@ const CartPage = () => {
     return "/Images/suit1.png";
   };
 
-  const getProductPrice = (item) => {
-    let basePrice = 0;
-    let quantity = 1;
-
-    if (item.items && item.items.length > 0) {
-      const firstItem = item.items[0];
-      const product = firstItem?.product;
-      const buyType = firstItem?.buy_type;
-      quantity = firstItem?.quantity || 1;
-
-      if (buyType === "buy") {
-        basePrice = product?.buy_price || 0;
-      } else if (buyType === "rent") {
-        basePrice = product?.rent_price || 0;
-      }
-    } else {
-      const product = item.product;
-      const buyType = item.buy_type;
-      quantity = item.quantity || 1;
-
-      if (buyType === "buy") {
-        basePrice = product?.buy_price || 0;
-      } else if (buyType === "rent") {
-        basePrice = product?.rent_price || 0;
-      }
+  const getSingleItemPrice = (item) => {
+    if (item?.override_price !== null && item?.override_price !== undefined) {
+      return parseFloat(item.override_price) || 0;
     }
-    
-    return basePrice * quantity;
+
+    const product = item?.product;
+    const buyType = item?.buy_type;
+
+    if (buyType === "buy") {
+      return parseFloat(product?.buy_price) || 0;
+    }
+
+    if (buyType === "rent") {
+      return parseFloat(product?.rent_price) || 0;
+    }
+
+    return 0;
   };
 
-  const getProductBuyType = (item) => item.items?.length ? item.items[0]?.buy_type : item.buy_type;
+  const getProductPrice = (item) => {
+    if (item.items && item.items.length > 0) {
+      return item.items.reduce((sum, nestedItem) => {
+        const quantity = nestedItem?.quantity || 1;
+        return sum + getSingleItemPrice(nestedItem) * quantity;
+      }, 0);
+    }
+
+    return getSingleItemPrice(item) * (item.quantity || 1);
+  };
+
+  const getProductBuyType = (item) => {
+    const displayItem = item.items?.length ? item.items[0] : item;
+
+    if (
+      displayItem?.override_price !== null &&
+      displayItem?.override_price !== undefined &&
+      parseFloat(displayItem.override_price) === 0
+    ) {
+      return "rent";
+    }
+
+    return displayItem?.buy_type;
+  };
+
+  const getProductColor = (item) => {
+    const displayItem = item.items?.length ? item.items[0] : item;
+    return displayItem?.color || displayItem?.color_code || "";
+  };
 
   const formatPrice = (price) => {
     if (!price || price === 0) return "$0.00";
@@ -197,36 +249,7 @@ const CartPage = () => {
 
   const getProductName = (item) => item.product?.name || "Product";
 
-  const total = cartItems.reduce((sum, item) => {
-    if (item.items && item.items.length > 0) {
-      const firstItem = item.items[0];
-      const product = firstItem?.product;
-      const buyType = firstItem?.buy_type;
-      const quantity = firstItem?.quantity || 1;
-      
-      let price = 0;
-      if (buyType === "buy") {
-        price = product?.buy_price || 0;
-      } else if (buyType === "rent") {
-        price = product?.rent_price || 0;
-      }
-      
-      return sum + (price * quantity);
-    } else {
-      const product = item.product;
-      const buyType = item.buy_type;
-      const quantity = item.quantity || 1;
-      
-      let price = 0;
-      if (buyType === "buy") {
-        price = product?.buy_price || 0;
-      } else if (buyType === "rent") {
-        price = product?.rent_price || 0;
-      }
-      
-      return sum + (price * quantity);
-    }
-  }, 0);
+  const total = cartItems.reduce((sum, item) => sum + getProductPrice(item), 0);
 
   const getProductQuantity = (item) => {
     if (item.items && item.items.length > 0) {
@@ -297,6 +320,7 @@ const CartPage = () => {
 
                             <p className="item-price">
                               {getProductBuyType(item) === "buy" ? "Buy" : "Rent"} : {formatPrice(price)}
+                              {getProductColor(item) && ` | Color: ${getProductColor(item)}`}
                             </p>
 
                             {getProductBuyType(item) === "buy" && (

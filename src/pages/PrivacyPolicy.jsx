@@ -231,9 +231,6 @@ const PrivacyPolicy = () => {
                 <br />
                 SuitSync Inc.
                 <br />
-                [Insert Address]
-                <br />
-                [Insert City, State ZIP]
               </p>
             </div>
           </div>

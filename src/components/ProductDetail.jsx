@@ -10,6 +10,7 @@ import SizeChartModal from "../components/SizeChartModal";
 import AssignLookModal from "../components/AssignLookModal";
 import { getProductsService } from "../Redux/Services/productServices";
 import { addToCart, getMeasurements, addToWishlist, getWishlistCount, setSelectedProductForLook, clearSelectedProductForLook } from "../Redux/Reducers/productSlice";
+import { getEvents } from "../Redux/Reducers/eventSlice";
 import Swal from "sweetalert2";
 
 const ProductDetail = ({ product }) => {
@@ -17,6 +18,7 @@ const ProductDetail = ({ product }) => {
   const dispatch = useDispatch();
 
   const { measurements: savedMeasurements, wishlistLoading } = useSelector((state) => state.products || {});
+  const { events = [], loading: eventsLoading } = useSelector((state) => state.events || {});
 
   // UI State
   const [tabState, setTabState] = useState(false);
@@ -30,6 +32,7 @@ const ProductDetail = ({ product }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const isCartSubmittingRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -39,6 +42,7 @@ const ProductDetail = ({ product }) => {
 
   // Product Selection State
   const [selectedPriceType, setSelectedPriceType] = useState("");
+  const [selectedColorKey, setSelectedColorKey] = useState("");
   const [coatSizeTypes, setCoatSizeTypes] = useState([]);
   const [pantSizeTypes, setPantSizeTypes] = useState([]);
   const [coatMeasurementData, setCoatMeasurementData] = useState([]);
@@ -71,6 +75,12 @@ const ProductDetail = ({ product }) => {
   const [selectedTieSize, setSelectedTieSize] = useState("");
   const [selectedBowSize, setSelectedBowSize] = useState("");
   const [selectedShoesSize, setSelectedShoesSize] = useState("");
+  const [selectedShirtColorKey, setSelectedShirtColorKey] = useState("");
+  const [selectedTieColorKey, setSelectedTieColorKey] = useState("");
+  const [selectedBowColorKey, setSelectedBowColorKey] = useState("");
+  const [selectedShoesColorKey, setSelectedShoesColorKey] = useState("");
+  const [selectedRentDate, setSelectedRentDate] = useState("");
+  const [selectedRentEvent, setSelectedRentEvent] = useState(null);
 
   // Available sizes for each product type
   const [shirtAvailableSizes, setShirtAvailableSizes] = useState([]);
@@ -92,6 +102,44 @@ const ProductDetail = ({ product }) => {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   const standardSizeCategories = ["bow-ties", "pocket-square", "socks"];
+
+  const getBuyGroup = (prod, priceType = selectedPriceType) => {
+    if (!prod?.buy_type_groups?.length) return null;
+
+    if (priceType) {
+      const matchedGroup = prod.buy_type_groups.find(
+        (group) => group?.type?.toString().toLowerCase() === priceType.toLowerCase(),
+      );
+      if (matchedGroup) return matchedGroup;
+    }
+
+    return (
+      prod.buy_type_groups.find((group) => group?.colors?.length) ||
+      prod.buy_type_groups[0]
+    );
+  };
+
+  const getColorKey = (color, index) => {
+    const colorIdentity = [color?.color_code, color?.color]
+      .filter((value) => value !== undefined && value !== null)
+      .join("-");
+
+    return colorIdentity || `color-${index}`;
+  };
+
+  const productColors = getBuyGroup(product)?.colors || [];
+  const selectedColor =
+    productColors.find((color, index) => getColorKey(color, index) === selectedColorKey) ||
+    productColors[0] ||
+    null;
+  const selectedProductColorValue =
+    selectedColor?.color ||
+    selectedColor?.color_code ||
+    product?.color_name ||
+    product?.color_code ||
+    selectedColor?.buy_style ||
+    selectedColor?.rent_style ||
+    "Default";
 
   // Fetch category IDs on component mount
   useEffect(() => {
@@ -230,92 +278,235 @@ const ProductDetail = ({ product }) => {
     return "/Images/suit1.png";
   };
 
-  // Helper function to extract sizes from product variants
-  const getProductSizes = (product, productType) => {
-    if (!product || !product.variants || !Array.isArray(product.variants)) {
-      return [];
+  // Helper function to extract colors and sizes for addon products
+  const getProductColors = (addonProduct) => {
+    if (!addonProduct) return [];
+
+    if (addonProduct.variants?.length) {
+      const colorMap = new Map();
+
+      addonProduct.variants.forEach((variant) => {
+        const colorKey = getColorKey(variant, colorMap.size);
+        const existingColor = colorMap.get(colorKey);
+
+        if (existingColor) {
+          existingColor.variants.push(variant);
+        } else {
+          colorMap.set(colorKey, {
+            color: variant.color,
+            color_code: variant.color_code,
+            buy_style: variant.buy_style,
+            rent_style: variant.rent_style,
+            variants: [variant],
+          });
+        }
+      });
+
+      return Array.from(colorMap.values());
     }
 
-    let sizes = [];
+    return getBuyGroup(addonProduct, "rent")?.colors || [];
+  };
 
-    if (productType === "shoes") {
-      // For shoes, use size_measurement
-      sizes = product.variants
-        .map((variant) => variant.size_measurement)
-        .filter((size) => size && size.trim() !== "")
-        .filter((value, index, self) => self.indexOf(value) === index);
-    } else {
-      // For shirts, ties, bows - use size_type
-      sizes = product.variants
-        .map((variant) => variant.size_type)
-        .filter((size) => size && size.trim() !== "")
-        .filter((value, index, self) => self.indexOf(value) === index);
+  const getSelectedAddonColor = (addonProduct, colorKey) => {
+    const colors = getProductColors(addonProduct);
+    return (
+      colors.find((color, index) => getColorKey(color, index) === colorKey) ||
+      colors[0] ||
+      null
+    );
+  };
+
+  const getAddonColorValue = (addonProduct, colorKey) => {
+    const color = getSelectedAddonColor(addonProduct, colorKey);
+    return (
+      color?.color ||
+      color?.color_code ||
+      addonProduct?.color_name ||
+      addonProduct?.color_code ||
+      color?.buy_style ||
+      color?.rent_style ||
+      "Default"
+    );
+  };
+
+  const getSelectedAddonVariant = (addonProduct, colorKey, selectedSize, productType) => {
+    const color = getSelectedAddonColor(addonProduct, colorKey);
+    if (!color?.variants?.length || !selectedSize) return null;
+
+    return (
+      color.variants.find((variant) => {
+        const variantSize =
+          productType === "shoes" ? variant.size_measurement : variant.size_type;
+        return variantSize?.toString() === selectedSize.toString();
+      }) || null
+    );
+  };
+
+  const getAddonBuyType = (addonProduct, colorKey, selectedSize, productType) => {
+    const selectedVariant = getSelectedAddonVariant(
+      addonProduct,
+      colorKey,
+      selectedSize,
+      productType,
+    );
+    const selectedColor = getSelectedAddonColor(addonProduct, colorKey);
+
+    return (
+      selectedVariant?.buy_type ||
+      selectedColor?.buy_type ||
+      addonProduct?.buy_type ||
+      "rent"
+    );
+  };
+
+  const getProductSizes = (addonProduct, productType, colorKey) => {
+    const color = getSelectedAddonColor(addonProduct, colorKey);
+    if (!color) return [];
+
+    if (color.variants?.length) {
+      const sizeMap = new Map();
+
+      color.variants.forEach((variant) => {
+        const sizeValue =
+          productType === "shoes" ? variant.size_measurement : variant.size_type;
+
+        if (!sizeValue) return;
+
+        const value = String(sizeValue);
+        const stock = variant.stock_quantity ?? 0;
+        const existingSize = sizeMap.get(value);
+
+        sizeMap.set(value, {
+          value,
+          stock: existingSize ? Math.max(existingSize.stock, stock) : stock,
+        });
+      });
+
+      return Array.from(sizeMap.values());
     }
 
-    return sizes;
+    if (productType === "shoes" && color.measurements?.length) {
+      return color.measurements.map((measurement) => ({
+        value: String(measurement.measurement || measurement.size || measurement.label || measurement),
+        stock: measurement.stock_quantity ?? 0,
+      }));
+    }
+
+    if (color.sizes?.length) {
+      return color.sizes.map((size) => ({
+        value: String(size.size_type || size.label || size.name || size.id || size),
+        stock: size.stock_quantity ?? 0,
+      }));
+    }
+
+    if (color.measurements?.length) {
+      return color.measurements.map((measurement) => ({
+        value: String(measurement.measurement || measurement.size || measurement.label || measurement),
+        stock: measurement.stock_quantity ?? 0,
+      }));
+    }
+
+    return [];
+  };
+
+  const syncAddonOptions = (
+    addonProduct,
+    productType,
+    selectedColorKey,
+    setSelectedColorKey,
+    setAvailableSizes,
+    setSelectedSize,
+  ) => {
+    if (!addonProduct) {
+      setSelectedColorKey("");
+      setAvailableSizes([]);
+      setSelectedSize("");
+      return;
+    }
+
+    const colors = getProductColors(addonProduct);
+    const hasSelectedColor = colors.some(
+      (color, index) => getColorKey(color, index) === selectedColorKey,
+    );
+    const nextColorKey = hasSelectedColor
+      ? selectedColorKey
+      : getColorKey(colors[0], 0);
+
+    if (!hasSelectedColor) {
+      setSelectedColorKey(nextColorKey);
+    }
+
+    const sizes = getProductSizes(addonProduct, productType, nextColorKey);
+    setAvailableSizes(sizes);
+    setSelectedSize((currentSize) =>
+      sizes.some((size) => size.value.toString() === currentSize.toString())
+        ? currentSize
+        : "",
+    );
   };
 
   // Update available sizes when product is selected
   useEffect(() => {
-    if (selectedShirtProduct) {
-      const sizes = getProductSizes(selectedShirtProduct, "shirt");
-      setShirtAvailableSizes(sizes);
-      setSelectedShirtSize("");
-    } else {
-      setShirtAvailableSizes([]);
-    }
-  }, [selectedShirtProduct]);
+    syncAddonOptions(
+      selectedShirtProduct,
+      "shirt",
+      selectedShirtColorKey,
+      setSelectedShirtColorKey,
+      setShirtAvailableSizes,
+      setSelectedShirtSize,
+    );
+  }, [selectedShirtProduct, selectedShirtColorKey]);
 
   useEffect(() => {
-    if (selectedTieProduct) {
-      const sizes = getProductSizes(selectedTieProduct, "tie");
-      setTieAvailableSizes(sizes);
-      setSelectedTieSize("");
-    } else {
-      setTieAvailableSizes([]);
-    }
-  }, [selectedTieProduct]);
+    syncAddonOptions(
+      selectedTieProduct,
+      "tie",
+      selectedTieColorKey,
+      setSelectedTieColorKey,
+      setTieAvailableSizes,
+      setSelectedTieSize,
+    );
+  }, [selectedTieProduct, selectedTieColorKey]);
 
   useEffect(() => {
-    if (selectedBowProduct) {
-      const sizes = getProductSizes(selectedBowProduct, "bow");
-      setBowAvailableSizes(sizes);
-      setSelectedBowSize("");
-    } else {
-      setBowAvailableSizes([]);
-    }
-  }, [selectedBowProduct]);
+    syncAddonOptions(
+      selectedBowProduct,
+      "bow",
+      selectedBowColorKey,
+      setSelectedBowColorKey,
+      setBowAvailableSizes,
+      setSelectedBowSize,
+    );
+  }, [selectedBowProduct, selectedBowColorKey]);
 
   useEffect(() => {
-    if (selectedShoesProduct) {
-      const sizes = getProductSizes(selectedShoesProduct, "shoes");
-      setShoesAvailableSizes(sizes);
-      setSelectedShoesSize("");
-    } else {
-      setShoesAvailableSizes([]);
-    }
-  }, [selectedShoesProduct]);
+    syncAddonOptions(
+      selectedShoesProduct,
+      "shoes",
+      selectedShoesColorKey,
+      setSelectedShoesColorKey,
+      setShoesAvailableSizes,
+      setSelectedShoesSize,
+    );
+  }, [selectedShoesProduct, selectedShoesColorKey]);
 
   // Extract product data on load
-  const extractGenericSizes = (prod) => {
-    if (!prod) return [];
-    const buyGroup =
-      prod.buy_type_groups?.find((g) => g.type) || prod.buy_type_groups?.[0];
-    const firstColor = buyGroup?.colors?.[0];
-    if (!firstColor) return [];
+  const extractGenericSizes = (color) => {
+    if (!color) return [];
 
     // measurement list directly on color
-    if (firstColor.measurements && firstColor.measurements.length) {
-      return firstColor.measurements.map((m) => ({
+    if (color.measurements && color.measurements.length) {
+      return color.measurements.map((m) => ({
         value: String(m.measurement || m.size || m.label || m),
         stock: m.stock_quantity ?? 0,
       }));
     }
 
     // or nested under sizes
-    if (firstColor.sizes && firstColor.sizes.length) {
+    if (color.sizes && color.sizes.length) {
       const results = [];
-      firstColor.sizes.forEach((s) => {
+      color.sizes.forEach((s) => {
         if (s.measurements && s.measurements.length) {
           s.measurements.forEach((m) => {
             results.push({
@@ -336,17 +527,27 @@ const ProductDetail = ({ product }) => {
   };
 
   useEffect(() => {
-    if (!product?.buy_type_groups?.length) return;
+    if (!productColors.length) {
+      setSelectedColorKey("");
+      return;
+    }
 
-    const buyGroup = product.buy_type_groups.find((group) => group.type);
-    if (!buyGroup?.colors?.length) return;
+    const hasSelectedColor = productColors.some(
+      (color, index) => getColorKey(color, index) === selectedColorKey,
+    );
+    if (!hasSelectedColor) {
+      setSelectedColorKey(getColorKey(productColors[0], 0));
+    }
+  }, [product, selectedPriceType, productColors, selectedColorKey]);
 
-    const firstColor = buyGroup.colors[0];
+  useEffect(() => {
+    if (!selectedColor) return;
+
     // categories may be absent for generic products, so don't bail early
-    const hasCategories = firstColor.categories && firstColor.categories.length;
+    const hasCategories = selectedColor.categories && selectedColor.categories.length;
 
     // Coat sizes
-    const coatCategory = firstColor.categories?.find(
+    const coatCategory = selectedColor.categories?.find(
       (cat) => cat.category === "coat",
     );
     if (coatCategory?.sizes?.length) {
@@ -357,7 +558,7 @@ const ProductDetail = ({ product }) => {
     }
 
     // Pant sizes
-    const pantCategory = firstColor.categories?.find(
+    const pantCategory = selectedColor.categories?.find(
       (cat) => cat.category === "pants",
     );
     if (pantCategory?.sizes?.length) {
@@ -369,9 +570,13 @@ const ProductDetail = ({ product }) => {
 
     // Generic when no categories exist or this is not a suit
     if (!hasCategories || (!coatCategory && !pantCategory)) {
-      const gen = extractGenericSizes(product);
+      const gen = extractGenericSizes(selectedColor);
       setGenericSizes(gen);
-      setSelectedGenericSize("");
+      setSelectedGenericSize((currentSize) =>
+        gen.some((item) => item.value.toString() === currentSize.toString())
+          ? currentSize
+          : "",
+      );
       setSelectedCoatType("");
       setSelectedCoatMeasurement("");
       setSelectedPantType("");
@@ -379,8 +584,18 @@ const ProductDetail = ({ product }) => {
     } else {
       setGenericSizes([]);
       setSelectedGenericSize("");
+      setSelectedCoatType((currentType) =>
+        coatCategory?.sizes?.some((size) => size.size_type === currentType)
+          ? currentType
+          : "",
+      );
+      setSelectedPantType((currentType) =>
+        pantCategory?.sizes?.some((size) => size.size_type === currentType)
+          ? currentType
+          : "",
+      );
     }
-  }, [product]);
+  }, [selectedColor]);
 
   // Update coat measurements
   useEffect(() => {
@@ -390,9 +605,7 @@ const ProductDetail = ({ product }) => {
       return;
     }
 
-    const buyGroup = product.buy_type_groups.find((g) => g.type);
-    const firstColor = buyGroup?.colors?.[0];
-    const coatCategory = firstColor?.categories?.find(
+    const coatCategory = selectedColor?.categories?.find(
       (cat) => cat.category === "coat",
     );
     const sizeType = coatCategory?.sizes?.find(
@@ -404,8 +617,14 @@ const ProductDetail = ({ product }) => {
     } else {
       setCoatMeasurementData([]);
     }
-    setSelectedCoatMeasurement("");
-  }, [selectedCoatType, product]);
+    setSelectedCoatMeasurement((currentMeasurement) =>
+      sizeType?.measurements?.some(
+        (item) => item.measurement.toString() === currentMeasurement.toString(),
+      )
+        ? currentMeasurement
+        : "",
+    );
+  }, [selectedCoatType, product, selectedColor]);
 
   // Update pant measurements
   useEffect(() => {
@@ -415,9 +634,7 @@ const ProductDetail = ({ product }) => {
       return;
     }
 
-    const buyGroup = product.buy_type_groups.find((g) => g.type);
-    const firstColor = buyGroup?.colors?.[0];
-    const pantCategory = firstColor?.categories?.find(
+    const pantCategory = selectedColor?.categories?.find(
       (cat) => cat.category === "pants",
     );
     const sizeType = pantCategory?.sizes?.find(
@@ -429,10 +646,49 @@ const ProductDetail = ({ product }) => {
     } else {
       setPantMeasurementData([]);
     }
-    setSelectedPantMeasurement("");
-  }, [selectedPantType, product]);
+    setSelectedPantMeasurement((currentMeasurement) =>
+      sizeType?.measurements?.some(
+        (item) => item.measurement.toString() === currentMeasurement.toString(),
+      )
+        ? currentMeasurement
+        : "",
+    );
+  }, [selectedPantType, product, selectedColor]);
 
   // Image handling for main product - FIXED VERSION
+  const normalizeColorText = (value) =>
+    value?.toString().toLowerCase().replace(/[^a-z0-9]/g, "") || "";
+
+  const getColorMatchedImage = () => {
+    if (!product?.images?.length || !selectedColor) return null;
+
+    const selectedColorName = normalizeColorText(selectedColor.color);
+    const selectedColorCode = normalizeColorText(selectedColor.color_code);
+    const selectedColorValues = [selectedColorName, selectedColorCode].filter(Boolean);
+
+    if (!selectedColorValues.length) return null;
+
+    const matchedImage = product.images.find((img) => {
+      const imageColorValues = [
+        img.color,
+        img.color_name,
+        img.color_key,
+        img.name,
+        img.alt,
+        img.title,
+        img.image_url,
+      ]
+        .map(normalizeColorText)
+        .filter(Boolean);
+
+      return selectedColorValues.some((colorValue) =>
+        imageColorValues.some((imageValue) => imageValue.includes(colorValue)),
+      );
+    });
+
+    return matchedImage?.image_url || null;
+  };
+
   const getPrimaryImage = () => {
     if (!product) return "/Images/suit1.png";
 
@@ -460,12 +716,72 @@ const ProductDetail = ({ product }) => {
   const galleryImages = product?.images?.map((img) => img.image_url) || [];
 
   useEffect(() => {
-    if (product) setSelectedImage(getPrimaryImage());
-  }, [product]);
+    if (product) {
+      setSelectedImage(getColorMatchedImage() || getPrimaryImage());
+    }
+  }, [product, selectedColor]);
 
   // Utility Functions
   const capitalizeFirst = (str) =>
     str?.charAt(0).toUpperCase() + str?.slice(1) || "";
+
+  const formatDateForInput = (dateValue) => {
+    if (!dateValue) return "";
+
+    const dateString = dateValue.toString().trim();
+    const isoDate = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoDate) {
+      return `${isoDate[1]}-${isoDate[2]}-${isoDate[3]}`;
+    }
+
+    const separatedDate = dateString.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+    if (separatedDate) {
+      const firstPart = Number(separatedDate[1]);
+      const secondPart = Number(separatedDate[2]);
+      const month = firstPart > 12 ? secondPart : firstPart;
+      const day = firstPart > 12 ? firstPart : secondPart;
+
+      return `${separatedDate[3]}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    }
+
+    const parsedDate = new Date(dateString);
+    if (Number.isNaN(parsedDate.getTime())) return "";
+
+    const year = parsedDate.getFullYear();
+    const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+    const day = String(parsedDate.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const getDateAfterDays = (days) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const minRentDate = getDateAfterDays(21);
+
+  const getEventImage = (event) =>
+    event?.image_url || event?.image || "/Images/events-detail-image.png";
+
+  const handleEventDropdownClick = () => {
+    if (activeDropdown === "event") {
+      setActiveDropdown(null);
+      return;
+    }
+
+    setActiveDropdown("event");
+
+    if (!events.length) {
+      dispatch(getEvents());
+    }
+  };
 
   const handleAddToCart = async () => {
     const isSuit = coatSizeTypes.length || pantSizeTypes.length;
@@ -481,22 +797,27 @@ const ProductDetail = ({ product }) => {
       }
 
       if (!selectedPriceType) return;
+      if (selectedPriceType.toLowerCase() === "rent" && !selectedRentDate) return;
 
       const cartData = {
         product_id: product.id,
-        color: product.color_name || product.color_code,
+        color: selectedProductColorValue,
         buy_type: selectedPriceType.toLowerCase(),
         size_type: "Standard"
       };
 
       try {
+        if (isCartSubmittingRef.current) return;
+        isCartSubmittingRef.current = true;
         setIsAddingToCart(true);
         const result = await dispatch(addToCart(cartData)).unwrap();
         setTimeout(() => {
+          isCartSubmittingRef.current = false;
           setIsAddingToCart(false);
           navigate("/cart");
         }, 1500);
       } catch (error) {
+        isCartSubmittingRef.current = false;
         setIsAddingToCart(false);
       }
       return;
@@ -540,6 +861,7 @@ const ProductDetail = ({ product }) => {
       }
 
       if (selectedPriceType.toLowerCase() === "rent") {
+        if (!selectedRentDate) return;
         setIsRentModalOpen(true);
         setShowRentModal(true);
         document.body.style.overflow = "hidden";
@@ -555,7 +877,7 @@ const ProductDetail = ({ product }) => {
           size_category: "coat",
           size_type: selectedCoatType,
           size_measurement: selectedCoatMeasurement,
-          color: product.color_name || product.color_code,
+          color: selectedProductColorValue,
           buy_type: "buy",
           override_price: 0, 
           addOns: []
@@ -567,20 +889,24 @@ const ProductDetail = ({ product }) => {
           size_category: "pants",
           size_type: selectedPantType,
           size_measurement: selectedPantMeasurement,
-          color: product.color_name || product.color_code,
+          color: selectedProductColorValue,
           buy_type: "buy"
         };
         
         cartData.addOns.push(pantsAddon);
 
         try {
+          if (isCartSubmittingRef.current) return;
+          isCartSubmittingRef.current = true;
           setIsAddingToCart(true);
           const result = await dispatch(addToCart(cartData)).unwrap();
           setTimeout(() => {
+            isCartSubmittingRef.current = false;
             setIsAddingToCart(false);
             navigate("/cart");
           }, 1500);
         } catch (error) {
+          isCartSubmittingRef.current = false;
           setIsAddingToCart(false);
         }
         return;
@@ -610,10 +936,20 @@ const ProductDetail = ({ product }) => {
     if (!selectedPriceType) {
       return;
     }
+    if (selectedPriceType.toLowerCase() === "rent" && !selectedRentDate) {
+      return;
+    }
+    if (
+      selectedPriceType.toLowerCase() === "rent" &&
+      !selectedRentEvent &&
+      selectedRentDate < minRentDate
+    ) {
+      return;
+    }
 
     const cartData = {
       product_id: product.id,
-      color: product.color_name || product.color_code,
+      color: selectedProductColorValue,
       buy_type: selectedPriceType.toLowerCase(),
     };
 
@@ -626,19 +962,34 @@ const ProductDetail = ({ product }) => {
     }
 
     try {
+      if (isCartSubmittingRef.current) return;
+      isCartSubmittingRef.current = true;
       setIsAddingToCart(true);
       const result = await dispatch(addToCart(cartData)).unwrap();
       setTimeout(() => {
+        isCartSubmittingRef.current = false;
         setIsAddingToCart(false);
         navigate("/cart");
       }, 1500);
     } catch (error) {
+      isCartSubmittingRef.current = false;
       setIsAddingToCart(false);
     }
   };
 
   const isFormValid = () => {
     if (!selectedPriceType) {
+      return false;
+    }
+
+    if (selectedPriceType.toLowerCase() === "rent" && !selectedRentDate) {
+      return false;
+    }
+    if (
+      selectedPriceType.toLowerCase() === "rent" &&
+      !selectedRentEvent &&
+      selectedRentDate < minRentDate
+    ) {
       return false;
     }
     
@@ -770,6 +1121,8 @@ const ProductDetail = ({ product }) => {
     setSelectedType(type);
     setSelectedTieProduct(null);
     setSelectedBowProduct(null);
+    setSelectedTieColorKey("");
+    setSelectedBowColorKey("");
     setSelectedTieSize("");
     setSelectedBowSize("");
     setTieAvailableSizes([]);
@@ -785,11 +1138,17 @@ const ProductDetail = ({ product }) => {
       setActiveDropdown(null);
       setActiveSizeDropdown(null);
       setSelectedType(null);
+      setSelectedRentDate("");
+      setSelectedRentEvent(null);
       // Reset selections
       setSelectedShirtProduct(null);
       setSelectedTieProduct(null);
       setSelectedBowProduct(null);
       setSelectedShoesProduct(null);
+      setSelectedShirtColorKey("");
+      setSelectedTieColorKey("");
+      setSelectedBowColorKey("");
+      setSelectedShoesColorKey("");
       setSelectedShirtSize("");
       setSelectedTieSize("");
       setSelectedBowSize("");
@@ -808,6 +1167,8 @@ const ProductDetail = ({ product }) => {
   };
 
   const handleConfirmRent = async () => {
+    if (!selectedRentDate) return;
+
     const suitGroupUUID = generateGroupUUID();
     
     const cartData = {
@@ -816,11 +1177,16 @@ const ProductDetail = ({ product }) => {
       size_category: "coat",
       size_type: selectedCoatType,
       size_measurement: selectedCoatMeasurement,
-      color: product.color_name || product.color_code,
-      buy_type: selectedPriceType.toLowerCase(),
+      color: selectedProductColorValue,
+      buy_type: "rent",
+      date: selectedRentDate,
       override_price: 0, 
       addOns: []
     };
+
+    if (selectedRentEvent?.id) {
+      cartData.event_id = selectedRentEvent.id;
+    }
 
     const pantsAddon = {
       group_uuid: suitGroupUUID,
@@ -828,8 +1194,8 @@ const ProductDetail = ({ product }) => {
       size_category: "pants",
       size_type: selectedPantType,
       size_measurement: selectedPantMeasurement,
-      color: product.color_name || product.color_code,
-      buy_type: selectedPriceType.toLowerCase()
+      color: selectedProductColorValue,
+      buy_type: "rent"
     };
     
     cartData.addOns.push(pantsAddon);
@@ -838,8 +1204,13 @@ const ProductDetail = ({ product }) => {
       cartData.addOns.push({
         product_id: selectedShirtProduct.id,
         size_type: selectedShirtSize,
-        color: selectedShirtProduct.color_name || selectedShirtProduct.color_code,
-        buy_type: "rent",
+        color: getAddonColorValue(selectedShirtProduct, selectedShirtColorKey),
+        buy_type: getAddonBuyType(
+          selectedShirtProduct,
+          selectedShirtColorKey,
+          selectedShirtSize,
+          "shirt",
+        ),
         override_price: 0
       });
     }
@@ -848,8 +1219,13 @@ const ProductDetail = ({ product }) => {
       cartData.addOns.push({
         product_id: selectedTieProduct.id,
         size_type: selectedTieSize,
-        color: selectedTieProduct.color_name || selectedTieProduct.color_code,
-        buy_type: "rent",
+        color: getAddonColorValue(selectedTieProduct, selectedTieColorKey),
+        buy_type: getAddonBuyType(
+          selectedTieProduct,
+          selectedTieColorKey,
+          selectedTieSize,
+          "tie",
+        ),
         override_price: 0
       });
     }
@@ -858,8 +1234,13 @@ const ProductDetail = ({ product }) => {
       cartData.addOns.push({
         product_id: selectedBowProduct.id,
         size_type: selectedBowSize,
-        color: selectedBowProduct.color_name || selectedBowProduct.color_code,
-        buy_type: "rent",
+        color: getAddonColorValue(selectedBowProduct, selectedBowColorKey),
+        buy_type: getAddonBuyType(
+          selectedBowProduct,
+          selectedBowColorKey,
+          selectedBowSize,
+          "bow",
+        ),
         override_price: 0
       });
     }
@@ -868,29 +1249,45 @@ const ProductDetail = ({ product }) => {
       cartData.addOns.push({
         product_id: selectedShoesProduct.id,
         size_measurement: selectedShoesSize,
-        color: selectedShoesProduct.color_name || selectedShoesProduct.color_code,
-        buy_type: "rent",
-        override_price: selectedShoesProduct.override_price
+        color: getAddonColorValue(selectedShoesProduct, selectedShoesColorKey),
+        buy_type: getAddonBuyType(
+          selectedShoesProduct,
+          selectedShoesColorKey,
+          selectedShoesSize,
+          "shoes",
+        ),
+        price: selectedShoesProduct.override_price || selectedShoesProduct.rent_price
       });
     }
 
     try {
+      if (isCartSubmittingRef.current) return;
+      isCartSubmittingRef.current = true;
       setIsAddingToCart(true);
       const result = await dispatch(addToCart(cartData)).unwrap();
       
       closeRentModal();
       
       setTimeout(() => {
+        isCartSubmittingRef.current = false;
         setIsAddingToCart(false);
         navigate("/cart");
       }, 1000);
       
     } catch (error) {
+      isCartSubmittingRef.current = false;
       setIsAddingToCart(false);
     }
   };
 
   const isRentFormValid = () => {
+    if (!selectedRentDate) {
+      return false;
+    }
+    if (!selectedRentEvent && selectedRentDate < minRentDate) {
+      return false;
+    }
+
     if (selectedShirtProduct && !selectedShirtSize) {
       return false;
     }
@@ -1132,6 +1529,145 @@ const ProductDetail = ({ product }) => {
       p?.rent_price &&
       parseFloat(p.rent_price) > 0,
   );
+
+  const renderAddonColorSelect = (
+    addonProduct,
+    selectedAddonColorKey,
+    setSelectedAddonColorKey,
+    dropdownKey,
+  ) => {
+    const colors = getProductColors(addonProduct);
+    const selectedAddonColor = getSelectedAddonColor(addonProduct, selectedAddonColorKey);
+
+    return (
+      <div className="custom-select-wrapper color-select-wrapper">
+        <div
+          className="custom-select color-select"
+          onClick={() =>
+            setActiveSizeDropdown(
+              activeSizeDropdown === dropdownKey ? null : dropdownKey,
+            )
+          }
+        >
+          {selectedAddonColor ? (
+            <span className="selected-color-display">
+              <span
+                className="selected-color-swatch"
+                style={{ background: selectedAddonColor.color_code }}
+              />
+              <span>{selectedAddonColor.color}</span>
+            </span>
+          ) : (
+            <span className="selected-value">Select Color</span>
+          )}
+          <i className="fa-solid fa-chevron-down"></i>
+        </div>
+
+        {activeSizeDropdown === dropdownKey && (
+          <ul className="custom-select-dropdown size-dropdown">
+            {colors.length > 0 ? (
+              colors.map((color, index) => {
+                const colorKey = getColorKey(color, index);
+                const activeColorKey =
+                  selectedAddonColorKey || getColorKey(colors[0], 0);
+                return (
+                  <li
+                    key={colorKey || index}
+                    className={activeColorKey === colorKey ? "active" : ""}
+                    onClick={() => {
+                      setSelectedAddonColorKey(colorKey);
+                      setActiveSizeDropdown(null);
+                    }}
+                  >
+                    <span className="addon-color-option">
+                      <span
+                        className="addon-color-swatch"
+                        style={{ background: color.color_code }}
+                      />
+                      <span>{color.color}</span>
+                    </span>
+                  </li>
+                );
+              })
+            ) : (
+              <li className="dropdown-item no-results">No colors available</li>
+            )}
+          </ul>
+        )}
+      </div>
+    );
+  };
+
+  const renderAddonSizeSelect = (
+    availableSizes,
+    selectedSize,
+    setSelectedSize,
+    dropdownKey,
+  ) => (
+    <div className="custom-select-wrapper size-select-wrapper">
+      <div
+        className="custom-select size-select"
+        onClick={() =>
+          setActiveSizeDropdown(
+            activeSizeDropdown === dropdownKey ? null : dropdownKey,
+          )
+        }
+      >
+        <span className="selected-value">
+          {selectedSize || "Select Size"}
+        </span>
+        <i className="fa-solid fa-chevron-down"></i>
+      </div>
+
+      {activeSizeDropdown === dropdownKey && (
+        <ul className="custom-select-dropdown size-dropdown">
+          {availableSizes.length > 0 ? (
+            availableSizes.map((size, index) => {
+              const isOut = size.stock === 0;
+              return (
+                <li
+                  key={index}
+                  className={`${selectedSize?.toString() === size.value.toString() ? "active" : ""} ${
+                    isOut ? "out-of-stock" : ""
+                  }`}
+                  onClick={() => {
+                    if (!isOut) {
+                      setSelectedSize(size.value);
+                      setActiveSizeDropdown(null);
+                    }
+                  }}
+                  style={
+                    isOut
+                      ? { opacity: 0.5, cursor: "not-allowed" }
+                      : {}
+                  }
+                >
+                  {size.value} {isOut && "(Out of Stock)"}
+                </li>
+              );
+            })
+          ) : (
+            <li className="dropdown-item no-results">No sizes available</li>
+          )}
+        </ul>
+      )}
+    </div>
+  );
+
+  const handleMainImageMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    e.currentTarget.style.setProperty("--zoom-x", `${x}%`);
+    e.currentTarget.style.setProperty("--zoom-y", `${y}%`);
+  };
+
+  const handleMainImageMouseLeave = (e) => {
+    e.currentTarget.style.setProperty("--zoom-x", "50%");
+    e.currentTarget.style.setProperty("--zoom-y", "50%");
+  };
+
   if (!product) return null;
 
   return (
@@ -1139,7 +1675,14 @@ const ProductDetail = ({ product }) => {
       <section className="product-detail-container container">
         <div className="row">
           <div className="product-left-column col-md-6" data-aos="fade-right">
-            <div className="main-image">
+            <div
+              className="main-image"
+              onMouseMove={handleMainImageMouseMove}
+              onMouseLeave={handleMainImageMouseLeave}
+            >
+              <span className="image-zoom-icon" aria-hidden="true">
+                <i className="fa-solid fa-magnifying-glass-plus"></i>
+              </span>
               <img
                 src={selectedImage}
                 alt={product.name}
@@ -1182,13 +1725,40 @@ const ProductDetail = ({ product }) => {
             </div>
             <div className="product-color">
               <h5>COLOR</h5>
-              <div className="color-option active">
-                <div
-                  className="color-swatch"
-                  title={product.color_name}
-                  style={{ background: product.color_code }}
-                />
-                <span className="color-name">{product.color_name}</span>
+              <div className="color-options">
+                {(productColors.length ? productColors : [{
+                  color: product.color_name,
+                  color_code: product.color_code,
+                }]).map((color, index) => {
+                  const colorKey = getColorKey(color, index);
+                  const activeColorKey =
+                    selectedColorKey || getColorKey(productColors[0], 0);
+                  const isActive =
+                    productColors.length > 0
+                      ? activeColorKey === colorKey
+                      : true;
+
+                  return (
+                    <div
+                      key={colorKey || index}
+                      className={`color-option ${isActive ? "active" : ""}`}
+                      title={color.color}
+                      aria-label={color.color}
+                      data-tooltip={color.color}
+                      onClick={() => {
+                        if (productColors.length) {
+                          setSelectedColorKey(colorKey);
+                        }
+                      }}
+                    >
+                      <div
+                        className="color-swatch"
+                        title={color.color}
+                        style={{ background: color.color_code }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
             <div className="product-size">
@@ -1484,6 +2054,112 @@ const ProductDetail = ({ product }) => {
                 )}
               </div>
             </div>
+            {selectedPriceType === "rent" && (
+              <div className="rental-details-main">
+                <h5>Event Details</h5>
+                <div className="rent-event-fields">
+                  <div className="custom-select-wrapper rent-date-wrapper">
+                    <input
+                      type="date"
+                      className="custom-select rent-date-input"
+                      value={selectedRentDate}
+                      min={minRentDate}
+                      onChange={(e) => {
+                        if (!e.target.value || e.target.value >= minRentDate) {
+                          setSelectedRentDate(e.target.value);
+                        }
+                      }}
+                      onKeyDown={(e) => e.preventDefault()}
+                      onPaste={(e) => e.preventDefault()}
+                      disabled={!!selectedRentEvent}
+                      required
+                    />
+                  </div>
+                  <div className="custom-select-wrapper event-select-wrapper">
+                    <div
+                      className={`custom-select ${selectedRentEvent ? "has-clear-action" : ""}`}
+                      onClick={handleEventDropdownClick}
+                    >
+                      {selectedRentEvent ? (
+                        <div className="selected-product-display">
+                          <img
+                            src={getEventImage(selectedRentEvent)}
+                            alt={selectedRentEvent.name}
+                            className="selected-product-image"
+                            onError={(e) => {
+                              e.target.src = "/Images/events-detail-image.png";
+                            }}
+                          />
+                          <span className="selected-product-title">
+                            {selectedRentEvent.name}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="selected-value">Select Event</span>
+                      )}
+                      {!selectedRentEvent && (
+                        <i className="fa-solid fa-chevron-down"></i>
+                      )}
+                      {selectedRentEvent && (
+                        <button
+                          type="button"
+                          className="clear-event-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedRentEvent(null);
+                            setSelectedRentDate("");
+                            setActiveDropdown(null);
+                          }}
+                          aria-label="Clear selected event"
+                        >
+                          <i className="fa-solid fa-xmark"></i>
+                        </button>
+                      )}
+                    </div>
+
+                    {activeDropdown === "event" && (
+                      <div className="custom-select-dropdown searchable-dropdown">
+                        <ul className="dropdown-items-list">
+                          {eventsLoading ? (
+                            <li className="dropdown-item loading">Loading...</li>
+                          ) : events.length > 0 ? (
+                            events.map((event, index) => (
+                              <li
+                                key={event.id || index}
+                                className={`dropdown-item ${
+                                  selectedRentEvent?.id === event.id ? "active" : ""
+                                }`}
+                                onClick={() => {
+                                  setSelectedRentEvent(event);
+                                  setSelectedRentDate(formatDateForInput(event.date));
+                                  setActiveDropdown(null);
+                                }}
+                              >
+                                <img
+                                  src={getEventImage(event)}
+                                  alt={event.name}
+                                  className="dropdown-item-image"
+                                  onError={(e) => {
+                                    e.target.src = "/Images/events-detail-image.png";
+                                  }}
+                                />
+                                <span className="dropdown-item-title">
+                                  {event.name}
+                                </span>
+                              </li>
+                            ))
+                          ) : (
+                            <li className="dropdown-item no-results">
+                              No events found
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="product-actions">
               <div className="buttons">
                 <button 
@@ -1580,7 +2256,7 @@ const ProductDetail = ({ product }) => {
                           }}
                         />
                         <span className="selected-product-title">
-                          {truncateName(selectedShirtProduct.name)}
+                          {selectedShirtProduct.name}
                         </span>
                       </div>
                     ) : (
@@ -1618,6 +2294,7 @@ const ProductDetail = ({ product }) => {
                               onClick={() => {
                                 setSelectedShirtProduct(product);
                                 setActiveDropdown(null);
+                                setSelectedShirtColorKey("");
                                 setSelectedShirtSize("");
                               }}
                             >
@@ -1630,7 +2307,7 @@ const ProductDetail = ({ product }) => {
                                 }}
                               />
                               <span className="dropdown-item-title">
-                                {truncateName(product.name, 25)}
+                                {product.name}
                               </span>
                             </li>
                           ))
@@ -1644,46 +2321,18 @@ const ProductDetail = ({ product }) => {
                   )}
                 </div>
                 {selectedShirtProduct && (
-                  <div className="custom-select-wrapper size-select-wrapper">
-                    <div
-                      className="custom-select size-select"
-                      onClick={() =>
-                        setActiveSizeDropdown(
-                          activeSizeDropdown === "shirt-size"
-                            ? null
-                            : "shirt-size",
-                        )
-                      }
-                    >
-                      <span className="selected-value">
-                        {selectedShirtSize || "Select Size"}
-                      </span>
-                      <i className="fa-solid fa-chevron-down"></i>
-                    </div>
-
-                    {activeSizeDropdown === "shirt-size" && (
-                      <ul className="custom-select-dropdown size-dropdown">
-                        {shirtAvailableSizes.length > 0 ? (
-                          shirtAvailableSizes.map((size, index) => (
-                            <li
-                              key={index}
-                              className={
-                                selectedShirtSize === size ? "active" : ""
-                              }
-                              onClick={() => {
-                                setSelectedShirtSize(size);
-                                setActiveSizeDropdown(null);
-                              }}
-                            >
-                              {size}
-                            </li>
-                          ))
-                        ) : (
-                          <li className="dropdown-item no-results">
-                            No sizes available
-                          </li>
-                        )}
-                      </ul>
+                  <div className="addon-options-row">
+                    {renderAddonColorSelect(
+                      selectedShirtProduct,
+                      selectedShirtColorKey,
+                      setSelectedShirtColorKey,
+                      "shirt-color",
+                    )}
+                    {renderAddonSizeSelect(
+                      shirtAvailableSizes,
+                      selectedShirtSize,
+                      setSelectedShirtSize,
+                      "shirt-size",
                     )}
                   </div>
                 )}
@@ -1721,7 +2370,7 @@ const ProductDetail = ({ product }) => {
                             }}
                           />
                           <span className="selected-product-title">
-                            {truncateName(selectedTieProduct.name)}
+                            {selectedTieProduct.name}
                           </span>
                         </div>
                       ) : (
@@ -1761,6 +2410,7 @@ const ProductDetail = ({ product }) => {
                                 onClick={() => {
                                   setSelectedTieProduct(product);
                                   setActiveDropdown(null);
+                                  setSelectedTieColorKey("");
                                   setSelectedTieSize("");
                                 }}
                               >
@@ -1773,7 +2423,7 @@ const ProductDetail = ({ product }) => {
                                   }}
                                 />
                                 <span className="dropdown-item-title">
-                                  {truncateName(product.name, 25)}
+                                  {product.name}
                                 </span>
                               </li>
                             ))
@@ -1787,46 +2437,18 @@ const ProductDetail = ({ product }) => {
                     )}
                   </div>
                   {selectedTieProduct && (
-                    <div className="custom-select-wrapper size-select-wrapper">
-                      <div
-                        className="custom-select size-select"
-                        onClick={() =>
-                          setActiveSizeDropdown(
-                            activeSizeDropdown === "tie-size"
-                              ? null
-                              : "tie-size",
-                          )
-                        }
-                      >
-                        <span className="selected-value">
-                          {selectedTieSize || "Select Size"}
-                        </span>
-                        <i className="fa-solid fa-chevron-down"></i>
-                      </div>
-
-                      {activeSizeDropdown === "tie-size" && (
-                        <ul className="custom-select-dropdown size-dropdown">
-                          {tieAvailableSizes.length > 0 ? (
-                            tieAvailableSizes.map((size, index) => (
-                              <li
-                                key={index}
-                                className={
-                                  selectedTieSize === size ? "active" : ""
-                                }
-                                onClick={() => {
-                                  setSelectedTieSize(size);
-                                  setActiveSizeDropdown(null);
-                                }}
-                              >
-                                {size}
-                              </li>
-                            ))
-                          ) : (
-                            <li className="dropdown-item no-results">
-                              No sizes available
-                            </li>
-                          )}
-                        </ul>
+                    <div className="addon-options-row">
+                      {renderAddonColorSelect(
+                        selectedTieProduct,
+                        selectedTieColorKey,
+                        setSelectedTieColorKey,
+                        "tie-color",
+                      )}
+                      {renderAddonSizeSelect(
+                        tieAvailableSizes,
+                        selectedTieSize,
+                        setSelectedTieSize,
+                        "tie-size",
                       )}
                     </div>
                   )}
@@ -1851,7 +2473,7 @@ const ProductDetail = ({ product }) => {
                             }}
                           />
                           <span className="selected-product-title">
-                            {truncateName(selectedBowProduct.name)}
+                            {selectedBowProduct.name}
                           </span>
                         </div>
                       ) : (
@@ -1891,6 +2513,7 @@ const ProductDetail = ({ product }) => {
                                 onClick={() => {
                                   setSelectedBowProduct(product);
                                   setActiveDropdown(null);
+                                  setSelectedBowColorKey("");
                                   setSelectedBowSize("");
                                 }}
                               >
@@ -1903,7 +2526,7 @@ const ProductDetail = ({ product }) => {
                                   }}
                                 />
                                 <span className="dropdown-item-title">
-                                  {truncateName(product.name, 25)}
+                                  {product.name}
                                 </span>
                               </li>
                             ))
@@ -1917,46 +2540,18 @@ const ProductDetail = ({ product }) => {
                     )}
                   </div>
                   {selectedBowProduct && (
-                    <div className="custom-select-wrapper size-select-wrapper">
-                      <div
-                        className="custom-select size-select"
-                        onClick={() =>
-                          setActiveSizeDropdown(
-                            activeSizeDropdown === "bow-size"
-                              ? null
-                              : "bow-size",
-                          )
-                        }
-                      >
-                        <span className="selected-value">
-                          {selectedBowSize || "Select Size"}
-                        </span>
-                        <i className="fa-solid fa-chevron-down"></i>
-                      </div>
-
-                      {activeSizeDropdown === "bow-size" && (
-                        <ul className="custom-select-dropdown size-dropdown">
-                          {bowAvailableSizes.length > 0 ? (
-                            bowAvailableSizes.map((size, index) => (
-                              <li
-                                key={index}
-                                className={
-                                  selectedBowSize === size ? "active" : ""
-                                }
-                                onClick={() => {
-                                  setSelectedBowSize(size);
-                                  setActiveSizeDropdown(null);
-                                }}
-                              >
-                                {size}
-                              </li>
-                            ))
-                          ) : (
-                            <li className="dropdown-item no-results">
-                              No sizes available
-                            </li>
-                          )}
-                        </ul>
+                    <div className="addon-options-row">
+                      {renderAddonColorSelect(
+                        selectedBowProduct,
+                        selectedBowColorKey,
+                        setSelectedBowColorKey,
+                        "bow-color",
+                      )}
+                      {renderAddonSizeSelect(
+                        bowAvailableSizes,
+                        selectedBowSize,
+                        setSelectedBowSize,
+                        "bow-size",
                       )}
                     </div>
                   )}
@@ -1980,7 +2575,7 @@ const ProductDetail = ({ product }) => {
                           }}
                         />
                         <span className="selected-product-title">
-                          {truncateName(selectedShoesProduct.name)}
+                          {selectedShoesProduct.name}
                         </span>
                       </div>
                     ) : (
@@ -2018,6 +2613,7 @@ const ProductDetail = ({ product }) => {
                               onClick={() => {
                                 setSelectedShoesProduct(product);
                                 setActiveDropdown(null);
+                                setSelectedShoesColorKey("");
                                 setSelectedShoesSize("");
                               }}
                             >
@@ -2031,7 +2627,7 @@ const ProductDetail = ({ product }) => {
                               />
                               <div className="dropdown-item-content">
                                 <span className="dropdown-item-title">
-                                  {truncateName(product.name, 25)}
+                                  {product.name}
                                 </span>
                                 <p className="dropdown-item-price">
                                   ${product.rent_price}
@@ -2049,49 +2645,18 @@ const ProductDetail = ({ product }) => {
                   )}
                 </div>
                 {selectedShoesProduct && (
-                  <div className="custom-select-wrapper size-select-wrapper">
-                    <div
-                      className="custom-select size-select"
-                      onClick={() =>
-                        setActiveSizeDropdown(
-                          activeSizeDropdown === "shoes-size"
-                            ? null
-                            : "shoes-size",
-                        )
-                      }
-                    >
-                      <span className="selected-value">
-                        {selectedShoesSize || "Select Size"}
-                      </span>
-                      <i className="fa-solid fa-chevron-down"></i>
-                    </div>
-
-                    {activeSizeDropdown === "shoes-size" && (
-                      <ul className="custom-select-dropdown size-dropdown">
-                        {shoesAvailableSizes.length > 0 ? (
-                          shoesAvailableSizes.map((size, index) => (
-                            <li
-                              key={index}
-                              className={
-                                selectedShoesSize?.toString() ===
-                                size.toString()
-                                  ? "active"
-                                  : ""
-                              }
-                              onClick={() => {
-                                setSelectedShoesSize(size);
-                                setActiveSizeDropdown(null);
-                              }}
-                            >
-                              {size}
-                            </li>
-                          ))
-                        ) : (
-                          <li className="dropdown-item no-results">
-                            No sizes available
-                          </li>
-                        )}
-                      </ul>
+                  <div className="addon-options-row">
+                    {renderAddonColorSelect(
+                      selectedShoesProduct,
+                      selectedShoesColorKey,
+                      setSelectedShoesColorKey,
+                      "shoes-color",
+                    )}
+                    {renderAddonSizeSelect(
+                      shoesAvailableSizes,
+                      selectedShoesSize,
+                      setSelectedShoesSize,
+                      "shoes-size",
                     )}
                   </div>
                 )}
@@ -2105,8 +2670,7 @@ const ProductDetail = ({ product }) => {
                     setAgreeToTerms(e.target.checked);}}
                 />
                 <label htmlFor="rentalAgreement">
-                  I agree to the <Link to="/terms-and-conditions">terms</Link>, and I understand I need to return my
-                  suit within X days.
+                  I understand that my suit will arrive within 7-10 business days of my event, and I agree to return my suit by the first business day after my event using the prepaid return label provided. I agree to the rental terms and conditions which include a $20 late fee per day, with full replacement charged if my suit is not returned with 21 days.
                 </label>
               </div>
 

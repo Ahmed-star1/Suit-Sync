@@ -82,7 +82,48 @@ const ThankYouPage = () => {
   };
 
   // Get product image
+  const normalizeColorText = (value) =>
+    value?.toString().toLowerCase().replace(/[^a-z0-9]/g, "") || "";
+
   const getProductImage = (item) => {
+    const sourceItem = getDisplaySourceItem(item);
+    const itemColorValues = [
+      sourceItem.color,
+      sourceItem.color_code,
+      item.color,
+      item.color_code,
+    ]
+      .map(normalizeColorText)
+      .filter(Boolean);
+
+    const productImages =
+      sourceItem.images ||
+      item.images ||
+      sourceItem.product?.images ||
+      item.product?.images ||
+      [];
+    if (productImages.length && itemColorValues.length) {
+      const matchedImage = productImages.find((img) => {
+        const imageColorValues = [
+          img.color,
+          img.color_name,
+          img.color_key,
+          img.name,
+          img.alt,
+          img.title,
+          img.image_url,
+        ]
+          .map(normalizeColorText)
+          .filter(Boolean);
+
+        return itemColorValues.some((colorValue) =>
+          imageColorValues.some((imageValue) => imageValue.includes(colorValue)),
+        );
+      });
+
+      if (matchedImage?.image_url) return matchedImage.image_url;
+    }
+
     if (item.image_url) {
       return item.image_url;
     }
@@ -91,7 +132,24 @@ const ThankYouPage = () => {
 
   // Get buy type label
   const getBuyTypeLabel = (item) => {
-    const buyType = item.buy_type || item.type || item.product?.buy_type;
+    const sourceItem = getDisplaySourceItem(item);
+    const totalPrice = sourceItem.total_price ?? item.total_price;
+
+    if (
+      totalPrice !== null &&
+      totalPrice !== undefined &&
+      parseFloat(totalPrice) === 0
+    ) {
+      return "Rent";
+    }
+
+    const buyType =
+      sourceItem.buy_type ||
+      sourceItem.type ||
+      sourceItem.product?.buy_type ||
+      item.buy_type ||
+      item.type ||
+      item.product?.buy_type;
 
     if (buyType === "rent") return "Rent";
     if (buyType === "buy") return "Buy";
@@ -146,6 +204,24 @@ const ThankYouPage = () => {
       sourceItem.product_rent_style ||
       sourceItem.buy_style ||
       sourceItem.rent_style ||
+      ""
+    );
+  };
+
+  const getProductColor = (item) => {
+    const sourceItem = getDisplaySourceItem(item);
+    return sourceItem.color || sourceItem.color_code || "";
+  };
+
+  const getProductEventDate = (item) => {
+    const sourceItem = getDisplaySourceItem(item);
+    return (
+      sourceItem.event_date ||
+      sourceItem.event?.date ||
+      sourceItem.date ||
+      item.event_date ||
+      item.event?.date ||
+      item.date ||
       ""
     );
   };
@@ -459,7 +535,10 @@ const getSuitGroupSizeDetails = (item) => {
                           </div>
                           <div className="item-meta">
                             <span className="item-quantity">
-                              <strong>Qty:</strong> {item.quantity} 
+                              <strong>Qty:</strong> {item.quantity}
+                              {getProductColor(item) && (
+                                <> | <strong>Color:</strong> {getProductColor(item)}</>
+                              )}
                             </span>
                             {productSku && (
                               <p className="item-detail">
@@ -494,6 +573,11 @@ const getSuitGroupSizeDetails = (item) => {
                           </div>
                         </div>
                         <div className="item-price">
+                          {getBuyTypeLabel(item.items[0]) === "Rent" && getProductEventDate(item) && (
+                            <div className="item-detail event-date">
+                              <strong>Event Date:</strong> {formatDate(getProductEventDate(item))}
+                            </div>
+                          )}
                           {formatPrice(item.total_price)}
                         </div>
                       </div>
@@ -526,11 +610,14 @@ const getSuitGroupSizeDetails = (item) => {
                           </div>
                           <div className="item-meta">
                             <span className="item-quantity">
-                              Qty: {item.quantity || 1} 
+                              <strong>Qty:</strong> {item.quantity || 1}
+                              {getProductColor(item) && (
+                                <> | <strong>Color:</strong> {getProductColor(item)}</>
+                              )}
                             </span>
                             {productSku && (
                               <p className="item-detail">
-                                SKU: {productSku}
+                                <strong>SKU:</strong> {productSku}
                               </p>
                             )}
                             {productStyle && (
@@ -547,6 +634,11 @@ const getSuitGroupSizeDetails = (item) => {
                         </div>
                         <div className="item-price">
                           {formatPrice(item.unit_price)}
+                          {getBuyTypeLabel(item) === "Rent" && getProductEventDate(item) && (
+                            <div className="item-detail">
+                              Event Date: {formatDate(getProductEventDate(item))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     );

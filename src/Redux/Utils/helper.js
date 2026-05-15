@@ -2,7 +2,7 @@ import axios from "axios";
 import nearestColor from "nearest-color";
 import { getAccessToken } from "./localStore";
 
-export const BASE_URL = "https://suit-sync.koderspedia.net";
+export const BASE_URL = "https://suit-sync.koderspedia.live";
 
 export const fetchApi = async ({
   method,

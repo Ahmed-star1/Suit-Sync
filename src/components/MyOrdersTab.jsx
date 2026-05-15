@@ -57,6 +57,22 @@ const MyOrdersTab = () => {
     return `$${parseFloat(price).toFixed(2)}`;
   };
 
+  const getOrderStatus = (status) => {
+    if (!status) return "";
+
+    const normalizedStatus = status.toString().trim().toLowerCase();
+    if (normalizedStatus === "delivered") {
+      return "Shipped";
+    }
+
+    return normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1);
+  };
+
+  const getOrderStatusClass = (status) => {
+    const normalizedStatus = getOrderStatus(status).toLowerCase().replace(/\s+/g, "-");
+    return normalizedStatus || "pending";
+  };
+
   // Flatten all items from all orders
   const getAllItems = () => {
     if (!orderSummary) return [];
@@ -70,6 +86,7 @@ const MyOrdersTab = () => {
           order_number: order.order_number,
           order_date: order.created_at,
           order_id: order.order_id,
+          status: item.status || item.order_status || order.status || order.order_status,
           product_id: item.product_id || "null",
         }))
       );
@@ -186,8 +203,10 @@ const MyOrdersTab = () => {
                   </div>
 
                   <div className="order-status">
-                    <p className="status paid">Paid</p>
-                    <span>Payment Status</span>
+                    <p className={`status ${getOrderStatusClass(item.status)}`}>
+                      {getOrderStatus(item.status)}
+                    </p>
+                    <span>Order Status</span>
                   </div>
 
                   <div className="order-price">

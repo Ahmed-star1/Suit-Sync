@@ -35,10 +35,25 @@ const EditEventForm = () => {
     { value: "Rehearsal Dinner", label: "Rehearsal Dinner" },
   ];
 
+  const getMinimumEventDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 22);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const validationSchema = Yup.object({
     name: Yup.string().required("Event name is required"),
     type: Yup.string().required("Event type is required"),
-    date: Yup.string().required("Event date is required"),
+    date: Yup.string()
+      .test(
+        "min-event-date",
+        "Event date must be after the next 21 days",
+        (value) => !value || value >= getMinimumEventDate(),
+      )
+      .required("Event date is required"),
     location: Yup.string().required("Event location is required"),
     image: Yup.mixed()
       .nullable()
@@ -263,6 +278,7 @@ const EditEventForm = () => {
                     className="input"
                     type="date"
                     value={values.date}
+                    min={getMinimumEventDate()}
                     onChange={(e) => setFieldValue("date", e.target.value)}
                     onBlur={() => setFieldTouched("date", true)}
                     onKeyDown={(e) => e.preventDefault()}

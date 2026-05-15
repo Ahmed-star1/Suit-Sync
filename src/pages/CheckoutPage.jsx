@@ -8,7 +8,7 @@ import {
 } from "react-country-state-city";
 import "react-country-state-city/dist/react-country-state-city.css";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import Header from "../components/header";
@@ -114,36 +114,7 @@ const CheckoutPage = () => {
       : [];
 
   const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => {
-      if (item.items && Array.isArray(item.items) && item.items.length > 0) {
-        const firstItem = item.items[0];
-        const product = firstItem?.product;
-        const buyType = firstItem?.buy_type;
-        const quantity = firstItem?.quantity || 1;
-
-        let price = 0;
-        if (buyType === "buy") {
-          price = product?.buy_price || 0;
-        } else if (buyType === "rent") {
-          price = product?.rent_price || 0;
-        }
-
-        return sum + price * quantity;
-      }
-
-      const product = item.product;
-      const buyType = item.buy_type;
-      const quantity = item.quantity || 1;
-
-      let price = 0;
-      if (buyType === "buy") {
-        price = product?.buy_price || 0;
-      } else if (buyType === "rent") {
-        price = product?.rent_price || 0;
-      }
-
-      return sum + price * quantity;
-    }, 0);
+    return cartItems.reduce((sum, item) => sum + getProductPrice(item), 0);
   };
 
   const handleSubmitCheckout = async (formValues) => {
@@ -195,8 +166,43 @@ const CheckoutPage = () => {
     }
   };
 
+  const normalizeColorText = (value) =>
+    value?.toString().toLowerCase().replace(/[^a-z0-9]/g, "") || "";
+
   const getProductImage = (item) => {
-    const product = item.product;
+    const displayItem = item.items?.length ? item.items[0] : item;
+    const product = displayItem?.product || item.product;
+    const itemColorValues = [
+      displayItem?.color,
+      displayItem?.color_code,
+      item?.color,
+      item?.color_code,
+    ]
+      .map(normalizeColorText)
+      .filter(Boolean);
+
+    if (product?.images?.length && itemColorValues.length) {
+      const matchedImage = product.images.find((img) => {
+        const imageColorValues = [
+          img.color,
+          img.color_name,
+          img.color_key,
+          img.name,
+          img.alt,
+          img.title,
+          img.image_url,
+        ]
+          .map(normalizeColorText)
+          .filter(Boolean);
+
+        return itemColorValues.some((colorValue) =>
+          imageColorValues.some((imageValue) => imageValue.includes(colorValue)),
+        );
+      });
+
+      if (matchedImage?.image_url) return matchedImage.image_url;
+    }
+
     if (product?.primary_image_url) return product.primary_image_url;
     if (product?.images && product.images.length > 0) {
       const primaryImage = product.images.find((img) => img.is_primary === true);
@@ -214,40 +220,52 @@ const CheckoutPage = () => {
   };
 
   const getProductDisplayType = (item) => {
-    if (item.items && item.items.length > 0) {
-      return item.items[0]?.buy_type || "rent";
+    const displayItem = item.items?.length ? item.items[0] : item;
+
+    if (
+      displayItem?.override_price !== null &&
+      displayItem?.override_price !== undefined &&
+      parseFloat(displayItem.override_price) === 0
+    ) {
+      return "rent";
     }
-    return item.buy_type;
+
+    return displayItem?.buy_type || "rent";
+  };
+
+  const getProductColor = (item) => {
+    const displayItem = item.items?.length ? item.items[0] : item;
+    return displayItem?.color || displayItem?.color_code || "";
+  };
+
+  const getSingleItemPrice = (item) => {
+    if (item?.override_price !== null && item?.override_price !== undefined) {
+      return parseFloat(item.override_price) || 0;
+    }
+
+    const product = item?.product;
+    const buyType = item?.buy_type;
+
+    if (buyType === "buy") {
+      return parseFloat(product?.buy_price) || 0;
+    }
+
+    if (buyType === "rent") {
+      return parseFloat(product?.rent_price) || 0;
+    }
+
+    return 0;
   };
 
   const getProductPrice = (item) => {
-    let basePrice = 0;
-    let quantity = 1;
-
     if (item.items && Array.isArray(item.items) && item.items.length > 0) {
-      const firstItem = item.items[0];
-      const product = firstItem?.product;
-      const buyType = firstItem?.buy_type;
-      quantity = firstItem?.quantity || 1;
-
-      if (buyType === "buy") {
-        basePrice = product?.buy_price || 0;
-      } else if (buyType === "rent") {
-        basePrice = product?.rent_price || 0;
-      }
-    } else {
-      const product = item.product;
-      const buyType = item.buy_type;
-      quantity = item.quantity || 1;
-
-      if (buyType === "buy") {
-        basePrice = product?.buy_price || 0;
-      } else if (buyType === "rent") {
-        basePrice = product?.rent_price || 0;
-      }
+      return item.items.reduce((sum, nestedItem) => {
+        const quantity = nestedItem?.quantity || 1;
+        return sum + getSingleItemPrice(nestedItem) * quantity;
+      }, 0);
     }
 
-    return basePrice * quantity;
+    return getSingleItemPrice(item) * (item.quantity || 1);
   };
 
   const getProductQuantity = (item) => {
@@ -477,7 +495,7 @@ const CheckoutPage = () => {
                     onBlur={formik.handleBlur}
                   />
                   <label htmlFor="agreeTerms">
-                    I agree to the Terms and Conditions and Privacy Policy
+                    I agree to the <Link to="/terms-and-conditions">Terms and Conditions</Link> and <Link to="/privacy-policy">Privacy Policy</Link>
                   </label>
                 </div>
                 {getFieldError("agree_terms")}
@@ -528,6 +546,7 @@ const CheckoutPage = () => {
                           </h4>
                           <span className="summary-price">
                             {formatPrice(getProductPrice(item))}
+                            {getProductColor(item) && ` | Color: ${getProductColor(item)}`}
                           </span>
                           <p className="item-quantity">
                             Qty: {getProductQuantity(item)}
