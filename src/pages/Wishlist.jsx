@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Swal from "sweetalert2";
-import AboutImage from "/Images/AboutBanner.png";
+import AboutImage from "/Images/aboutBanner.png";
 import { getWishlist, clearWishlist, deleteWishlist, getWishlistCount } from "../Redux/Reducers/productSlice";
 import Loader from "../components/Loader";
 import InnerBanner from "../components/InnerBanner";

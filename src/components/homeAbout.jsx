@@ -12,7 +12,7 @@ const HomeAbout = () => {
       <div className="container">
         <div className="row">
           <div className="col-md-6" data-aos="fade-up">
-            <img src="/Images/about.png" />
+            <img src="/Images/about.jpg" />
           </div>
           <div className="col-md-6" data-aos="fade-left">
             <div className="content-box">

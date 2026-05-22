@@ -118,15 +118,15 @@ const Header = () => {
       <div className="topbar">
         <div className="container">
           <div className="row align-items-center">
-            <div className="col-md-6">
+            {/* <div className="col-md-6">
               <div className="topbar-contact">
                 <span><a href="tel: 000-000-0000">Call Now: 000 000 0000</a></span>
                 <span className="separator">|</span>
                 <span><a href="mailto:info@suitsync.com">Email Now: info@suitsync.com</a></span>
               </div>
-            </div>
-            <div className="col-md-6 h-icons">
-              <div className="topbar-social d-flex justify-content-md-end">
+            </div> */}
+            <div className="col-md-12 h-icons">
+              <div className="topbar-social d-flex justify-content-end">
                 <a href="#"><Instagram size={18} /></a>
                 <a href="#"><Twitter size={18} /></a>
                 <a href="#"><Facebook size={18} /></a>

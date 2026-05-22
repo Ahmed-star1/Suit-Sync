@@ -17,9 +17,9 @@ const Contact = () => {
     <div class="contact-page">
       <Header />
 
-      <InnerBanner title="Step Into Elegance Rent or Buy Your Dream Suit Today" background={AboutImage} />
+      <InnerBanner title="Modern wedding suit coordination starts here" background={AboutImage} />
       <ContactForm />
-      <ContactInfo />
+      {/* <ContactInfo /> */}
 
       <Footer />
     </div>

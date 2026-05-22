@@ -21,6 +21,13 @@ const MyAccountTab = () => {
   const [isEdited, setIsEdited] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  const getErrorMessage = (error) => {
+    if (typeof error === "string") return error;
+    if (error?.errors?.image?.[0]) return error.errors.image[0];
+    if (error?.message) return error.message;
+    return "Something went wrong. Please try again.";
+  };
+
   useEffect(() => {
     dispatch(getUserProfile());
   }, [dispatch]);
@@ -68,10 +75,7 @@ const MyAccountTab = () => {
         Swal.fire({
           icon: "error",
           title: "Update Failed",
-          text:
-            typeof error === "string"
-              ? error
-              : "Something went wrong. Please try again.",
+          text: getErrorMessage(error),
           confirmButtonColor: "#000",
         });
       }

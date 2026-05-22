@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import AboutImage from "/Images/AboutBanner.png";
+import AboutImage from "/Images/aboutBanner.png";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import InnerBanner from "../components/InnerBanner";
@@ -17,7 +17,7 @@ const About = () => {
     <div class="about-page">
       <Header />
 
-      <InnerBanner title="Tailored Elegance for Every Occasion" background={AboutImage} />
+      <InnerBanner title="From invite to aisle, everyone stays in sync" background={AboutImage} />
       <AboutInfo />
       <WhyChooseUs />
 

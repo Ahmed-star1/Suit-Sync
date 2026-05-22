@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import MeasurementForm from "../components/MeasurementForm";
 import { AnimatePresence, motion } from "framer-motion";
+import { Navigation, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 import { 
   storeMeasurement, 
   getMeasurements, 
@@ -9,6 +14,46 @@ import {
 } from "../Redux/Reducers/productSlice";
 import Swal from "sweetalert2";
 import Loader from "../components/Loader";
+
+const measurementGuideContent = {
+  image: {
+    title: "Measurement Guide",
+    src: "/Images/size-guide4.jpg",
+  },
+  video: {
+    title: "How To Measure",
+    slides: [
+      {
+        title: "How To Measure Chest",
+        src: "/Images/ChestMeasurement.mp4",
+      },
+      {
+        title: "How To Measure Hips",
+        src: "/Images/HipMeasurement.mp4",
+      },
+      {
+        title: "How To Measure Neck",
+        src: "/Images/NeckMeasurement.mp4",
+      },
+      {
+        title: "How To Measure Outseam",
+        src: "/Images/OutseamMeasurement.mp4",
+      },
+      {
+        title: "How To Measure Overarm",
+        src: "/Images/OverarmMeasurement.mp4",
+      },
+      {
+        title: "How To Measure Sleeve",
+        src: "/Images/SleeveMeasurement.mp4",
+      },
+      {
+        title: "How To Measure Waist",
+        src: "/Images/WaistMeasurement.mp4",
+      },
+    ],
+  },
+};
 
 const MeasurementTabsBar = () => {
   const dispatch = useDispatch();
@@ -18,6 +63,9 @@ const MeasurementTabsBar = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [saveTriggered, setSaveTriggered] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [guideModalType, setGuideModalType] = useState(null);
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  const videoRefs = useRef([]);
 
   const { 
     measurementLoading, 
@@ -185,6 +233,41 @@ const MeasurementTabsBar = () => {
     setHasChanges(false);
   }, [activeTab]);
 
+  useEffect(() => {
+    document.body.style.overflow = guideModalType ? "hidden" : "auto";
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [guideModalType]);
+
+  useEffect(() => {
+    if (guideModalType !== "video") return;
+
+    videoRefs.current.forEach((video, index) => {
+      if (!video) return;
+
+      if (index === activeVideoIndex) {
+        video.muted = false;
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+        video.currentTime = 0;
+      }
+    });
+  }, [guideModalType, activeVideoIndex]);
+
+  const closeGuideModal = () => {
+    videoRefs.current.forEach((video) => {
+      if (!video) return;
+      video.pause();
+      video.currentTime = 0;
+    });
+
+    setGuideModalType(null);
+    setActiveVideoIndex(0);
+  };
+
   const handleSaveMeasurements = () => {
     const currentMeasurements = measurements[activeTab] || {};
     let apiMeasurements = {};
@@ -213,7 +296,22 @@ const MeasurementTabsBar = () => {
       <div className="right-column-content">
         <div className="header-row">
           <h2>Measurement</h2>
-          {/* <button className="designBtn2">How To Measure</button> */}
+          <div className="measurement-guide-actions">
+            <button
+              type="button"
+              className="designBtn2"
+              onClick={() => setGuideModalType("image")}
+            >
+              View Image
+            </button>
+            <button
+              type="button"
+              className="designBtn2"
+              onClick={() => setGuideModalType("video")}
+            >
+              Watch Video
+            </button>
+          </div>
         </div>
 
         <div className="main-tabs">
@@ -277,6 +375,59 @@ const MeasurementTabsBar = () => {
           </button>
         </div>
       </div>
+
+      {guideModalType && (
+        <div className="measurement-guide-modal-overlay">
+          <div className="measurement-guide-modal">
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={closeGuideModal}
+            >
+              X
+            </button>
+            <h3>
+              {guideModalType === "video"
+                ? measurementGuideContent.video.slides[activeVideoIndex]?.title
+                : measurementGuideContent[guideModalType].title}
+            </h3>
+
+            {guideModalType === "image" ? (
+              <img
+                src={measurementGuideContent.image.src}
+                alt="Measurement guide"
+              />
+            ) : (
+              <Swiper
+                modules={[Navigation, Pagination]}
+                navigation
+                pagination={{ clickable: true }}
+                spaceBetween={18}
+                slidesPerView={1}
+                onSlideChange={(swiper) => setActiveVideoIndex(swiper.activeIndex)}
+                className="measurement-video-swiper"
+              >
+                {measurementGuideContent.video.slides.map((video, index) => (
+                  <SwiperSlide key={video.src}>
+                    <div className="measurement-video-slide">
+                      <video
+                        ref={(element) => {
+                          videoRefs.current[index] = element;
+                        }}
+                        controls
+                        preload="metadata"
+                        muted={false}
+                      >
+                        <source src={video.src} type="video/mp4" />
+                      </video>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

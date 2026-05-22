@@ -9,17 +9,17 @@ import HomeGallery from "../components/homeGallery";
 
 const Home = () => {
   return (
-    <>
+    <div className="home">
       <Header />
       
       <HomeBanner />
       <HomeAbout />
       <HomeSteps />
       <ProductsCarousel />
-      <HomeGallery />
+      {/* <HomeGallery /> */}
 
       <Footer />
-    </>
+    </div>
   );
 };
 

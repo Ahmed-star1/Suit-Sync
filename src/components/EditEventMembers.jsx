@@ -148,11 +148,25 @@ const EditEventMembers = () => {
     email: Yup.string()
       .email("Invalid email format")
       .required("Email is required"),
+    image: Yup.mixed()
+      .nullable()
+      .test("fileType", "Only PNG, JPG or JPEG allowed", (value) => {
+        if (!value || !(value instanceof File)) return true;
+        return ["image/png", "image/jpeg", "image/jpg"].includes(value.type);
+      }),
   });
 
   const handleRoleSelect = (value, setFieldValue) => {
     setFieldValue("role", value);
     setActiveRoleDropdown(null);
+  };
+
+  const handleImageChange = (e, setFieldValue) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setFieldValue("image", file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   const handleSaveMember = async (values, { resetForm, setFieldValue }) => {
@@ -404,12 +418,7 @@ const EditEventMembers = () => {
                           type="file"
                           accept="image/*"
                           style={{ display: "none" }}
-                          onChange={(e) => {
-                            const file = e.target.files[0];
-                            if (!file) return;
-                            setFieldValue("image", file);
-                            setImagePreview(URL.createObjectURL(file));
-                          }}
+                          onChange={(e) => handleImageChange(e, setFieldValue)}
                         />
 
                         {imagePreview ? (
@@ -436,6 +445,11 @@ const EditEventMembers = () => {
                             <img src="/Images/camera.png" alt="Upload" />
                           </div>
                         )}
+                        <ErrorMessage
+                          name="image"
+                          component="div"
+                          className="text-danger"
+                        />
                       </div>
 
                       <div className="member-form-fields">

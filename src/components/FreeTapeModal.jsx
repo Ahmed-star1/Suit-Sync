@@ -4,6 +4,7 @@ import {
   getFreeTapeStatus,
   sendFreeTape,
 } from "../Redux/Reducers/eventSlice";
+import Swal from "sweetalert2";
 
 const FreeTapeModal = ({ shouldShow = true }) => {
   const dispatch = useDispatch();
@@ -44,6 +45,14 @@ const FreeTapeModal = ({ shouldShow = true }) => {
 
   useEffect(() => {
     if (success) {
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: "Free tailor's tape request sent successfully.",
+        timer: 2000,
+        showConfirmButton: true,
+        confirmButtonColor: "#000",
+      });
       closeModal();
     }
   }, [success]);
@@ -114,9 +123,8 @@ const FreeTapeModal = ({ shouldShow = true }) => {
 
   return (
     <div
-      className={`rent-modal-overlay shiping-modal ${
-        fadeIn ? "fade-in" : "fade-out"
-      }`}
+      className={`rent-modal-overlay shiping-modal ${fadeIn ? "fade-in" : "fade-out"
+        }`}
       onClick={handleOverlayClick}
     >
       <div className={`rent-modal ${fadeIn ? "modal-in" : "modal-out"}`}>
@@ -129,14 +137,25 @@ const FreeTapeModal = ({ shouldShow = true }) => {
         <img src="/Images/tailorTape.png" alt="Tailor's Tape" />
 
         <form onSubmit={(e) => e.preventDefault()}>
+          <div className="form-group">
+            <input
+              name="address"
+              className="input"
+              value={formData.address}
+              onChange={handleInputChange}
+              placeholder="Enter your address"
+              type="text"
+              disabled={tapeLoading}
+            />
+          </div>
           <div className="row">
             <div className="form-group col-md-6">
               <input
-                name="name"
+                name="state"
                 className="input"
-                value={formData.name}
+                value={formData.state}
                 onChange={handleInputChange}
-                placeholder="Enter your name"
+                placeholder="Enter your state"
                 type="text"
                 disabled={tapeLoading}
               />
@@ -156,17 +175,6 @@ const FreeTapeModal = ({ shouldShow = true }) => {
           <div className="row">
             <div className="form-group col-md-6">
               <input
-                name="state"
-                className="input"
-                value={formData.state}
-                onChange={handleInputChange}
-                placeholder="Enter your state"
-                type="text"
-                disabled={tapeLoading}
-              />
-            </div>
-            <div className="form-group col-md-6">
-              <input
                 name="zip"
                 className="input"
                 value={formData.zip}
@@ -176,17 +184,17 @@ const FreeTapeModal = ({ shouldShow = true }) => {
                 disabled={tapeLoading}
               />
             </div>
-          </div>
-          <div className="form-group">
-            <input
-              name="address"
-              className="input"
-              value={formData.address}
-              onChange={handleInputChange}
-              placeholder="Enter your address"
-              type="text"
-              disabled={tapeLoading}
-            />
+            <div className="form-group col-md-6">
+              <input
+                name="name"
+                className="input"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Enter your name"
+                type="text"
+                disabled={tapeLoading}
+              />
+            </div>
           </div>
           <div className="modal-footer">
             <button

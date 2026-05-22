@@ -1,12 +1,28 @@
 import React, { useEffect, useState } from "react";
+import { Navigation, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
+const sizeChartImages = [
+  "/Images/size-guide1.jpg",
+  "/Images/size-guide2.jpg",
+  "/Images/size-guide3.jpg",
+];
 
 const SizeChartModal = ({ isOpen, onClose }) => {
   const [closing, setClosing] = useState(false);
+  const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
     if (isOpen && !closing) {
       document.body.style.overflow = "hidden";
     }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [isOpen, closing]);
 
   const handleClose = () => {
@@ -15,8 +31,17 @@ const SizeChartModal = ({ isOpen, onClose }) => {
     setTimeout(() => {
       document.body.style.overflow = "auto";
       setClosing(false);
+      setZoom(1);
       onClose();
     }, 300); 
+  };
+
+  const zoomIn = () => {
+    setZoom((currentZoom) => Math.min(currentZoom + 0.25, 2.5));
+  };
+
+  const zoomOut = () => {
+    setZoom((currentZoom) => Math.max(currentZoom - 0.25, 1));
   };
 
   if (!isOpen && !closing) return null;
@@ -25,58 +50,43 @@ const SizeChartModal = ({ isOpen, onClose }) => {
     <div className={`size-modal-overlay ${closing ? "fade-out" : "fade-in"}`}>
       <div className={`size-modal-container ${closing ? "scale-out" : "scale-in"}`}>
         <button className="modal-close-btn" onClick={handleClose}>
-          ✕
+          X
         </button>
 
-        <div className="modal-left col-md-5">
-          <img src="/Images/suit1.png" alt="Size Chart" />
-        </div>
-
-        <div className="modal-right col-md-7">
-          <h2 className="modal-title">Size Chart</h2>
-          <p className="modal-description">
-            This Size Chart Shows Product Measurements Taken When Products Are
-            Laid Flat. Actual Product Measurements May Vary By Up To 1".
-          </p>
-
-          <div className="size-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Inch</th>
-                  <th>S</th>
-                  <th>M</th>
-                  <th>L</th>
-                  <th>XL</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>Length</td><td>28</td><td>29.1</td><td>29.9</td><td>31.1</td></tr>
-                <tr><td>Bust</td><td>36.2</td><td>40.2</td><td>44.1</td><td>48</td></tr>
-                <tr><td>Shoulder</td><td>15.7</td><td>16.9</td><td>18.1</td><td>19.3</td></tr>
-              </tbody>
-            </table>
+        <div className="modal-right size-slider-content">
+          <div className="size-modal-header">
+            <h2 className="modal-title">Size Chart</h2>
+            <div className="size-zoom-controls">
+              <button type="button" onClick={zoomOut} disabled={zoom === 1}>
+                -
+              </button>
+              <span>{Math.round(zoom * 100)}%</span>
+              <button type="button" onClick={zoomIn} disabled={zoom === 2.5}>
+                +
+              </button>
+            </div>
           </div>
-
-          <div className="size-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Centimetre</th>
-                  <th>S</th>
-                  <th>M</th>
-                  <th>L</th>
-                  <th>XL</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>Length</td><td>71</td><td>74</td><td>76</td><td>79</td></tr>
-                <tr><td>Bust</td><td>92</td><td>102</td><td>112</td><td>122</td></tr>
-                <tr><td>Shoulder</td><td>37</td><td>40</td><td>43</td><td>46</td></tr>
-              </tbody>
-            </table>
-          </div>
-
+          <Swiper
+            modules={[Navigation, Pagination]}
+            navigation
+            pagination={{ clickable: true }}
+            spaceBetween={16}
+            slidesPerView={1}
+            onSlideChange={() => setZoom(1)}
+            className="size-chart-swiper"
+          >
+            {sizeChartImages.map((image, index) => (
+              <SwiperSlide key={image}>
+                <div className="size-chart-image-frame">
+                  <img
+                    src={image}
+                    alt={`Size chart ${index + 1}`}
+                    style={{ width: `${zoom * 100}%` }}
+                  />
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       </div>
     </div>

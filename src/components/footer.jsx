@@ -6,7 +6,7 @@ const Footer = () => {
     { name: "Home", to: "/" },
     { name: "About Us", to: "/about-us" },
     { name: "Shop", to: "/shop" },
-    // { name: "How It Works", to: "#" },
+    { name: "How to Measure", to: "/measurement" },
   ];
 
   const supportLinks = [
@@ -49,7 +49,7 @@ const Footer = () => {
               <img src="/Images/suitsyncfooter.svg" alt="SuitSync Logo" />
             </Link>
             <p>
-              This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text. Only for show. He who searches for meaning here will be sorely disappointed. This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate.
+              Create a cohesive style for your crew, manage every event detail, and assign looks seamlessly. With SuitSync, from classic tuxedos to contemporary suits, coordination has never been easier
             </p>
             <div className="f-social">
               <a href="#" target="_blank">
@@ -88,15 +88,15 @@ const Footer = () => {
 
           <div className="col-md-2 footer-info">
             <h4>Contact Info</h4>
-            <p>
+            {/* <p>
               Call Now:
               <br />
               <a href="tel: 000-000-0000">000 000 0000</a>
-            </p>
+            </p> */}
             <p>
               Email Now:
               <br />
-              <a href="mailto: info@suitsync.com">info@suitsync.com</a>
+              <a href="mailto: cj@suit-sync.com">cj@suit-sync.com</a>
             </p>
           </div>
         </div>

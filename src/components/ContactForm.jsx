@@ -7,10 +7,10 @@ const ContactSection = () => {
         <h2>HAVE QUESTIONS? LET’S CONNECT.</h2>
 
         <p>
-          This Is Dummy Copy. It Is Not Meant To Be Read. It Has Been Placed Here
-          Solely To Demonstrate The Look And Feel Of Finished, Typeset Text. Only
-          For Show. He Who Searches For Meaning Here Will Be Sorely Disappointed.
-          This Is Dummy Copy.
+          Need help
+          keeping your wedding party in sync? Our support team is here for everything
+          from event setup and party management to suit sizing, ordering, and delivery
+          questions.
         </p>
 
         <form className="contact-form">

@@ -142,16 +142,16 @@ header .mobile-menu-overlay, header .mobile-menu-toggle{display: none !important
 .banner-content p {font-size: 18px; margin-bottom: 20px; color: #fff; line-height: 28px;}
 .designBtn {display: inline-block; padding: 14px 30px; background-color: #ffffff; color: #000000; font-weight: 600; border-radius: 30px; transition: .5s; font-size: 16px; border: solid 2px white;}
 .designBtn:hover {background-color: black; color: white; border: solid 2px white;}
-
+.home .site-footer{margin-top: 0px !important;}
 /* About Section */
-.home-about {background: #000; padding-top: 10px;}
+.home-about {background: #000; padding-top: 70px; padding-bottom: 70px;}
 .home-about .row{align-items: center;}
 .home-about h2{margin-bottom: 20px;}
 .home-about p{color: #fff; font-size: 18px; line-height: 28px; margin-bottom: 40px;}
-.home-about img{width: 100%;;}
+.home-about img{width: 100%; height: 600px; border-radius: 20px; object-fit: cover; object-position: top;}
 
 /* Steps Section section */
-.steps-wrapper {text-align: center; padding-top: 70px;}
+.steps-wrapper {text-align: center; padding-top: 70px; padding-bottom: 70px !important;}
 .steps-wrapper h2 {margin-bottom: 40px; color: #000;}
 .steps-wrapper .steps-row {justify-content: center; gap: 30px; margin-top: 80px;}
 .steps-wrapper .step {background: #F5F5F5; width: 23% !important; padding: 20px 40px; border-radius: 20px; position: relative; text-align: center; transition: .5s;}
@@ -161,7 +161,7 @@ header .mobile-menu-overlay, header .mobile-menu-toggle{display: none !important
 .steps-wrapper .step p {font-size: 16px; color: #000; line-height: 28px;}
 
 /* Trending Styles section */
-.trending-wrapper {padding-top: 70px; text-align: center; background: #F5F5F5; margin-top: 70px; padding-bottom: 70px;}
+.trending-wrapper {padding-top: 70px; text-align: center; background: #F5F5F5; padding-bottom: 70px;}
 .trending-wrapper h2 {color: #000; margin-bottom: 40px;}
 .trending-wrapper .trending-swiper {padding: 0px 20px;}
 .trending-wrapper .trending-card {text-align: center;}
@@ -202,9 +202,9 @@ header .mobile-menu-overlay, header .mobile-menu-toggle{display: none !important
 .about-info{padding-top: 70px;}
 .about-info .row{align-items: center;}
 .about-info .col-md-6:nth-child(2){padding-left: 40px;}
-.about-info h2{color: #000; margin-bottom: 30px;}
+.about-info h2{color: #000; margin-bottom: 20px;}
 .about-info p{color: #757575;}
-.about-info a{background: #000; color: #fff; margin-top: 40px;}
+.about-info a{background: #000; color: #fff; margin-top: 10px;}
 .about-info a:hover{border-color: #000 !important; background: transparent; color: #000 !important;}
 
 /* Why Choose Us Section */
@@ -225,7 +225,7 @@ header .mobile-menu-overlay, header .mobile-menu-toggle{display: none !important
 .contact-page footer{margin-top: 0px !important;}
 
 /* Contact Form Section */
-.contact-wrapper {padding-top: 70px;}
+.contact-wrapper {padding-top: 70px; padding-bottom: 70px;}
 .contact-wrapper h2{color: #000; margin-bottom: 15px;}
 .contact-wrapper p {color: #000; max-width: 960px; margin: 0 auto 40px;}
 .contact-wrapper .input-row {display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;}
@@ -434,17 +434,26 @@ header .mobile-menu-overlay, header .mobile-menu-toggle{display: none !important
 .login-modal .rent-modal .button-row{justify-content: center; gap: 20px;}
 
 /* Size Chart Modal */
-.size-modal-overlay {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgb(0 0 0 / 83%); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999;}
-.size-modal-overlay .size-modal-container {width: 1000px; background: #fff; border-radius: 20px; position: relative; display: flex; padding: 20px 30px 20px 20px; gap: 20px; animation: fadeIn 0.35s ease;}
+.size-modal-overlay {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgb(0 0 0 / 83%); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; overflow-y: auto;}
+.size-modal-overlay .size-modal-container {width: 850px; max-width: calc(100% - 30px); max-height: calc(100vh - 40px); overflow-y: auto; background: #fff; border-radius: 20px; position: relative; display: flex; padding: 24px; gap: 20px; animation: fadeIn 0.35s ease;}
 .size-modal-overlay .modal-left img {width: 100%; height: 500px; border-radius: 20px; object-fit: cover;}
 .size-modal-overlay h2{color: #000; font-size: 42px; line-height: 42px;}
 .size-modal-overlay p {font-size: 16px; margin-bottom: 18px; color: #000; margin-top: 10px;}
-.size-modal-overlay .size-table {width: 97%; text-align: left; border-top: 2px solid #808285; padding-top: 20px; margin-top: 20px;}
-.size-modal-overlay .size-table table{width: 100%;}
-.size-modal-overlay .size-table th {background: transparent; padding: 0px; text-align: center; font-family: "Urbanist", sans-serif; color: #808285; font-size: 25px; font-weight: 700; font-style: italic;}
-.size-modal-overlay .size-table tr th:nth-child(1){background: #F5F5F5; color: #808285; font-size: 20px; font-weight: 400; }
-.size-modal-overlay .size-table td {padding: 4px 25px; text-align: center; font-size: 20px; font-weight: 500;}
-.size-modal-overlay .size-table td:nth-child(1){text-align: left; padding-left: 0px;}
+.size-modal-overlay .size-slider-content {width: 100%;}
+.size-modal-overlay .size-modal-header {display: flex; align-items: center; justify-content: space-between; gap: 15px; padding-right: 42px;}
+.size-modal-overlay .size-zoom-controls {display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-right: 30px;}
+.size-modal-overlay .size-zoom-controls button {width: 25px; height: 25px; border-radius: 50%; border: 1px solid #000; background: #000; color: #fff; font-size: 16px; line-height: 1; font-weight: 700; cursor: pointer; display: flex; align-items: center;justify-content: center;}
+.size-modal-overlay .size-zoom-controls button:disabled {opacity: .35; cursor: not-allowed;}
+.size-modal-overlay .size-zoom-controls span {min-width: 48px; text-align: center; color: #000; font-size: 14px; font-weight: 700;}
+.size-modal-overlay .size-chart-swiper {width: 100%; margin-top: 20px; padding-bottom: 38px;}
+.size-modal-overlay .swiper-wrapper {display: flex; align-items: center;}
+.size-modal-overlay .size-chart-image-frame {max-height: calc(100vh - 210px); min-height: 360px; overflow: auto; background: #f5f5f5; border-radius: 20px;}
+.size-modal-overlay .size-chart-swiper img {max-width: none; height: auto; object-fit: contain; display: block;}
+.size-modal-overlay .size-chart-swiper .swiper-button-next, .size-modal-overlay .size-chart-swiper .swiper-button-prev {background: #000; width: 42px; height: 42px !important; border-radius: 50%; color: #fff;}
+.size-modal-overlay .size-chart-swiper .swiper-button-next svg, .size-modal-overlay .size-chart-swiper .swiper-button-prev svg{height: 20px;}
+.size-modal-overlay .size-chart-swiper .swiper-button-next::after, .size-modal-overlay .size-chart-swiper .swiper-button-prev::after {font-size: 16px; font-weight: 800;}
+.size-modal-overlay .size-chart-swiper .swiper-pagination-bullet {background: #808285; opacity: 1;}
+.size-modal-overlay .size-chart-swiper .swiper-pagination-bullet-active {background: #000;}
 .size-modal-overlay .modal-close-btn {position: absolute; top: 12px; right: 14px; background: #000; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 16px; font-weight: 900; cursor: pointer;}
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(.95); }
@@ -615,6 +624,19 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .measurement-right .header-row{display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #EBEBEB; padding-bottom: 20px;}
 .measurement-right .header-row h2{border: none; padding: 0px; margin: 0px;}
 .measurement-right .header-row .designBtn2{margin-top: 0px;}
+.measurement-guide-actions{display: flex; gap: 12px; align-items: center; flex-wrap: wrap;}
+.measurement-guide-modal-overlay{position: fixed; inset: 0; background: rgb(0 0 0 / 83%); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 9999; overflow-y: auto;}
+.measurement-guide-modal{width: 850px; max-width: 100%; max-height: calc(100vh - 40px); overflow-y: auto; background: #fff; border-radius: 20px; padding: 24px; position: relative;}
+.measurement-guide-modal h3{font-size: 32px; line-height: 40px; color: #000; margin: 0 50px 18px 0; font-weight: 700;}
+.measurement-guide-modal img, .measurement-guide-modal video{width: 100%; display: block;}
+.measurement-guide-modal .modal-close-btn{position: absolute; top: 12px; right: 14px; background: #000; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 16px; font-weight: 900; cursor: pointer;}
+.measurement-video-swiper{width: 100%; padding-bottom: 42px;}
+.measurement-video-slide video{background: #000; border-radius: 12px; max-height: calc(100vh - 260px); object-fit: contain;}
+.measurement-video-swiper .swiper-button-next svg, .measurement-video-swiper .swiper-button-prev svg{height: 20px !important;}
+.measurement-video-swiper .swiper-button-next, .measurement-video-swiper .swiper-button-prev{background: #000; width: 42px; height: 42px !important; border-radius: 50%; color: #fff;}
+.measurement-video-swiper .swiper-button-next::after, .measurement-video-swiper .swiper-button-prev::after{font-size: 16px; font-weight: 800;}
+.measurement-video-swiper .swiper-pagination-bullet{background: #808285; opacity: 1;}
+.measurement-video-swiper .swiper-pagination-bullet-active{background: #000;}
 .buttons-row{display: flex; justify-content: space-between;}
 .main-tabs{margin-top: 20px; background: #F5F5F5; border-radius: 80px; padding: 8px; display: flex; gap: 20px; width: 650px;}
 .measurement-right .buttons-row{justify-content: end;}
@@ -799,7 +821,8 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
 .add-new-member .buttons-row{margin-top: 140px !important;}
 .add-new-member .select-field{border-radius: 80px !important;}
 .add-new-member .select-field select{margin-bottom: 0px !important;}
-.add-new-member .text-danger{margin-top: -12px; font-size: 14px; margin-bottom: 10px;}
+.add-new-member .text-danger{margin-top: -12px; font-size: 14px; margin-bottom: 10px; text-align: left;}
+.profile-image .text-danger{margin-top: 5px;}
 .add-new-member .row{align-items: baseline;}
 
 .members-list {text-align: left;}
@@ -1061,13 +1084,13 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
   /* Home Page */
   .home-banner {height:auto !important; padding-top: 40px; padding-bottom: 40px; background-position: center;}
 
-  .home-about{padding-top: 40px !important; padding-bottom: 0px !important;}
+  .home-about{padding-top: 40px !important; padding-bottom: 40px !important;}
   .home-about .row{flex-direction: column-reverse;}
-  .home-about img{margin-top: 20px;}
+  .home-about img{margin-top: 20px; height: 450px;}
   .home-about h2{margin-bottom: 10px !important;}
   .home-about p{margin-bottom: 20px !important;}
 
-  .steps-wrapper{padding-top: 40px !important; padding-left: 20px; padding-right: 20px !important;}
+  .steps-wrapper{padding-top: 40px !important; padding-left: 20px; padding-right: 20px !important; padding-bottom: 40px !important;}
   .steps-wrapper .steps-row{gap: 60px; margin-top: 60px !important;}
   .steps-wrapper .step{width: 100% !important;}
   .steps-wrapper .step img{width: 80px !important;}
@@ -1132,6 +1155,19 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
   .product-detail-page .custom-select{height: 45px !important;}
   .rent-modal-overlay .type-tab{padding: 6px !important;}
 
+  /* Size Chart Modal */
+  .size-modal-overlay{padding: 15px !important; align-items: flex-start !important;}
+  .size-modal-overlay .size-modal-container{width: 100% !important; max-width: 100% !important; max-height: calc(100vh - 30px) !important; padding: 18px 14px !important; overflow-y: auto !important; border-radius: 16px !important;}
+  .size-modal-overlay .size-modal-header{align-items: flex-start !important; flex-direction: column !important; gap: 10px !important; padding-right: 40px !important;}
+  .size-modal-overlay h2{font-size: 28px !important; line-height: 34px !important; padding-right: 0 !important;}
+  .size-modal-overlay .size-zoom-controls button{width: 32px !important; height: 32px !important; font-size: 20px !important;}
+  .size-modal-overlay .size-zoom-controls span{font-size: 13px !important; min-width: 44px !important;}
+  .size-modal-overlay .size-chart-swiper{margin-top: 14px !important; padding-bottom: 34px !important;}
+  .size-modal-overlay .size-chart-image-frame{max-height: calc(100vh - 210px) !important; min-height: 360px !important; border-radius: 14px !important;}
+  .size-modal-overlay .size-chart-swiper .swiper-button-next, .size-modal-overlay .size-chart-swiper .swiper-button-prev{width: 34px !important; height: 34px !important;}
+  .size-modal-overlay .size-chart-swiper .swiper-button-next::after, .size-modal-overlay .size-chart-swiper .swiper-button-prev::after{font-size: 13px !important;}
+  .size-modal-overlay .modal-close-btn{top: 10px !important; right: 10px !important; width: 34px !important; height: 34px !important;}
+
   /* Product Detail Page */
   .product-detail-page .main-image img{height: 470px !important;}
   .product-detail-page .product-title{margin-top: 20px; font-size: 30px !important; line-height: 40px !important; margin-bottom: 20px !important;}
@@ -1146,7 +1182,7 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
   .product-detail-page .rental-details-main .rent-event-fields{flex-direction: column;}
   .product-detail-page .rental-details-main .rent-date-wrapper, .product-detail-page .rental-details-main .event-select-wrapper{width: 100%;}
 
-  .trending-wrapper{padding-top: 40px !important; margin-top: 40px; padding-bottom: 30px !important;}
+  .trending-wrapper{padding-top: 40px !important; padding-bottom: 30px !important;}
   .trending-wrapper h2{margin-bottom: 20px !important;}
   .trending-wrapper .swiper-button-next, .trending-wrapper .swiper-button-prev{display: none !important;}
   .trending-wrapper .trending-card h3{font-size: 16px !important;}
@@ -1282,7 +1318,14 @@ label{color: #000; font-size: 14px; font-weight: 500; margin-bottom: 5px; font-f
   .event-details-container .event-members .designBtn{font-size: 10px !important;}
 
   /* Measurements  */
-  .measurement-right .header-row{padding-bottom: 0px !important;}
+  .measurement-right .header-row{padding-bottom: 0px !important; align-items: flex-start !important; flex-direction: column !important; gap: 14px !important;}
+  .measurement-guide-actions{width: 100% !important; gap: 10px !important;}
+  .measurement-guide-actions .designBtn2{flex: 1 !important; text-align: center !important; padding-left: 12px !important; padding-right: 12px !important;}
+  .measurement-guide-modal-overlay{align-items: flex-start !important; padding: 15px !important;}
+  .measurement-guide-modal{max-height: calc(100vh - 30px) !important; padding: 18px 14px !important; border-radius: 16px !important;}
+  .measurement-guide-modal h3{font-size: 24px !important; line-height: 32px !important; margin-bottom: 14px !important;}
+  .measurement-guide-modal img, .measurement-guide-modal video{max-height: calc(100vh - 150px) !important; border-radius: 12px !important;}
+  .measurement-guide-modal .modal-close-btn{top: 10px !important; right: 10px !important; width: 34px !important; height: 34px !important;}
   .main-tabs{border-radius: 20px; width:100% !important; flex-wrap: wrap;}
   .main-tabs button{font-size: 14px !important; padding: 8px 24px !important;}
   .measurement-form h3{font-size: 20px !important; margin-bottom: 20px !important;}

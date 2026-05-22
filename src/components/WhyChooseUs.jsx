@@ -6,7 +6,7 @@ const WhyChooseUs = () => {
       <div className="container-fluid">
         <div className="row">
           <div class="col-md-6" data-aos="fade-right">
-            <h2>Why Choose Us </h2>
+            <h2>Keep your wedding Party Synced! </h2>
             <p>
              This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text. Only for show. He who searches for meaning here will be sorely disappointed.
             </p>
@@ -14,29 +14,29 @@ const WhyChooseUs = () => {
             <li>
                 <img src="/Images/Guaranteed.png" />
                 <div>
-                    <h4>Guaranteed Purchase</h4>
-                    <p>This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text. </p>
+                    <h4>Wedding Party Tracking</h4>
+                    <p>See exactly who has ordered, what they selected, and who still needs to complete their purchase.</p>
                 </div>
                </li>
                <li>
                 <img src="/Images/NoCost.png" />
                 <div>
-                    <h4>No Cost. No Obligation</h4>
-                    <p>This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text. </p>
+                    <h4>All-in-One Coordination</h4>
+                    <p>Create events, assign looks, invite groomsmen, and manage everything from one dashboard.</p>
                 </div>
                </li>
                <li>
                 <img src="/Images/Quick.png" />
                 <div>
-                    <h4>Quick & Easy</h4>
-                    <p>This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text. </p>
+                    <h4>Premium Suit Quality</h4>
+                    <p>Modern styles backed by trusted manufacturing partners for reliable quality, fit, and delivery.</p>
                 </div>
                </li>
                <li>
                 <img src="/Images/Secure.png" />
                 <div>
-                    <h4>Fast & Secure</h4>
-                    <p>This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text. </p>
+                    <h4>Stress-Free Experience</h4>
+                    <p>Easy sizing with step-by-step videos, photo guidance, and real-time customer support whenever you need help.</p>
                 </div>
                </li>
            </ul>
