@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getProducts, setCurrentPage } from "../Redux/Reducers/productSlice";
@@ -10,13 +10,13 @@ const ShopProducts = ({ selectedFilters }) => {
   const dispatch = useDispatch();
   const [isPageChanging, setIsPageChanging] = useState(false);
   const [isFilterChanging, setIsFilterChanging] = useState(false);
-  const filterTimeoutRef = useRef(null);
+  const lastRequestRef = useRef("");
 
   const { products, pagination, loading, filters } = useSelector(
     (state) => state.products,
   );
 
-  const buildApiParams = () => {
+  const apiFilters = useMemo(() => {
     const params = {};
 
     if (selectedFilters.category && selectedFilters.category.length > 0) {
@@ -40,7 +40,7 @@ const ShopProducts = ({ selectedFilters }) => {
     }
 
     return params;
-  };
+  }, [selectedFilters, filters?.categories]);
 
   useEffect(() => {
     if (!loading && products.length > 0) {
@@ -55,56 +55,50 @@ const ShopProducts = ({ selectedFilters }) => {
   }, [loading]);
 
   useEffect(() => {
-    dispatch(setCurrentPage(1));
+    const requestKey = JSON.stringify({
+      page: 1,
+      perPage: pagination.per_page,
+      filters: apiFilters,
+    });
 
-    const normalizedFilters = { ...selectedFilters };
-    if (
-      Array.isArray(normalizedFilters.category) &&
-      normalizedFilters.category.length > 0
-    ) {
-      normalizedFilters.category = normalizedFilters.category.map((c) => {
-        if (/^\d+$/.test(String(c))) return String(c);
-        const matched = filters?.categories?.find(
-          (cat) =>
-            String(cat.id) === String(c) ||
-            (cat.name || "").toLowerCase() === String(c).toLowerCase(),
-        );
-        return matched ? String(matched.id) : String(c);
-      });
-    }
-    if (
-      Array.isArray(normalizedFilters["rent-buy"]) &&
-      normalizedFilters["rent-buy"].length > 0
-    ) {
-      normalizedFilters.buy_type = normalizedFilters["rent-buy"].map((type) =>
-        type.toLowerCase(),
-      );
-    }
+    if (lastRequestRef.current === requestKey) return;
+    lastRequestRef.current = requestKey;
+    dispatch(setCurrentPage(1));
 
     dispatch(
       getProducts({
         page: 1,
         perPage: pagination.per_page,
-        filters: normalizedFilters,
+        filters: apiFilters,
       }),
     );
-  }, [dispatch, selectedFilters]);
+  }, [dispatch, apiFilters, pagination.per_page]);
 
   useEffect(() => {
     if (isPageChanging) {
-      const apiParams = buildApiParams();
+      const requestKey = JSON.stringify({
+        page: pagination.current_page,
+        perPage: pagination.per_page,
+        filters: apiFilters,
+      });
+
+      if (lastRequestRef.current === requestKey) {
+        setTimeout(() => setIsPageChanging(false), 0);
+        return;
+      }
+      lastRequestRef.current = requestKey;
 
       dispatch(
         getProducts({
           page: pagination.current_page,
           perPage: pagination.per_page,
-          filters: apiParams,
+          filters: apiFilters,
         }),
       ).finally(() => {
         setIsPageChanging(false);
       });
     }
-  }, [dispatch, pagination.current_page, selectedFilters, isPageChanging]);
+  }, [dispatch, pagination.current_page, pagination.per_page, apiFilters, isPageChanging]);
 
   const formatPrice = (price) => {
     return `$${price}`;

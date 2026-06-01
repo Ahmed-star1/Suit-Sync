@@ -15,13 +15,8 @@ const ShopFilters = ({ selectedFilters, onFilterChange }) => {
 
   const { filters } = useSelector((state) => state.products);
   
-  const [categories, setCategories] = useState([]);
-
-  useEffect(() => {
-    if (filters?.categories && filters.categories.length > 0) {
-      setCategories(filters.categories);
-    }
-  }, [filters]);
+  const categories = filters?.categories || [];
+  const buyTypes = filters?.buy_types || [];
 
   // Prevent body scrolling when mobile sidebar is open
   useEffect(() => {
@@ -57,14 +52,16 @@ const ShopFilters = ({ selectedFilters, onFilterChange }) => {
     }
   };
 
-  const rentBuyOptions = ["Buy", "Rent"];
-
   const handleCategoryChange = (categoryId) => {
     onFilterChange("category", categoryId.toString());
   };
 
   const handleRentBuyChange = (option) => {
     onFilterChange("rent-buy", option);
+  };
+
+  const formatBuyTypeLabel = (type) => {
+    return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
   return (
@@ -134,17 +131,21 @@ const ShopFilters = ({ selectedFilters, onFilterChange }) => {
 
           {tabState["rent-buy"] && (
             <div className="filter-options">
-              {rentBuyOptions.map((option, index) => (
-                <label key={index}>
-                  <input
-                    type="checkbox"
-                    checked={selectedFilters["rent-buy"].includes(option)}
-                    onChange={() => handleRentBuyChange(option)}
-                  />
-                  <span></span>
-                  {option}
-                </label>
-              ))}
+              {buyTypes.length > 0 ? (
+                buyTypes.map((option) => (
+                  <label key={option}>
+                    <input
+                      type="checkbox"
+                      checked={selectedFilters["rent-buy"].includes(option)}
+                      onChange={() => handleRentBuyChange(option)}
+                    />
+                    <span></span>
+                    {formatBuyTypeLabel(option)}
+                  </label>
+                ))
+              ) : (
+                <p className="no-categories">Loading options...</p>
+              )}
             </div>
           )}
         </div>
@@ -229,17 +230,21 @@ const ShopFilters = ({ selectedFilters, onFilterChange }) => {
 
                     {mobileTabState["rent-buy"] && (
                       <div className="filter-options">
-                        {rentBuyOptions.map((option, index) => (
-                          <label key={index}>
-                            <input
-                              type="checkbox"
-                              checked={selectedFilters["rent-buy"].includes(option)}
-                              onChange={() => handleRentBuyChange(option)}
-                            />
-                            <span></span>
-                            {option}
-                          </label>
-                        ))}
+                        {buyTypes.length > 0 ? (
+                          buyTypes.map((option) => (
+                            <label key={option}>
+                              <input
+                                type="checkbox"
+                                checked={selectedFilters["rent-buy"].includes(option)}
+                                onChange={() => handleRentBuyChange(option)}
+                              />
+                              <span></span>
+                              {formatBuyTypeLabel(option)}
+                            </label>
+                          ))
+                        ) : (
+                          <p className="no-categories">Loading options...</p>
+                        )}
                       </div>
                     )}
                   </div>
