@@ -5,12 +5,23 @@ import { getProducts, setCurrentPage } from "../Redux/Reducers/productSlice";
 import Pagination from "../components/Pagination";
 import Loader from "./Loader";
 
-const ShopProducts = ({ selectedFilters }) => {
+const SHOP_STATE_KEY = "shop_navigation_state";
+
+const ShopProducts = ({
+  selectedFilters,
+  initialPage = 1,
+  isRestoringShopState = false,
+}) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [isInitialLoading, setIsInitialLoading] = useState(
+    !isRestoringShopState,
+  );
   const [isPageChanging, setIsPageChanging] = useState(false);
   const [isFilterChanging, setIsFilterChanging] = useState(false);
   const lastRequestRef = useRef("");
+  const isInitialRequestRef = useRef(true);
+  const initialPageRef = useRef(initialPage);
 
   const { products, pagination, loading, filters } = useSelector(
     (state) => state.products,
@@ -42,6 +53,8 @@ const ShopProducts = ({ selectedFilters }) => {
     return params;
   }, [selectedFilters, filters?.categories]);
 
+  const apiFiltersKey = JSON.stringify(apiFilters);
+
   useEffect(() => {
     if (!loading && products.length > 0) {
       setIsFilterChanging(true);
@@ -55,24 +68,30 @@ const ShopProducts = ({ selectedFilters }) => {
   }, [loading]);
 
   useEffect(() => {
+    const page = isInitialRequestRef.current ? initialPageRef.current : 1;
+    const requestFilters = JSON.parse(apiFiltersKey);
+    isInitialRequestRef.current = false;
+
     const requestKey = JSON.stringify({
-      page: 1,
+      page,
       perPage: pagination.per_page,
-      filters: apiFilters,
+      filters: requestFilters,
     });
 
     if (lastRequestRef.current === requestKey) return;
     lastRequestRef.current = requestKey;
-    dispatch(setCurrentPage(1));
+    dispatch(setCurrentPage(page));
 
     dispatch(
       getProducts({
-        page: 1,
+        page,
         perPage: pagination.per_page,
-        filters: apiFilters,
+        filters: requestFilters,
       }),
-    );
-  }, [dispatch, apiFilters, pagination.per_page]);
+    ).finally(() => {
+      setIsInitialLoading(false);
+    });
+  }, [dispatch, apiFiltersKey, pagination.per_page]);
 
   useEffect(() => {
     if (isPageChanging) {
@@ -124,6 +143,13 @@ const ShopProducts = ({ selectedFilters }) => {
   };
 
   const handleProductClick = (productId) => {
+    sessionStorage.setItem(
+      SHOP_STATE_KEY,
+      JSON.stringify({
+        selectedFilters,
+        page: pagination.current_page,
+      }),
+    );
     navigate(`/shop/product/${productId}`);
   };
 
@@ -133,7 +159,7 @@ const ShopProducts = ({ selectedFilters }) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  if (isPageChanging || isFilterChanging) {
+  if (isInitialLoading || isPageChanging || isFilterChanging) {
     return (
       <div
         style={{

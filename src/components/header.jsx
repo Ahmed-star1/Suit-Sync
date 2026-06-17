@@ -172,7 +172,9 @@ const Header = () => {
                     <span className="cart-count">{cartCount}</span>
                   )}
                 </button>
-                
+               <button onClick={handleChange} className="mobile-cart-btn">
+                  <i className="fa-solid fa-cart-shopping"></i>
+                </button> 
                 <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
                   <i className="fa-solid fa-bars"></i>
                 </button>
@@ -232,9 +234,6 @@ const Header = () => {
               </button>
               <button className="search" onClick={handleSearchButtonClick}>
                 <i className="fa-solid fa-magnifying-glass"></i>
-              </button>
-              <button onClick={handleChange}>
-                <i className="fa-solid fa-cart-shopping"></i>
               </button>
             </div>
           </div>

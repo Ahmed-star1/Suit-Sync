@@ -201,7 +201,7 @@ const EventDetails = () => {
 
                     <div className="progress-bar">
                       <div className="progress-step">
-                        <span>Invite Accept</span>
+                        <span>Invite Accepted</span>
                         <div
                           className={`step-circle ${
                             member.status === "accepted" ||
@@ -240,7 +240,7 @@ const EventDetails = () => {
                         </div>
                       </div>
                       <div className="progress-step">
-                        <span>Suit Delivered</span>
+                        <span>Suit Shipped</span>
                         <div
                           className={`step-circle ${
                             member.status === "delivered"

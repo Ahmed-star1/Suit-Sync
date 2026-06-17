@@ -208,6 +208,36 @@ const ThankYouPage = () => {
     );
   };
 
+  const getProductStyleLabel = (item) => {
+    const sourceItem = getDisplaySourceItem(item);
+    const buyType = (
+      sourceItem.buy_type ||
+      sourceItem.type ||
+      sourceItem.product?.buy_type ||
+      ""
+    ).toLowerCase();
+
+    if (
+      buyType === "buy" ||
+      sourceItem.product_buy_style ||
+      sourceItem.buy_style ||
+      sourceItem.product?.buy_style
+    ) {
+      return "Buy Style";
+    }
+
+    if (
+      buyType === "rent" ||
+      sourceItem.product_rent_style ||
+      sourceItem.rent_style ||
+      sourceItem.product?.rent_style
+    ) {
+      return "Rent Style";
+    }
+
+    return "Style";
+  };
+
   const getProductColor = (item) => {
     const sourceItem = getDisplaySourceItem(item);
     return sourceItem.color || sourceItem.color_code || "";
@@ -222,6 +252,17 @@ const ThankYouPage = () => {
       item.event_date ||
       item.event?.date ||
       item.date ||
+      ""
+    );
+  };
+
+  const getProductEventName = (item) => {
+    const sourceItem = getDisplaySourceItem(item);
+    return (
+      sourceItem.event_name ||
+      sourceItem.event?.name ||
+      item.event_name ||
+      item.event?.name ||
       ""
     );
   };
@@ -508,9 +549,11 @@ const getSuitGroupSizeDetails = (item) => {
               <div className="items-list">
                 {displayItems.map((item, index) => {
                   if (isSuitGroup(item)) {
-                    const productSize = getProductSize(item);
                     const productSku = getProductSku(item);
                     const productStyle = getProductStyle(item);
+                    const productStyleLabel = getProductStyleLabel(item);
+                    const productEventName = getProductEventName(item);
+                    const productEventDate = getProductEventDate(item);
                     return (
                       <div
                         className="list-item with-image"
@@ -547,7 +590,7 @@ const getSuitGroupSizeDetails = (item) => {
                             )}
                             {productStyle && (
                               <p className="item-detail">
-                                <strong>SKU:</strong> {productStyle}
+                                <strong>{productStyleLabel}:</strong> {productStyle}
                               </p>
                             )}
                             {(() => {
@@ -573,10 +616,19 @@ const getSuitGroupSizeDetails = (item) => {
                           </div>
                         </div>
                         <div className="item-price">
-                          {getBuyTypeLabel(item.items[0]) === "Rent" && getProductEventDate(item) && (
-                            <div className="item-detail event-date">
-                              <strong>Event Date:</strong> {formatDate(getProductEventDate(item))}
-                            </div>
+                          {getBuyTypeLabel(item.items[0]) === "Rent" && (productEventName || productEventDate) && (
+                            <>
+                              {productEventName && (
+                                <div className="item-detail event-name">
+                                  <strong>Event Name:</strong> {productEventName}
+                                </div>
+                              )}
+                              {productEventDate && (
+                                <div className="item-detail event-date">
+                                  <strong>Event Date:</strong> {formatDate(productEventDate)}
+                                </div>
+                              )}
+                            </>
                           )}
                           {formatPrice(item.total_price)}
                         </div>
@@ -586,6 +638,9 @@ const getSuitGroupSizeDetails = (item) => {
                     const productSize = getProductSize(item);
                     const productSku = getProductSku(item);
                     const productStyle = getProductStyle(item);
+                    const productStyleLabel = getProductStyleLabel(item);
+                    const productEventName = getProductEventName(item);
+                    const productEventDate = getProductEventDate(item);
                     return (
                       <div
                         className="list-item with-image"
@@ -622,7 +677,7 @@ const getSuitGroupSizeDetails = (item) => {
                             )}
                             {productStyle && (
                               <p className="item-detail">
-                                <strong>SKU:</strong> {productStyle}
+                                <strong>{productStyleLabel}:</strong> {productStyle}
                               </p>
                             )}
                             {productSize && (
@@ -634,10 +689,19 @@ const getSuitGroupSizeDetails = (item) => {
                         </div>
                         <div className="item-price">
                           {formatPrice(item.unit_price)}
-                          {getBuyTypeLabel(item) === "Rent" && getProductEventDate(item) && (
-                            <div className="item-detail">
-                              Event Date: {formatDate(getProductEventDate(item))}
-                            </div>
+                          {getBuyTypeLabel(item) === "Rent" && (productEventName || productEventDate) && (
+                            <>
+                              {productEventName && (
+                                <div className="item-detail event-name">
+                                  <strong>Event Name:</strong> {productEventName}
+                                </div>
+                              )}
+                              {productEventDate && (
+                                <div className="item-detail event-date">
+                                  <strong>Event Date:</strong> {formatDate(productEventDate)}
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>

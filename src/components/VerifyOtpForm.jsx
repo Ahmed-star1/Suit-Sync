@@ -124,7 +124,7 @@ const VerifyOtpForm = () => {
           </Formik>
         </div>
         <div className="auth-link">
-          <p>Don't get a code 
+          <p>Didn’t receive a code?
             <button
             type="button"
             disabled={loading}

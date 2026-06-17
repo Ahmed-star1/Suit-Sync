@@ -8,19 +8,32 @@ import "aos/dist/aos.css";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "../components/Loader";
 
+const SHOP_STATE_KEY = "shop_navigation_state";
+
 const Shop = () => {
   const dispatch = useDispatch();
+  const [restoredShopState] = useState(() => {
+    try {
+      const savedState = sessionStorage.getItem(SHOP_STATE_KEY);
+      return savedState ? JSON.parse(savedState) : null;
+    } catch {
+      return null;
+    }
+  });
   
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
+    sessionStorage.removeItem(SHOP_STATE_KEY);
   }, []);
 
   const { loading, products } = useSelector((state) => state.products);
 
-  const [selectedFilters, setSelectedFilters] = useState({
-    category: [],
-    "rent-buy": [],
-  });
+  const [selectedFilters, setSelectedFilters] = useState(
+    restoredShopState?.selectedFilters || {
+      category: [],
+      "rent-buy": [],
+    },
+  );
 
   const handleFilterChange = (filterType, value) => {
     setSelectedFilters((prevFilters) => {
@@ -65,7 +78,11 @@ const Shop = () => {
           </div>
           <div className="shop-right-column col-md-9" data-aos="fade-left">
             <h3>Featured Products</h3>
-            <ShopProducts selectedFilters={selectedFilters} />
+            <ShopProducts
+              selectedFilters={selectedFilters}
+              initialPage={restoredShopState?.page || 1}
+              isRestoringShopState={Boolean(restoredShopState)}
+            />
           </div>
         </div>
       </section>

@@ -249,6 +249,23 @@ const CartPage = () => {
 
   const getProductName = (item) => item.product?.name || "Product";
 
+  const getProductDetailId = (item) => {
+    const displayItem = item.items?.length ? item.items[0] : item;
+    return (
+      displayItem?.product_id ||
+      displayItem?.product?.id ||
+      item?.product_id ||
+      item?.product?.id
+    );
+  };
+
+  const handleProductDetail = (item) => {
+    const productId = getProductDetailId(item);
+    if (productId) {
+      navigate(`/shop/product/${productId}`);
+    }
+  };
+
   const total = cartItems.reduce((sum, item) => sum + getProductPrice(item), 0);
 
   const getProductQuantity = (item) => {
@@ -312,11 +329,19 @@ const CartPage = () => {
                             src={getProductImage(item)}
                             alt={getProductName(item)}
                             className="item-img"
+                            onClick={() => handleProductDetail(item)}
+                            style={{ cursor: getProductDetailId(item) ? "pointer" : "default" }}
                             onError={(e) => (e.target.src = "/Images/suit1.png")}
                           />
 
                           <div className="item-info">
-                            <h3 className="item-title">{getProductName(item)}</h3>
+                            <h3
+                              className="item-title"
+                              onClick={() => handleProductDetail(item)}
+                              style={{ cursor: getProductDetailId(item) ? "pointer" : "default" }}
+                            >
+                              {getProductName(item)}
+                            </h3>
 
                             <p className="item-price">
                               {getProductBuyType(item) === "buy" ? "Buy" : "Rent"} : {formatPrice(price)}

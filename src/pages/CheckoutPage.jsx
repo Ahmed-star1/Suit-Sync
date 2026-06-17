@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import {
-  CitySelect,
-  CountrySelect,
-  StateSelect,
-} from "react-country-state-city";
-import "react-country-state-city/dist/react-country-state-city.css";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+// State and city will be simple text inputs now (no country-state-city package)
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -14,14 +11,20 @@ import * as Yup from "yup";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import Loader from "../components/Loader";
+import StripePaymentForm from "../components/StripePaymentForm";
 import { getCart } from "../Redux/Reducers/productSlice";
 import {
   submitCheckout,
   resetCheckoutState,
 } from "../Redux/Reducers/productSlice";
 
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
 const CheckoutPage = () => {
   const PHONE_NUMBER_LENGTH = 10;
+  const UNITED_STATES_COUNTRY_ID = 233;
+  const UNITED_STATES_COUNTRY_CODE = "US";
+  const UNITED_STATES_COUNTRY_NAME = "United States";
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,8 +37,11 @@ const CheckoutPage = () => {
   } = useSelector((state) => state.products);
 
   const [pageLoading, setPageLoading] = useState(true);
-  const [selectedCountryId, setSelectedCountryId] = useState(0);
-  const [selectedStateId, setSelectedStateId] = useState(0);
+  const [selectedCountryId] = useState(UNITED_STATES_COUNTRY_ID);
+  const [selectedState, setSelectedState] = useState(null);
+  const [useStateAsCity, setUseStateAsCity] = useState(false);
+  const [paymentMethodError, setPaymentMethodError] = useState("");
+  const stripePaymentFormRef = useRef(null);
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -80,7 +86,7 @@ const CheckoutPage = () => {
       address: "",
       city: "",
       state: "",
-      country: "",
+      country: UNITED_STATES_COUNTRY_CODE,
       zip_code: "",
       notes: "",
       agree_terms: false,
@@ -96,7 +102,9 @@ const CheckoutPage = () => {
           "Phone number must be in (123) 456-7890 format",
         ),
       address: Yup.string().required("Address is required"),
-      city: Yup.string().required("City is required"),
+      city: useStateAsCity
+        ? Yup.string()
+        : Yup.string().required("City is required"),
       state: Yup.string().required("State is required"),
       country: Yup.string().required("Country is required"),
       zip_code: Yup.string().required("ZIP code is required"),
@@ -119,6 +127,27 @@ const CheckoutPage = () => {
 
   const handleSubmitCheckout = async (formValues) => {
     try {
+      setPaymentMethodError("");
+
+      if (!stripePaymentFormRef.current) {
+        throw new Error("Stripe card form is still loading.");
+      }
+
+      const paymentMethod = await stripePaymentFormRef.current.createPaymentMethod({
+          name: `${formValues.first_name} ${formValues.last_name}`.trim(),
+          email: formValues.email,
+          phone: formValues.phone,
+          address: {
+            line1: formValues.address,
+            city: formValues.city === "-" ? undefined : formValues.city,
+            state: formValues.state,
+            country: UNITED_STATES_COUNTRY_CODE,
+            postal_code: formValues.zip_code,
+          },
+      });
+
+      console.log("Stripe PaymentMethod ID:", paymentMethod.id);
+
       const checkoutData = {
         user_id: userId || localStorage.getItem("cart_user_id"),
         first_name: formValues.first_name,
@@ -128,10 +157,11 @@ const CheckoutPage = () => {
         address: formValues.address,
         city: formValues.city,
         state: formValues.state,
-        country: formValues.country,
+        country: UNITED_STATES_COUNTRY_CODE,
         zip_code: formValues.zip_code,
         notes: formValues.notes || "",
         agree_terms: formValues.agree_terms,
+        payment_method_id: paymentMethod.id,
         cart_items: cartItems.map((item) => {
           if (item.items && Array.isArray(item.items)) {
             return {
@@ -163,6 +193,9 @@ const CheckoutPage = () => {
       navigate("/thank-you");
     } catch (checkoutError) {
       console.error("Checkout failed:", checkoutError);
+      setPaymentMethodError(
+        checkoutError?.message || "Unable to create Stripe payment method.",
+      );
     }
   };
 
@@ -286,6 +319,12 @@ const CheckoutPage = () => {
     ) : null;
   };
 
+  const handleStateChange = (value) => {
+    setSelectedState(null);
+    setUseStateAsCity(false);
+    formik.setFieldValue("state", value || "");
+  };
+
   if (pageLoading || cartLoading) {
     return (
       <div className="checkout-page">
@@ -332,60 +371,43 @@ const CheckoutPage = () => {
               <h3>Billing address</h3>
 
               <div className="select-field">
-                <CountrySelect
-                  containerClassName="custom-select-wrapper checkout-location-select"
-                  inputClassName={`input custom-select ${formik.touched.country && formik.errors.country ? "error" : ""}`}
-                  placeHolder="Select Country"
-                  defaultValue={formik.values.country || undefined}
-                  value={formik.values.country}
-                  onChange={(country) => {
-                    setSelectedCountryId(country.id);
-                    setSelectedStateId(0);
-                    formik.setFieldValue("country", country.name);
-                    formik.setFieldValue("state", "");
-                    formik.setFieldValue("city", "");
-                  }}
-                  onBlur={() => formik.setFieldTouched("country", true)}
+                <input
+                  type="text"
+                  name="country"
+                  className={`input  ${formik.touched.country && formik.errors.country ? "error" : ""}`}
+                  value={UNITED_STATES_COUNTRY_NAME}
+                  disabled
+                  readOnly
                 />
                 {getFieldError("country")}
               </div>
 
               <div className="row-fields">
                 <div className="select-field">
-                  <StateSelect
-                    key={selectedCountryId || "state-empty"}
-                    containerClassName="custom-select-wrapper checkout-location-select"
-                    inputClassName={`input custom-select ${formik.touched.state && formik.errors.state ? "error" : ""}`}
-                    countryid={selectedCountryId}
-                    placeHolder="Select State"
-                    defaultValue={formik.values.state || undefined}
+                  <input
+                    type="text"
+                    name="state"
+                    className={`input ${formik.touched.state && formik.errors.state ? "error" : ""}`}
+                    placeholder="State"
                     value={formik.values.state}
-                    disabled={!selectedCountryId}
-                    onChange={(state) => {
-                      setSelectedStateId(state.id);
-                      formik.setFieldValue("state", state.name);
-                      formik.setFieldValue("city", "");
+                    onChange={(e) => {
+                      formik.setFieldValue("state", e.target.value);
+                      handleStateChange(e.target.value);
                     }}
-                    onBlur={() => formik.setFieldTouched("state", true)}
+                    onBlur={formik.handleBlur}
                   />
                   {getFieldError("state")}
                 </div>
 
                 <div className="select-field">
-                  <CitySelect
-                    key={`${selectedCountryId}-${selectedStateId}`}
-                    containerClassName="custom-select-wrapper checkout-location-select"
-                    inputClassName={`input custom-select ${formik.touched.city && formik.errors.city ? "error" : ""}`}
-                    countryid={selectedCountryId}
-                    stateid={selectedStateId}
-                    placeHolder="Select City"
-                    defaultValue={formik.values.city || undefined}
+                  <input
+                    type="text"
+                    name="city"
+                    className={`input ${formik.touched.city && formik.errors.city ? "error" : ""}`}
+                    placeholder="City"
                     value={formik.values.city}
-                    disabled={!selectedCountryId || !selectedStateId}
-                    onChange={(city) => {
-                      formik.setFieldValue("city", city.name);
-                    }}
-                    onBlur={() => formik.setFieldTouched("city", true)}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
                   />
                   {getFieldError("city")}
                 </div>
@@ -479,9 +501,15 @@ const CheckoutPage = () => {
 
               <h3>Payment options</h3>
 
-              <div className="payment-error-box">
-                <span>!</span>
-                Demo Mode - No payment will be processed
+              <div className="stripe-payment-wrapper">
+                <Elements stripe={stripePromise}>
+                  <StripePaymentForm ref={stripePaymentFormRef} />
+                </Elements>
+                {paymentMethodError && (
+                  <div className="payment-message error">
+                    {paymentMethodError}
+                  </div>
+                )}
               </div>
 
               <div className="terms-checkbox">

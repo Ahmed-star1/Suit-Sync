@@ -2,7 +2,7 @@ import axios from "axios";
 import nearestColor from "nearest-color";
 import { getAccessToken } from "./localStore";
 
-export const BASE_URL = "https://suit-sync.koderspedia.live";
+export const BASE_URL = "https://api.suit-sync.com";
 
 export const fetchApi = async ({
   method,
@@ -34,17 +34,17 @@ export const fetchApi = async ({
   };
 
   // 👇 Only request log
-  console.log("API REQUEST:", config);
+  // console.log("API REQUEST:", config);
 
   try {
     const response = await axios(config);
 
     // 👇 Only success log
-    console.log("API SUCCESS:", response.data);
+    // console.log("API SUCCESS:", response.data);
 
     return response.data;
   } catch (error) {
-    console.log("API ERROR:", error.response?.data || error.message);
+    // console.log("API ERROR:", error.response?.data || error.message);
 
     throw error;
   }
