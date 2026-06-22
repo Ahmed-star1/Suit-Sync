@@ -1250,12 +1250,7 @@ const ProductDetail = ({ product }) => {
         product_id: selectedShoesProduct.id,
         size_measurement: selectedShoesSize,
         color: getAddonColorValue(selectedShoesProduct, selectedShoesColorKey),
-        buy_type: getAddonBuyType(
-          selectedShoesProduct,
-          selectedShoesColorKey,
-          selectedShoesSize,
-          "shoes",
-        ),
+        buy_type: "rent",
         price: selectedShoesProduct.override_price || selectedShoesProduct.rent_price
       });
     }
