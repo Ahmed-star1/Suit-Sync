@@ -194,7 +194,7 @@ const PrivacyPolicy = () => {
               </ul>
               <p>
                 To do so, email:{" "}
-                <a href="mailto:privacy@suitsync.com">privacy@suitsync.com</a>
+                <a href="mailto:contact@suit-sync.com">contact@suit-sync.com</a>
               </p>
               <p>
                 If you are a California resident, you also have additional
@@ -224,7 +224,7 @@ const PrivacyPolicy = () => {
               <h3>Contact Us</h3>
               <p>
                 Privacy questions? Reach out anytime at{" "}
-                <a href="mailto:privacy@suitsync.com">privacy@suitsync.com</a>
+                <a href="mailto:contact@suit-sync.com">contact@suit-sync.com</a>
               </p>
               <p>
                 Or write us:

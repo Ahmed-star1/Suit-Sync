@@ -61,9 +61,6 @@ const StripePaymentForm = forwardRef((_, ref) => {
 
       {cardError && <div className="payment-message error">{cardError}</div>}
 
-      <p className="stripe-card-note">
-        Card form preview only. No payment will be processed.
-      </p>
     </div>
   );
 });

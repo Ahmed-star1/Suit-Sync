@@ -96,7 +96,7 @@ const Footer = () => {
             <p>
               Email Now:
               <br />
-              <a href="mailto: cj@suit-sync.com">cj@suit-sync.com</a>
+              <a href="mailto: contact@suit-sync.com">contact@suit-sync.com</a>
             </p>
           </div>
         </div>

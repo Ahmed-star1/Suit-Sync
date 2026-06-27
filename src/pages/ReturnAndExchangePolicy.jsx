@@ -93,12 +93,8 @@ const ReturnAndExchangePolicy = () => {
                 last-minute panic.
               </p>
               <p>
-                <strong>Phone:</strong>{" "}
-                <a href="tel:6033161725">603-316-1725</a>
-              </p>
-              <p>
                 <strong>Email:</strong>{" "}
-                <a href="mailto:support@suitsync.com">support@suitsync.com</a>
+                <a href="mailto:contact@suit-sync.com">contact@suit-sync.com</a>
               </p>
             </div>
           </div>

@@ -277,11 +277,7 @@ const TermsAndConditions = () => {
               <h3>10. Contact</h3>
               <p>
                 <strong>Email:</strong>{" "}
-                <a href="mailto:support@suitsync.com">support@suitsync.com</a>
-              </p>
-              <p>
-                <strong>Phone:</strong>{" "}
-                <a href="tel:6033161725">603-316-1725</a>
+                <a href="mailto:contact@suit-sync.com">contact@suit-sync.com</a>
               </p>
             </div>
           </div>

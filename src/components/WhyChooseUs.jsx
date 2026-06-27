@@ -7,9 +7,6 @@ const WhyChooseUs = () => {
         <div className="row">
           <div class="col-md-6" data-aos="fade-right">
             <h2>Keep your wedding Party Synced! </h2>
-            <p>
-             This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text. Only for show. He who searches for meaning here will be sorely disappointed.
-            </p>
            <ul>
             <li>
                 <img src="/Images/Guaranteed.png" />
