@@ -77,6 +77,9 @@ const CheckoutPage = () => {
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
   };
 
+  const formatStateCode = (value) =>
+    value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 3);
+
   const formik = useFormik({
     initialValues: {
       first_name: "",
@@ -105,7 +108,12 @@ const CheckoutPage = () => {
       city: useStateAsCity
         ? Yup.string()
         : Yup.string().required("City is required"),
-      state: Yup.string().required("State is required"),
+      state: Yup.string()
+        .required("State is required")
+        .matches(
+          /^[A-Z]{2,3}$/,
+          "Enter state abbreviation only, e.g. CA, NY, TX",
+        ),
       country: Yup.string().required("Country is required"),
       zip_code: Yup.string().required("ZIP code is required"),
       agree_terms: Yup.boolean().oneOf([true], "You must agree to the terms"),
@@ -173,6 +181,8 @@ const CheckoutPage = () => {
                 quantity: nestedItem.quantity,
                 buy_type: nestedItem.buy_type,
                 price: getProductPrice(nestedItem),
+                waist_measurement: nestedItem.waist_measurement,
+                outseam_measurement: nestedItem.outseam_measurement,
               })),
             };
           }
@@ -184,6 +194,8 @@ const CheckoutPage = () => {
             quantity: item.quantity,
             buy_type: item.buy_type,
             price: getProductPrice(item),
+            waist_measurement: item.waist_measurement,
+            outseam_measurement: item.outseam_measurement,
           };
         }),
         total_amount: calculateTotal(),
@@ -271,6 +283,25 @@ const CheckoutPage = () => {
     return displayItem?.color || displayItem?.color_code || "";
   };
 
+  const getPantMeasurementDetails = (item) => {
+    const pantItem = item.items?.length
+      ? item.items.find((nestedItem) => nestedItem.size_category === "pants")
+      : item.size_category === "pants"
+        ? item
+        : null;
+
+    if (!pantItem?.waist_measurement && !pantItem?.outseam_measurement) {
+      return "";
+    }
+
+    return [
+      pantItem.waist_measurement && `Waist: ${pantItem.waist_measurement}`,
+      pantItem.outseam_measurement && `Outseam: ${pantItem.outseam_measurement}`,
+    ]
+      .filter(Boolean)
+      .join(" | ");
+  };
+
   const getSingleItemPrice = (item) => {
     if (item?.override_price !== null && item?.override_price !== undefined) {
       return parseFloat(item.override_price) || 0;
@@ -322,7 +353,7 @@ const CheckoutPage = () => {
   const handleStateChange = (value) => {
     setSelectedState(null);
     setUseStateAsCity(false);
-    formik.setFieldValue("state", value || "");
+    formik.setFieldValue("state", formatStateCode(value || ""));
   };
 
   if (pageLoading || cartLoading) {
@@ -388,10 +419,10 @@ const CheckoutPage = () => {
                     type="text"
                     name="state"
                     className={`input ${formik.touched.state && formik.errors.state ? "error" : ""}`}
-                    placeholder="State"
+                    placeholder="State (CA, TX, NY, etc.)"
+                    maxLength={3}
                     value={formik.values.state}
                     onChange={(e) => {
-                      formik.setFieldValue("state", e.target.value);
                       handleStateChange(e.target.value);
                     }}
                     onBlur={formik.handleBlur}
@@ -579,6 +610,9 @@ const CheckoutPage = () => {
                           <p className="item-quantity">
                             Qty: {getProductQuantity(item)}
                           </p>
+                          {getPantMeasurementDetails(item) && (
+                            <p>{getPantMeasurementDetails(item)}</p>
+                          )}
                         </div>
                         <div className="summary-info-type">
                           <p className="item-type">

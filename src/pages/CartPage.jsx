@@ -242,6 +242,25 @@ const CartPage = () => {
     return displayItem?.color || displayItem?.color_code || "";
   };
 
+  const getPantMeasurementDetails = (item) => {
+    const pantItem = item.items?.length
+      ? item.items.find((nestedItem) => nestedItem.size_category === "pants")
+      : item.size_category === "pants"
+        ? item
+        : null;
+
+    if (!pantItem?.waist_measurement && !pantItem?.outseam_measurement) {
+      return "";
+    }
+
+    return [
+      pantItem.waist_measurement && `Waist: ${pantItem.waist_measurement}`,
+      pantItem.outseam_measurement && `Outseam: ${pantItem.outseam_measurement}`,
+    ]
+      .filter(Boolean)
+      .join(" | ");
+  };
+
   const formatPrice = (price) => {
     if (!price || price === 0) return "$0.00";
     return `$${parseFloat(price).toFixed(2)}`;
@@ -347,6 +366,11 @@ const CartPage = () => {
                               {getProductBuyType(item) === "buy" ? "Buy" : "Rent"} : {formatPrice(price)}
                               {getProductColor(item) && ` | Color: ${getProductColor(item)}`}
                             </p>
+                            {getPantMeasurementDetails(item) && (
+                              <p className="item-desc">
+                                {getPantMeasurementDetails(item)}
+                              </p>
+                            )}
 
                             {getProductBuyType(item) === "buy" && (
                               <div className="qty-box">

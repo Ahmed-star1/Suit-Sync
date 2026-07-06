@@ -5,13 +5,13 @@ import ShopFilters from "../components/ShopFilters";
 import ShopProducts from "../components/ShopProducts";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Loader from "../components/Loader";
 
 const SHOP_STATE_KEY = "shop_navigation_state";
+const DEFAULT_SUIT_CATEGORY_ID = "1";
 
 const Shop = () => {
-  const dispatch = useDispatch();
   const [restoredShopState] = useState(() => {
     try {
       const savedState = sessionStorage.getItem(SHOP_STATE_KEY);
@@ -20,6 +20,7 @@ const Shop = () => {
       return null;
     }
   });
+  const hasRestoredShopState = Boolean(restoredShopState);
   
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -30,7 +31,7 @@ const Shop = () => {
 
   const [selectedFilters, setSelectedFilters] = useState(
     restoredShopState?.selectedFilters || {
-      category: [],
+      category: [DEFAULT_SUIT_CATEGORY_ID],
       "rent-buy": [],
     },
   );
@@ -81,7 +82,7 @@ const Shop = () => {
             <ShopProducts
               selectedFilters={selectedFilters}
               initialPage={restoredShopState?.page || 1}
-              isRestoringShopState={Boolean(restoredShopState)}
+              isRestoringShopState={hasRestoredShopState}
             />
           </div>
         </div>

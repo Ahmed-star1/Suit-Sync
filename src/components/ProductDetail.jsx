@@ -141,6 +141,57 @@ const ProductDetail = ({ product }) => {
     selectedColor?.rent_style ||
     "Default";
 
+  const getRootVariantsForSelectedColor = () => {
+    if (!product?.variants?.length) return [];
+
+    if (!selectedColor) return product.variants;
+
+    const selectedColorValues = [
+      selectedColor.color,
+      selectedColor.color_code,
+      selectedColor.buy_style,
+      selectedColor.rent_style,
+    ]
+      .map((value) => value?.toString().toLowerCase())
+      .filter(Boolean);
+
+    if (!selectedColorValues.length) return product.variants;
+
+    const matchedVariants = product.variants.filter((variant) => {
+      const variantColorValues = [
+        variant.color,
+        variant.color_code,
+        variant.buy_style,
+        variant.rent_style,
+      ]
+        .map((value) => value?.toString().toLowerCase())
+        .filter(Boolean);
+
+      return selectedColorValues.some((selectedValue) =>
+        variantColorValues.includes(selectedValue),
+      );
+    });
+
+    return matchedVariants.length ? matchedVariants : product.variants;
+  };
+
+  const getSelectedColorCategory = (category) => {
+    const categoryFromGroups = selectedColor?.categories?.find(
+      (cat) => cat.category === category,
+    );
+
+    if (categoryFromGroups) return categoryFromGroups;
+
+    const colorVariants = selectedColor?.variants?.length
+      ? selectedColor.variants
+      : getRootVariantsForSelectedColor();
+    const sizes = colorVariants.filter(
+      (variant) => variant.size_category === category,
+    );
+
+    return sizes?.length ? { category, sizes } : null;
+  };
+
   // Fetch category IDs on component mount
   useEffect(() => {
     const fetchCategoryIds = async () => {
@@ -541,28 +592,35 @@ const ProductDetail = ({ product }) => {
   }, [product, selectedPriceType, productColors, selectedColorKey]);
 
   useEffect(() => {
-    if (!selectedColor) return;
+    if (!selectedColor && !product?.variants?.length) return;
 
     // categories may be absent for generic products, so don't bail early
-    const hasCategories = selectedColor.categories && selectedColor.categories.length;
+    const hasCategories =
+      (selectedColor?.categories && selectedColor.categories.length) ||
+      (selectedColor?.variants && selectedColor.variants.length) ||
+      (product?.variants && product.variants.length);
 
     // Coat sizes
-    const coatCategory = selectedColor.categories?.find(
-      (cat) => cat.category === "coat",
-    );
+    const coatCategory = getSelectedColorCategory("coat");
     if (coatCategory?.sizes?.length) {
-      const types = coatCategory.sizes.map((s) => s.size_type);
+      const types = [
+        ...new Set(coatCategory.sizes.map((s) => s.size_type).filter(Boolean)),
+      ];
       setCoatSizeTypes(types);
     } else {
       setCoatSizeTypes([]);
     }
 
     // Pant sizes
-    const pantCategory = selectedColor.categories?.find(
-      (cat) => cat.category === "pants",
-    );
-    if (pantCategory?.sizes?.length) {
-      const types = pantCategory.sizes.map((s) => s.size_type);
+    const pantCategory = getSelectedColorCategory("pants");
+    if (pantCategory?.variants?.length) {
+      const types = [
+        ...new Set(
+          pantCategory.variants
+            .map((s) => s.waist_measurement)
+            .filter(Boolean),
+        ),
+      ];
       setPantSizeTypes(types);
     } else {
       setPantSizeTypes([]);
@@ -570,7 +628,7 @@ const ProductDetail = ({ product }) => {
 
     // Generic when no categories exist or this is not a suit
     if (!hasCategories || (!coatCategory && !pantCategory)) {
-      const gen = extractGenericSizes(selectedColor);
+      const gen = extractGenericSizes(selectedColor || { variants: product?.variants || [] });
       setGenericSizes(gen);
       setSelectedGenericSize((currentSize) =>
         gen.some((item) => item.value.toString() === currentSize.toString())
@@ -590,7 +648,7 @@ const ProductDetail = ({ product }) => {
           : "",
       );
       setSelectedPantType((currentType) =>
-        pantCategory?.sizes?.some((size) => size.size_type === currentType)
+        pantCategory?.sizes?.some((size) => size.waist_measurement === currentType)
           ? currentType
           : "",
       );
@@ -605,20 +663,27 @@ const ProductDetail = ({ product }) => {
       return;
     }
 
-    const coatCategory = selectedColor?.categories?.find(
-      (cat) => cat.category === "coat",
-    );
-    const sizeType = coatCategory?.sizes?.find(
+    const coatCategory = getSelectedColorCategory("coat");
+    const matchingCoatSizes = coatCategory?.sizes?.filter(
       (s) => s.size_type === selectedCoatType,
-    );
+    ) || [];
+    const sizeType = matchingCoatSizes[0];
+    const measurements = matchingCoatSizes
+      .map((size) => ({
+        ...size,
+        measurement: size.size_measurement || size.measurement,
+      }))
+      .filter((size) => size.measurement);
 
-    if (sizeType?.measurements?.length) {
+    if (measurements.length) {
+      setCoatMeasurementData(measurements);
+    } else if (sizeType?.measurements?.length) {
       setCoatMeasurementData(sizeType.measurements);
     } else {
       setCoatMeasurementData([]);
     }
     setSelectedCoatMeasurement((currentMeasurement) =>
-      sizeType?.measurements?.some(
+      (measurements.length ? measurements : sizeType?.measurements || []).some(
         (item) => item.measurement.toString() === currentMeasurement.toString(),
       )
         ? currentMeasurement
@@ -628,32 +693,47 @@ const ProductDetail = ({ product }) => {
 
   // Update pant measurements
   useEffect(() => {
-    if (!product || !selectedPantType) {
+    if (!product) {
       setPantMeasurementData([]);
       setSelectedPantMeasurement("");
       return;
     }
 
-    const pantCategory = selectedColor?.categories?.find(
-      (cat) => cat.category === "pants",
-    );
-    const sizeType = pantCategory?.sizes?.find(
-      (s) => s.size_type === selectedPantType,
-    );
+    const pantCategory = getSelectedColorCategory("pants");
+    const pantSizes = pantCategory?.variants || [];
+    const measurementMap = new Map();
 
-    if (sizeType?.measurements?.length) {
-      setPantMeasurementData(sizeType.measurements);
+    pantSizes.forEach((size) => {
+      const measurement = size.outseam_measurement;
+      if (!measurement) return;
+
+      const value = measurement.toString();
+      const existingMeasurement = measurementMap.get(value);
+      measurementMap.set(value, {
+        ...size,
+        measurement,
+        stock_quantity: Math.max(
+          existingMeasurement?.stock_quantity ?? 0,
+          size.stock_quantity ?? 0,
+        ),
+      });
+    });
+
+    const measurements = Array.from(measurementMap.values());
+
+    if (measurements.length) {
+      setPantMeasurementData(measurements);
     } else {
       setPantMeasurementData([]);
     }
     setSelectedPantMeasurement((currentMeasurement) =>
-      sizeType?.measurements?.some(
+      measurements.some(
         (item) => item.measurement.toString() === currentMeasurement.toString(),
       )
         ? currentMeasurement
         : "",
     );
-  }, [selectedPantType, product, selectedColor]);
+  }, [product, selectedColor]);
 
   // Image handling for main product - FIXED VERSION
   const normalizeColorText = (value) =>
@@ -887,8 +967,8 @@ const ProductDetail = ({ product }) => {
           group_uuid: suitGroupUUID,
           product_id: product.id,
           size_category: "pants",
-          size_type: selectedPantType,
-          size_measurement: selectedPantMeasurement,
+          waist_measurement: selectedPantType,
+          outseam_measurement: selectedPantMeasurement,
           color: selectedProductColorValue,
           buy_type: "buy"
         };
@@ -1192,8 +1272,8 @@ const ProductDetail = ({ product }) => {
       group_uuid: suitGroupUUID,
       product_id: product.id,
       size_category: "pants",
-      size_type: selectedPantType,
-      size_measurement: selectedPantMeasurement,
+      waist_measurement: selectedPantType,
+      outseam_measurement: selectedPantMeasurement,
       color: selectedProductColorValue,
       buy_type: "rent"
     };
@@ -1910,21 +1990,21 @@ const ProductDetail = ({ product }) => {
                     </div>
                   </div>
                   <div className="sizes">
-                    <h5>PANT SIZE</h5>
+                    <h5>PANT MEASUREMENT</h5>
                     <div className="sizes-dropdown">
                       <div className="custom-select-wrapper">
                         <div
                           className="custom-select"
-                          onClick={() =>
+                          onClick={() => {
                             setActiveSizeDropdown(
                               activeSizeDropdown === "pant" ? null : "pant",
-                            )
-                          }
+                            );
+                          }}
                         >
                           <span className="selected-value">
                             {selectedPantType
-                              ? capitalizeFirst(selectedPantType)
-                              : "Select Pant Size"}
+                              ? selectedPantType
+                              : "Select Waist Measurement"}
                           </span>
                           <i className="fa-solid fa-chevron-down"></i>
                         </div>
@@ -1942,60 +2022,58 @@ const ProductDetail = ({ product }) => {
                                   setActiveSizeDropdown(null);
                                 }}
                               >
-                                {capitalizeFirst(type)}
+                                {type}
                               </li>
                             ))}
                           </ul>
                         )}
                       </div>
 
-                      {selectedPantType && pantMeasurementData.length > 0 && (
-                        <div className="custom-select-wrapper">
-                          <div
-                            className="custom-select"
-                            onClick={() =>
-                              setActiveSizeDropdown(
-                                activeSizeDropdown === "pantInner"
-                                  ? null
-                                  : "pantInner",
-                              )
-                            }
-                          >
-                            <span className="selected-value">
-                              {selectedPantMeasurement || "Select Length"}
-                            </span>
-                            <i className="fa-solid fa-chevron-down"></i>
-                          </div>
-
-                          {activeSizeDropdown === "pantInner" && (
-                            <ul className="custom-select-dropdown">
-                              {pantMeasurementData.map((item, idx) => {
-                                const isOutOfStock = item.stock_quantity === 0;
-                                return (
-                                  <li
-                                    key={idx}
-                                    className={`
-                                  ${selectedPantMeasurement === item.measurement.toString() ? "active" : ""}
-                                  ${isOutOfStock ? "out-of-stock" : ""}
-                                `}
-                                    onClick={() => {
-                                      if (!isOutOfStock) {
-                                        setSelectedPantMeasurement(
-                                          item.measurement.toString(),
-                                        );
-                                        setActiveSizeDropdown(null);
-                                      }
-                                    }}
-                                  >
-                                    {item.measurement}{" "}
-                                    {isOutOfStock && "(Out of Stock)"}
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          )}
+                      <div className="custom-select-wrapper">
+                        <div
+                          className="custom-select"
+                          onClick={() => {
+                            setActiveSizeDropdown(
+                              activeSizeDropdown === "pantInner"
+                                ? null
+                                : "pantInner",
+                            );
+                          }}
+                        >
+                          <span className="selected-value">
+                            {selectedPantMeasurement || "Select Outseam Measurement"}
+                          </span>
+                          <i className="fa-solid fa-chevron-down"></i>
                         </div>
-                      )}
+
+                        {activeSizeDropdown === "pantInner" && (
+                          <ul className="custom-select-dropdown">
+                            {pantMeasurementData.map((item, idx) => {
+                              const isOutOfStock = item.stock_quantity === 0;
+                              return (
+                                <li
+                                  key={idx}
+                                  className={`
+                                ${selectedPantMeasurement === item.measurement.toString() ? "active" : ""}
+                                ${isOutOfStock ? "out-of-stock" : ""}
+                              `}
+                                  onClick={() => {
+                                    if (!isOutOfStock) {
+                                      setSelectedPantMeasurement(
+                                        item.measurement.toString(),
+                                      );
+                                      setActiveSizeDropdown(null);
+                                    }
+                                  }}
+                                >
+                                  {item.measurement}{" "}
+                                  {isOutOfStock && "(Out of Stock)"}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </>

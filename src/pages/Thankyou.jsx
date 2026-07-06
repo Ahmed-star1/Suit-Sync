@@ -407,7 +407,7 @@ const getSuitGroupSizeDetails = (item) => {
     
     if (isCoat(normalized)) {
       sizeDetails.coat = sizeValue;
-    } else if (isPant(normalized)) {
+    } else if (isPant(normalized) && !sizeDetails.pant) {
       sizeDetails.pant = sizeValue;
     } else if (!sizeDetails.coat) {
       sizeDetails.coat = sizeValue;
@@ -419,6 +419,12 @@ const getSuitGroupSizeDetails = (item) => {
 
     if (nestedItem.main_size) sizeCandidates.push(nestedItem.main_size);
     if (nestedItem.size) sizeCandidates.push(nestedItem.size);
+    if (nestedItem.size_category === "pants" && (nestedItem.waist_measurement || nestedItem.outseam_measurement)) {
+      sizeDetails.pant = [
+        nestedItem.waist_measurement && `Waist: ${nestedItem.waist_measurement}`,
+        nestedItem.outseam_measurement && `Outseam: ${nestedItem.outseam_measurement}`,
+      ].filter(Boolean).join(" | ");
+    }
     if (nestedItem.variants && nestedItem.variants.length > 0) {
       nestedItem.variants.forEach((variant) => {
         if (variant.size) sizeCandidates.push(variant.size);
@@ -443,6 +449,8 @@ const getSuitGroupSizeDetails = (item) => {
     order?.summary?.subtotal || totalSummary?.subtotal || calculateItemTotal();
   const total =
     order?.summary?.total_amount || totalSummary?.total_amount || subtotal;
+  const tax_amount =
+    order?.summary?.tax_amount || totalSummary?.tax_amount || 0;
 
   if (orderSummaryLoading) {
     return (
@@ -716,8 +724,8 @@ const getSuitGroupSizeDetails = (item) => {
                   <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="breakdown-row shipping">
-                  <span>Shipping</span>
-                  <span className="free">FREE</span>
+                  <span>Sales Tax</span>
+                  <span className="free">{formatPrice(tax_amount)}</span>
                 </div>
                 <div className="breakdown-row total">
                   <span>Total</span>
