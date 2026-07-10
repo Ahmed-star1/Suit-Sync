@@ -10,6 +10,7 @@ import {
   updateProfileService,
   getProfileService,
   logoutService,
+  contactUsService,
 } from "../Services/authServices";
 import { setAccessToken, clearStorage } from "../Utils/localStore";
 
@@ -152,6 +153,19 @@ export const updateUserProfile = createAsyncThunk(
   }
 );
 
+// CONTACT US THUNK
+export const submitContactUs = createAsyncThunk(
+  "auth/submitContactUs",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await contactUsService(payload);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error?.response?.data);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
 
@@ -163,6 +177,9 @@ const authSlice = createSlice({
     registeredEmail: null,
     forgetEmail: null,
     user: null,
+    contactLoading: false,
+    contactError: null,
+    contactSuccess: false,
   },
 
   reducers: {
@@ -340,6 +357,23 @@ const authSlice = createSlice({
       .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // -------- CONTACT US --------
+      .addCase(submitContactUs.pending, (state) => {
+        state.contactLoading = true;
+        state.contactError = null;
+        state.contactSuccess = false;
+      })
+      .addCase(submitContactUs.fulfilled, (state) => {
+        state.contactLoading = false;
+        state.contactError = null;
+        state.contactSuccess = true;
+      })
+      .addCase(submitContactUs.rejected, (state, action) => {
+        state.contactLoading = false;
+        state.contactError = action.payload;
+        state.contactSuccess = false;
       });
   },
 });

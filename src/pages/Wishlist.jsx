@@ -42,14 +42,14 @@ const Wishlist = () => {
     }
 
     if (product.images && product.images.length > 0) {
-      const primaryImage = product.images.find(
-        (img) => img.is_primary === true,
+      const featuredImage = product.images.find(
+        (img) => img.is_featured === true || img.is_primary === true,
       );
-      if (primaryImage && primaryImage.image_url) {
-        return primaryImage.image_url;
+      if (featuredImage) {
+        return featuredImage.image_url || featuredImage.url || "/Images/suit1.png";
       }
-      if (product.images[0] && product.images[0].image_url) {
-        return product.images[0].image_url;
+      if (product.images[0]) {
+        return product.images[0].image_url || product.images[0].url || "/Images/suit1.png";
       }
     }
 

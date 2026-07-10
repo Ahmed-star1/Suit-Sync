@@ -81,6 +81,7 @@ const ProductDetail = ({ product }) => {
   const [selectedShoesColorKey, setSelectedShoesColorKey] = useState("");
   const [selectedRentDate, setSelectedRentDate] = useState("");
   const [selectedRentEvent, setSelectedRentEvent] = useState(null);
+  const rentDateInputRef = useRef(null);
 
   // Available sizes for each product type
   const [shirtAvailableSizes, setShirtAvailableSizes] = useState([]);
@@ -648,7 +649,7 @@ const ProductDetail = ({ product }) => {
           : "",
       );
       setSelectedPantType((currentType) =>
-        pantCategory?.sizes?.some((size) => size.waist_measurement === currentType)
+        pantCategory?.variants?.some((size) => size.waist_measurement === currentType)
           ? currentType
           : "",
       );
@@ -700,7 +701,11 @@ const ProductDetail = ({ product }) => {
     }
 
     const pantCategory = getSelectedColorCategory("pants");
-    const pantSizes = pantCategory?.variants || [];
+    const pantSizes = selectedPantType
+      ? (pantCategory?.variants || []).filter(
+          (size) => size.waist_measurement === selectedPantType,
+        )
+      : pantCategory?.variants || [];
     const measurementMap = new Map();
 
     pantSizes.forEach((size) => {
@@ -733,7 +738,7 @@ const ProductDetail = ({ product }) => {
         ? currentMeasurement
         : "",
     );
-  }, [product, selectedColor]);
+  }, [product, selectedColor, selectedPantType]);
 
   // Image handling for main product - FIXED VERSION
   const normalizeColorText = (value) =>
@@ -762,7 +767,7 @@ const ProductDetail = ({ product }) => {
         .filter(Boolean);
 
       return selectedColorValues.some((colorValue) =>
-        imageColorValues.some((imageValue) => imageValue.includes(colorValue)),
+        imageColorValues.some((imageValue) => imageValue === colorValue),
       );
     });
 
@@ -849,6 +854,17 @@ const ProductDetail = ({ product }) => {
 
   const getEventImage = (event) =>
     event?.image_url || event?.image || "/Images/events-detail-image.png";
+
+  const openRentDatePicker = () => {
+    if (selectedRentEvent) return;
+
+    const dateInput = rentDateInputRef.current;
+    if (dateInput?.showPicker) {
+      dateInput.showPicker();
+    } else {
+      dateInput?.focus();
+    }
+  };
 
   const handleEventDropdownClick = () => {
     if (activeDropdown === "event") {
@@ -1467,12 +1483,20 @@ const ProductDetail = ({ product }) => {
       
       if (coatSizeTypes.length || pantSizeTypes.length) {
         let missingMeasurements = [];
+        const pantWaistMeasurement =
+          measurements.pant_waist_measurement ||
+          measurements.waist_measurement ||
+          measurements.pant_fit;
+        const pantOutseamMeasurement =
+          measurements.pant_outseam_measurement ||
+          measurements.outseam_measurement ||
+          measurements.pant_size;
         
         if (!measurements.coat_fit || !measurements.coat_size) {
           missingMeasurements.push("Coat");
         }
         
-        if (!measurements.pant_fit || !measurements.pant_size) {
+        if (!pantWaistMeasurement || !pantOutseamMeasurement) {
           missingMeasurements.push("Pant");
         }
         
@@ -1485,16 +1509,16 @@ const ProductDetail = ({ product }) => {
           if (measurements.coat_fit) {
             setSelectedCoatType(measurements.coat_fit);
           }
-          if (measurements.pant_fit) {
-            setSelectedPantType(measurements.pant_fit);
+          if (pantWaistMeasurement) {
+            setSelectedPantType(pantWaistMeasurement);
           }
         
           setTimeout(() => {
             if (measurements.coat_size) {
               setSelectedCoatMeasurement(measurements.coat_size);
             }
-            if (measurements.pant_size) {
-              setSelectedPantMeasurement(measurements.pant_size);
+            if (pantOutseamMeasurement) {
+              setSelectedPantMeasurement(pantOutseamMeasurement);
             }
           }, 100);
         }
@@ -2131,8 +2155,12 @@ const ProductDetail = ({ product }) => {
               <div className="rental-details-main">
                 <h5>Event Details</h5>
                 <div className="rent-event-fields">
-                  <div className="custom-select-wrapper rent-date-wrapper">
+                  <div
+                    className="custom-select-wrapper rent-date-wrapper"
+                    onClick={openRentDatePicker}
+                  >
                     <input
+                      ref={rentDateInputRef}
                       type="date"
                       className="custom-select rent-date-input"
                       value={selectedRentDate}

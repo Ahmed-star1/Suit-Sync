@@ -12,6 +12,7 @@ import {
 import Loader from "../components/Loader";
 
 const ChangePasswordSchema = Yup.object().shape({
+  current_password: Yup.string().required("Old Password is required"),
   password: Yup.string()
     .min(6, "Password must be at least 6 characters")
     .required("Password is required"),
@@ -25,6 +26,7 @@ const ChangePassword = () => {
   const navigate = useNavigate();
   const { loading, user, error } = useSelector((state) => state.auth);
 
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -33,6 +35,13 @@ const ChangePassword = () => {
       dispatch(getUserProfile());
     }
   }, [dispatch, user]);
+
+  const getApiErrorMessage = (apiError) =>
+    apiError?.data?.error ||
+    apiError?.data?.message ||
+    apiError?.error ||
+    apiError?.message ||
+    "Something went wrong. Please try again.";
 
   const renderApiError = () => {
     if (!error) return null;
@@ -43,7 +52,7 @@ const ChangePassword = () => {
       ));
     }
 
-    return <div>{error.message || "Something went wrong. Please try again."}</div>;
+    return <div>{getApiErrorMessage(error)}</div>;
   };
 
   return (
@@ -56,12 +65,14 @@ const ChangePassword = () => {
 
           <Formik
             initialValues={{
+              current_password: "",
               password: "",
               password_confirmation: "",
             }}
             validationSchema={ChangePasswordSchema}
             onSubmit={async (values, { resetForm }) => {
               const formData = new FormData();
+              formData.append("current_password", values.current_password);
               formData.append("password", values.password);
               formData.append(
                 "password_confirmation",
@@ -84,10 +95,7 @@ const ChangePassword = () => {
                 Swal.fire({
                   icon: "error",
                   title: "Update Failed",
-                  text:
-                    submitError?.message ||
-                    submitError?.error ||
-                    "Something went wrong. Please try again.",
+                  text: getApiErrorMessage(submitError),
                   confirmButtonColor: "#000",
                 });
               }
@@ -97,12 +105,32 @@ const ChangePassword = () => {
               <Form className="change-password-form">
                 <div className="change-password-fields row">
                   <div className="input-group password-field">
-                    <label>Password</label>
+                    <label>Old Password</label>
+                    <Field
+                      className="input"
+                      type={showCurrentPassword ? "text" : "password"}
+                      name="current_password"
+                      placeholder="Enter old password"
+                    />
+                    <span
+                      className="password-toggle"
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
+                    >
+                      {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
+                    </span>
+                    <small className="text-danger">
+                      <ErrorMessage name="current_password" />
+                    </small>
+                  </div>
+                  <div className="input-group password-field">
+                    <label> New Password</label>
                     <Field
                       className="input"
                       type={showPassword ? "text" : "password"}
                       name="password"
-                      placeholder="Enter password"
+                      placeholder="Enter new password"
                     />
                     <span
                       className="password-toggle"
@@ -142,13 +170,22 @@ const ChangePassword = () => {
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  className="designBtn2"
-                  disabled={loading || !user}
-                >
-                  {loading ? "Saving..." : "Save"}
-                </button>
+                <div className="buttons-row">
+                  <button
+                    type="button"
+                    className="designBtn2"
+                    onClick={() => navigate(-1)}
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    className="designBtn2"
+                    disabled={loading || !user}
+                  >
+                    {loading ? "Saving..." : "Save"}
+                  </button>
+                </div>
               </Form>
             )}
           </Formik>

@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { createEvent, addMemberToInProgressEvent, removeMemberFromInProgressEvent, clearInProgressEvent } from "../Redux/Reducers/eventSlice";
+import { createEvent, addMemberToInProgressEvent, removeMemberFromInProgressEvent, clearInProgressEvent, setInProgressEvent } from "../Redux/Reducers/eventSlice";
 import Loader from "../components/Loader";
 
 const AddEventMember = () => {
@@ -14,6 +14,8 @@ const AddEventMember = () => {
   const [activeRoleDropdown, setActiveRoleDropdown] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageBase64, setImageBase64] = useState(null);
+  const [editingMemberIndex, setEditingMemberIndex] = useState(null);
+  const [editingInitialValues, setEditingInitialValues] = useState(null);
 
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -125,19 +127,51 @@ const AddEventMember = () => {
     image: Yup.mixed()
       .nullable()
       .test("fileType", "Only PNG, JPG or JPEG allowed", (value) => {
-        if (!value) return true; 
+        if (!value || !(value instanceof File)) return true; 
         return ["image/png", "image/jpeg", "image/jpg"].includes(value.type);
       })
       .test("fileSize", "Image must be less than 100MB", (value) => {
-        if (!value) return true; 
+        if (!value || !(value instanceof File)) return true; 
         return value.size <= 100 * 1024 * 1024;
       }),
   });
 
   const handleSaveMember = async (values, { resetForm }) => {
-    const base64 = values.image
-      ? await convertToBase64(values.image)
-      : "/Images/camera.png";
+    if (editingMemberIndex !== null) {
+      const updatedMembers = [...event_member];
+      const currentMember = updatedMembers[editingMemberIndex];
+      const image =
+        values.image instanceof File
+          ? await convertToBase64(values.image)
+          : currentMember.image || currentMember.image_url || "/Images/camera.png";
+
+      updatedMembers[editingMemberIndex] = {
+        ...currentMember,
+        role: values.role,
+        name: values.name,
+        phone: values.phone,
+        email: values.email,
+        image,
+        image_url: image,
+      };
+
+      setMembersList(updatedMembers);
+      dispatch(setInProgressEvent({ ...inProgressEvent, event_member: updatedMembers }));
+      setImagePreview(null);
+      setImageBase64(null);
+      setEditingMemberIndex(null);
+      setEditingInitialValues(null);
+      resetForm();
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    const base64 =
+      values.image instanceof File
+        ? await convertToBase64(values.image)
+        : "/Images/camera.png";
 
     const newMember = {
       id: Date.now().toString(),
@@ -161,11 +195,46 @@ const AddEventMember = () => {
     }
   };
 
+  const handleEditMember = (index) => {
+    const member = event_member[index];
+    const image = member.image || member.image_url || null;
+
+    setEditingMemberIndex(index);
+    setEditingInitialValues({
+      role: member.role || "",
+      name: member.name || "",
+      phone: formatPhoneNumber(member.phone || ""),
+      email: member.email || "",
+      image,
+    });
+    setImagePreview(image);
+    setActiveDropdown(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleCancelEdit = (resetForm) => {
+    setEditingMemberIndex(null);
+    setEditingInitialValues(null);
+    setImagePreview(null);
+    setImageBase64(null);
+    resetForm();
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleRemoveMember = (id) => {
     const updatedMembers = event_member.filter((m) => m.id !== id);
     setMembersList(updatedMembers);
 
     dispatch(removeMemberFromInProgressEvent(id));
+    if (editingMemberIndex !== null) {
+      setEditingMemberIndex(null);
+      setEditingInitialValues(null);
+      setImagePreview(null);
+    }
     setActiveDropdown(null);
   };
 
@@ -214,20 +283,23 @@ const AddEventMember = () => {
           <div className="add-member-container container-fluid">
             <div className="row">
               <div className="add-member-form col-md-5">
-                <h3>Add Member</h3>
+                <h3>{editingMemberIndex !== null ? "Edit Member" : "Add Member"}</h3>
 
                 <Formik
-                  initialValues={{
-                    role: "",
-                    name: "",
-                    phone: "",
-                    email: "",
-                    image: null,
-                  }}
+                  enableReinitialize
+                  initialValues={
+                    editingInitialValues || {
+                      role: "",
+                      name: "",
+                      phone: "",
+                      email: "",
+                      image: null,
+                    }
+                  }
                   validationSchema={validationSchema}
                   onSubmit={handleSaveMember}
                 >
-                  {({ setFieldValue, values }) => (
+                  {({ setFieldValue, values, resetForm }) => (
                     <Form>
                       <div className="upload-photo-box">
                         <input
@@ -378,9 +450,20 @@ const AddEventMember = () => {
                           />
                         </div>
 
-                        <button type="submit" className="designBtn2">
-                          Add Member
-                        </button>
+                        <div className="buttons-row">
+                          {editingMemberIndex !== null && (
+                            <button
+                              type="button"
+                              className="designBtn2"
+                              onClick={() => handleCancelEdit(resetForm)}
+                            >
+                              Cancel
+                            </button>
+                          )}
+                          <button type="submit" className="add-button designBtn2">
+                            {editingMemberIndex !== null ? "Update" : "Add Member"}
+                          </button>
+                        </div>
                       </div>
                     </Form>
                   )}
@@ -408,8 +491,12 @@ const AddEventMember = () => {
                     <div className="members-list">
                       <h3>Members List ({event_member.length})</h3>
                       <div className="members-wrapper">
-                        {event_member.map((member) => (
-                          <div key={member.id} className="member-row">
+                        {event_member.map((member, index) => (
+                          <div
+                            key={member.id}
+                            className="member-row"
+                            onClick={() => handleEditMember(index)}
+                          >
                             <div className="member-left">
                               <img
                                 src={
@@ -446,9 +533,10 @@ const AddEventMember = () => {
                                 <div className="dropdown-menu">
                                   <button
                                     className="remove-btn"
-                                    onClick={() =>
-                                      handleRemoveMember(member.id)
-                                    }
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRemoveMember(member.id);
+                                    }}
                                   >
                                     Remove Member
                                   </button>

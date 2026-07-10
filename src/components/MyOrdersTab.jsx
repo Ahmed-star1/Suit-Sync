@@ -223,9 +223,9 @@ const MyOrdersTab = () => {
               ))}
             </div>
 
-            <button className="designBtn2 back-btn" onClick={() => navigate(-1)}>
+            {/* <button className="designBtn2 back-btn" onClick={() => navigate(-1)}>
               Back
-            </button>
+            </button> */}
           </>
         )}
       </div>

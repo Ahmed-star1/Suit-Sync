@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getProductsService, getProductByIdService, getFeaturedProductsService, getWishlistService, deleteToWishlistService, getWishlistCountService, addToCartService, getCartService, subCartItemService, updateCartItemQuantityService, deleteCartItemService, getCartCountService, submitCheckoutService, getOrderSummaryService, getRelatedProductsService, getCartRelatedProductsService, storeMeasurementService, getMeasurementsService, getCategoriesService, addToWishlistService } from "../Services/productServices";
+import { getProductsService, getProductByIdService, getFeaturedProductsService, getWishlistService, deleteToWishlistService, getWishlistCountService, addToCartService, getCartService, subCartItemService, updateCartItemQuantityService, deleteCartItemService, getCartCountService, calculateTaxService, submitCheckoutService, getOrderSummaryService, getRelatedProductsService, getCartRelatedProductsService, storeMeasurementService, getMeasurementsService, getCategoriesService, addToWishlistService } from "../Services/productServices";
 
 // Get Products Thunk
 export const getProducts = createAsyncThunk(
@@ -197,6 +197,18 @@ export const getCartRelatedProducts = createAsyncThunk(
 );
 
 // Checkout Thunk
+export const calculateTax = createAsyncThunk(
+  "checkout/calculateTax",
+  async (taxData, { rejectWithValue }) => {
+    try {
+      const response = await calculateTaxService(taxData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error?.message || "Tax calculation failed");
+    }
+  }
+);
+
 export const submitCheckout = createAsyncThunk(
   "checkout/submitCheckout",
   async (checkoutData, { rejectWithValue }) => {
@@ -281,6 +293,9 @@ const productSlice = createSlice({
     cartLoading: false,
     checkoutLoading: false,
     checkoutSuccess: false,
+    taxLoading: false,
+    taxResponse: null,
+    taxError: null,
     orderSummaryLoading: false,
     relatedProductsLoading: false,
     cartRelatedProductsLoading: false,
@@ -318,6 +333,9 @@ const productSlice = createSlice({
       state.checkoutLoading = false;
       state.checkoutSuccess = false;
       state.checkoutResponse = null;
+      state.taxLoading = false;
+      state.taxResponse = null;
+      state.taxError = null;
       state.error = null;
       state.products = [];
       state.featuredProducts = [];
@@ -349,6 +367,9 @@ const productSlice = createSlice({
       state.checkoutLoading = false;
       state.checkoutSuccess = false;
       state.checkoutResponse = null;
+      state.taxLoading = false;
+      state.taxResponse = null;
+      state.taxError = null;
       state.error = null;
     },
     clearOrderSummary: (state) => {
@@ -477,7 +498,6 @@ const productSlice = createSlice({
       })
       .addCase(addToWishlist.fulfilled, (state, action) => {
         state.wishlistLoading = false;
-        console.log("Added to wishlist successfully:", action.payload);
       })
       .addCase(addToWishlist.rejected, (state, action) => {
         state.wishlistLoading = false;
@@ -531,7 +551,6 @@ const productSlice = createSlice({
       })
       .addCase(addToCart.fulfilled, (state, action) => {
         state.cartLoading = false;
-        console.log("Added to cart successfully:", action.payload);
       })
       .addCase(addToCart.rejected, (state, action) => {
         state.cartLoading = false;
@@ -650,6 +669,23 @@ const productSlice = createSlice({
         state.cartCountLoading = false;
         state.error = action.payload;
         state.cartCount = 0;
+      })
+
+      // Tax calculation cases
+      .addCase(calculateTax.pending, (state) => {
+        state.taxLoading = true;
+        state.taxResponse = null;
+        state.taxError = null;
+        state.error = null;
+      })
+      .addCase(calculateTax.fulfilled, (state, action) => {
+        state.taxLoading = false;
+        state.taxResponse = action.payload;
+      })
+      .addCase(calculateTax.rejected, (state, action) => {
+        state.taxLoading = false;
+        state.taxError = action.payload;
+        state.error = action.payload;
       })
 
       // Checkout cases

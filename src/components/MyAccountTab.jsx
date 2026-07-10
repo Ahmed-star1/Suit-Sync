@@ -192,7 +192,7 @@ const MyAccountTab = () => {
                       className="input"
                       name="email"
                       value={formik.values.email}
-                      onChange={handleInputChange}
+                      disabled
                     />
                   </div>
 

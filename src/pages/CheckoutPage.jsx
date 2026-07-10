@@ -1,9 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-// State and city will be simple text inputs now (no country-state-city package)
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -11,18 +8,15 @@ import * as Yup from "yup";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import Loader from "../components/Loader";
-import StripePaymentForm from "../components/StripePaymentForm";
-import { getCart } from "../Redux/Reducers/productSlice";
+import { calculateTax, getCart, resetCheckoutState } from "../Redux/Reducers/productSlice";
 import {
-  submitCheckout,
-  resetCheckoutState,
-} from "../Redux/Reducers/productSlice";
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+  getCheckoutBillingDetails,
+  setCheckoutBillingDetails,
+  setCheckoutTaxDetails,
+} from "../Redux/Utils/localStore";
 
 const CheckoutPage = () => {
   const PHONE_NUMBER_LENGTH = 10;
-  const UNITED_STATES_COUNTRY_ID = 233;
   const UNITED_STATES_COUNTRY_CODE = "US";
   const UNITED_STATES_COUNTRY_NAME = "United States";
   const dispatch = useDispatch();
@@ -30,18 +24,11 @@ const CheckoutPage = () => {
   const location = useLocation();
   const { userId } = location.state || {};
 
-  const { cart, cartLoading } = useSelector((state) => state.products);
-  const {
-    checkoutLoading: submitting,
-    checkoutSuccess: success,
-  } = useSelector((state) => state.products);
-
+  const { cart, cartLoading, taxLoading, taxError } = useSelector(
+    (state) => state.products,
+  );
   const [pageLoading, setPageLoading] = useState(true);
-  const [selectedCountryId] = useState(UNITED_STATES_COUNTRY_ID);
-  const [selectedState, setSelectedState] = useState(null);
-  const [useStateAsCity, setUseStateAsCity] = useState(false);
-  const [paymentMethodError, setPaymentMethodError] = useState("");
-  const stripePaymentFormRef = useRef(null);
+  const useStateAsCity = false;
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -56,12 +43,6 @@ const CheckoutPage = () => {
       dispatch(resetCheckoutState());
     };
   }, [dispatch]);
-
-  useEffect(() => {
-    if (success) {
-      navigate("/thank-you", {});
-    }
-  }, [success, navigate]);
 
   const formatPhoneNumber = (value) => {
     const digits = value.replace(/\D/g, "").slice(0, PHONE_NUMBER_LENGTH);
@@ -82,17 +63,17 @@ const CheckoutPage = () => {
 
   const formik = useFormik({
     initialValues: {
-      first_name: "",
-      last_name: "",
-      email: "",
-      phone: "",
-      address: "",
-      city: "",
-      state: "",
-      country: UNITED_STATES_COUNTRY_CODE,
-      zip_code: "",
-      notes: "",
-      agree_terms: false,
+      first_name: getCheckoutBillingDetails()?.first_name || "",
+      last_name: getCheckoutBillingDetails()?.last_name || "",
+      email: getCheckoutBillingDetails()?.email || "",
+      phone: getCheckoutBillingDetails()?.phone || "",
+      address: getCheckoutBillingDetails()?.address || "",
+      city: getCheckoutBillingDetails()?.city || "",
+      state: getCheckoutBillingDetails()?.state || "",
+      country: getCheckoutBillingDetails()?.country || UNITED_STATES_COUNTRY_CODE,
+      zip_code: getCheckoutBillingDetails()?.zip_code || "",
+      notes: getCheckoutBillingDetails()?.notes || "",
+      agree_terms: getCheckoutBillingDetails()?.agree_terms || false,
     },
     validationSchema: Yup.object({
       first_name: Yup.string().required("First name is required"),
@@ -119,7 +100,7 @@ const CheckoutPage = () => {
       agree_terms: Yup.boolean().oneOf([true], "You must agree to the terms"),
     }),
     onSubmit: async (values) => {
-      await handleSubmitCheckout(values);
+      handleProceedToPayment(values);
     },
   });
 
@@ -133,81 +114,66 @@ const CheckoutPage = () => {
     return cartItems.reduce((sum, item) => sum + getProductPrice(item), 0);
   };
 
-  const handleSubmitCheckout = async (formValues) => {
+  const getTaxCalculationId = (response) => {
+    const responseData = response?.data || response;
+    return (
+      responseData?.tax_calculation_id ||
+      responseData?.taxCalculationId ||
+      responseData?.calculation_id ||
+      responseData?.id ||
+      responseData?.calculation?.id ||
+      responseData?.tax_calculation?.id ||
+      responseData?.tax?.id ||
+      ""
+    );
+  };
+
+  const getTaxAmount = (response) => {
+    const responseData = response?.data || response;
+    return (
+      responseData?.tax_amount ||
+      responseData?.taxAmount ||
+      responseData?.amount_tax ||
+      responseData?.tax?.amount ||
+      0
+    );
+  };
+
+  const handleProceedToPayment = async (formValues) => {
+    const billingDetails = {
+      ...formValues,
+      user_id: userId || localStorage.getItem("cart_user_id"),
+      country: UNITED_STATES_COUNTRY_CODE,
+    };
+
+    setCheckoutBillingDetails(billingDetails);
+
+    const taxPayload = {
+      subtotal: calculateTotal(),
+      shipping_address: {
+        address: billingDetails.address,
+        city: billingDetails.city,
+        state: billingDetails.state,
+        country: UNITED_STATES_COUNTRY_CODE,
+        zip_code: billingDetails.zip_code,
+      },
+    };
+
     try {
-      setPaymentMethodError("");
-
-      if (!stripePaymentFormRef.current) {
-        throw new Error("Stripe card form is still loading.");
-      }
-
-      const paymentMethod = await stripePaymentFormRef.current.createPaymentMethod({
-          name: `${formValues.first_name} ${formValues.last_name}`.trim(),
-          email: formValues.email,
-          phone: formValues.phone,
-          address: {
-            line1: formValues.address,
-            city: formValues.city === "-" ? undefined : formValues.city,
-            state: formValues.state,
-            country: UNITED_STATES_COUNTRY_CODE,
-            postal_code: formValues.zip_code,
-          },
+      const taxResponse = await dispatch(calculateTax(taxPayload)).unwrap();
+      setCheckoutTaxDetails({
+        ...taxResponse,
+        tax_calculation_id: getTaxCalculationId(taxResponse),
+        tax_amount: getTaxAmount(taxResponse),
+        subtotal: calculateTotal(),
       });
 
-      console.log("Stripe PaymentMethod ID:", paymentMethod.id);
-
-      const checkoutData = {
-        user_id: userId || localStorage.getItem("cart_user_id"),
-        first_name: formValues.first_name,
-        last_name: formValues.last_name,
-        email: formValues.email,
-        phone: formValues.phone,
-        address: formValues.address,
-        city: formValues.city,
-        state: formValues.state,
-        country: UNITED_STATES_COUNTRY_CODE,
-        zip_code: formValues.zip_code,
-        notes: formValues.notes || "",
-        agree_terms: formValues.agree_terms,
-        payment_method_id: paymentMethod.id,
-        cart_items: cartItems.map((item) => {
-          if (item.items && Array.isArray(item.items)) {
-            return {
-              group_uuid: item.group_uuid,
-              items: item.items.map((nestedItem) => ({
-                id: nestedItem.id,
-                product_id: nestedItem.product_id,
-                product_variant_id: nestedItem.product_variant_id,
-                quantity: nestedItem.quantity,
-                buy_type: nestedItem.buy_type,
-                price: getProductPrice(nestedItem),
-                waist_measurement: nestedItem.waist_measurement,
-                outseam_measurement: nestedItem.outseam_measurement,
-              })),
-            };
-          }
-
-          return {
-            id: item.id,
-            product_id: item.product_id,
-            product_variant_id: item.product_variant_id,
-            quantity: item.quantity,
-            buy_type: item.buy_type,
-            price: getProductPrice(item),
-            waist_measurement: item.waist_measurement,
-            outseam_measurement: item.outseam_measurement,
-          };
-        }),
-        total_amount: calculateTotal(),
-      };
-
-      await dispatch(submitCheckout(checkoutData)).unwrap();
-      navigate("/thank-you");
-    } catch (checkoutError) {
-      console.error("Checkout failed:", checkoutError);
-      setPaymentMethodError(
-        checkoutError?.message || "Unable to create Stripe payment method.",
-      );
+      navigate("/checkout/payment", {
+        state: {
+          userId,
+        },
+      });
+    } catch (error) {
     }
   };
 
@@ -351,8 +317,6 @@ const CheckoutPage = () => {
   };
 
   const handleStateChange = (value) => {
-    setSelectedState(null);
-    setUseStateAsCity(false);
     formik.setFieldValue("state", formatStateCode(value || ""));
   };
 
@@ -399,7 +363,7 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              <h3>Billing address</h3>
+              <h3>Delivery Address</h3>
 
               <div className="select-field">
                 <input
@@ -530,19 +494,6 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              <h3>Payment options</h3>
-
-              <div className="stripe-payment-wrapper">
-                <Elements stripe={stripePromise}>
-                  <StripePaymentForm ref={stripePaymentFormRef} />
-                </Elements>
-                {paymentMethodError && (
-                  <div className="payment-message error">
-                    {paymentMethodError}
-                  </div>
-                )}
-              </div>
-
               <div className="terms-checkbox">
                 <div>
                   <input
@@ -567,15 +518,20 @@ const CheckoutPage = () => {
                 <button
                   type="submit"
                   className="designBtn2"
-                  disabled={submitting}
+                  disabled={taxLoading}
                   style={{
-                    opacity: submitting ? 0.7 : 1,
-                    cursor: submitting ? "not-allowed" : "pointer",
+                    opacity: taxLoading ? 0.7 : 1,
+                    cursor: taxLoading ? "not-allowed" : "pointer",
                   }}
                 >
-                  {submitting ? "SUBMITTING..." : "PLACE ORDER"}
+                  {taxLoading ? "CALCULATING..." : "PROCEED TO BILLING"}
                 </button>
               </div>
+              {taxError && (
+                <div className="payment-message error">
+                  {taxError}
+                </div>
+              )}
             </div>
 
             <div className="checkout-right col-md-4" data-aos="fade-left">

@@ -103,7 +103,7 @@ const MeasurementTabsBar = () => {
     },
     suit: {
       title: "Suit Measurement",
-      fields: ["coat_size", "coat_fit", "pant_size", "pant_fit"],
+      fields: ["coat_size", "coat_fit", "pant_waist_measurement", "pant_outseam_measurement"],
     },
     shoes: {
       title: "Shoes Measurement",
@@ -175,8 +175,8 @@ const MeasurementTabsBar = () => {
         suit: {
           coat_size: savedMeasurements.coat_fit,
           coat_fit: savedMeasurements.coat_size,
-          pant_size: savedMeasurements.pant_fit,
-          pant_fit: savedMeasurements.pant_size
+          pant_waist_measurement: savedMeasurements.pant_waist_measurement,
+          pant_outseam_measurement: savedMeasurements.pant_outseam_measurement
         },
         shoes: {
           shoe_size: savedMeasurements.shoe_size?.toString()
@@ -276,8 +276,8 @@ const MeasurementTabsBar = () => {
       apiMeasurements = {
         coat_size: currentMeasurements.coat_fit,  
         coat_fit: currentMeasurements.coat_size,    
-        pant_size: currentMeasurements.pant_fit,   
-        pant_fit: currentMeasurements.pant_size
+        pant_waist_measurement: currentMeasurements.pant_waist_measurement,   
+        pant_outseam_measurement: currentMeasurements.pant_outseam_measurement
       };
     } else {
       apiMeasurements = currentMeasurements;

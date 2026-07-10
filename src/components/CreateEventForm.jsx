@@ -8,6 +8,7 @@ import * as Yup from "yup";
 
 const CreateEventForm = () => {
   const fileInputRef = useRef(null);
+  const dateInputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -94,6 +95,15 @@ const CreateEventForm = () => {
   const handleEventTypeSelect = (value, setFieldValue) => {
     setFieldValue("type", value);
     setActiveDropdown(null);
+  };
+
+  const openDatePicker = () => {
+    const dateInput = dateInputRef.current;
+    if (dateInput?.showPicker) {
+      dateInput.showPicker();
+    } else {
+      dateInput?.focus();
+    }
   };
 
   const saveEventToRedux = (values) => {
@@ -222,9 +232,10 @@ const CreateEventForm = () => {
               </div>
 
               <div className="row">
-                <div className="input-group">
+                <div className="input-group" onClick={openDatePicker}>
                   <label>Event Date *</label>
                   <Field
+                    innerRef={dateInputRef}
                     className="input"
                     type="date"
                     name="date"

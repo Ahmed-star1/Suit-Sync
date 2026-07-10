@@ -22,7 +22,6 @@ const TrendingStyles = ({ type = "featured", data = [], productId = null }) => {
     if (type === "featured") {
       dispatch(getFeaturedProducts());
     } else if (type === "related" && productId) {
-      console.log("Fetching related products for ID:", productId);
       dispatch(getRelatedProducts(productId));
     }
   }, [dispatch, type, productId]);
@@ -122,7 +121,7 @@ const TrendingStyles = ({ type = "featured", data = [], productId = null }) => {
             return (
               <SwiperSlide key={productId}>
                 <div
-                  className="trending-card"
+                  className={`trending-card ${(item.category?.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`.trim()}
                   onClick={() => handleDetailpage(productId)}
                   style={{ cursor: "pointer" }}
                 >

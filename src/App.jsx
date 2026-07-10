@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ScrollProvider } from "./components/ScrollContext";
 import { useEventFlowCleanup } from "./hooks/useEventFlowCleanup";
@@ -15,6 +14,7 @@ import ShopDetailPage from "./pages/ShopDetailPage";
 import CartPage from "./pages/CartPage";
 import WishlistPage from "./pages/Wishlist";
 import CheckoutPage from "./pages/CheckoutPage";
+import CheckoutPaymentPage from "./pages/CheckoutPaymentPage";
 import ThankyouPage from "./pages/Thankyou";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -37,8 +37,6 @@ import EventsDetailPage from "./pages/EventsDetailPage";
 import EditEventPage from "./pages/EditEventPage";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   useEventFlowCleanup();
 
   return (
@@ -57,6 +55,7 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/Checkout" element={<CheckoutPage />} />
+        <Route path="/checkout/payment" element={<CheckoutPaymentPage />} />
         <Route path="/thank-you" element={<ThankyouPage />} />
 
         {/* Auth Pages */}

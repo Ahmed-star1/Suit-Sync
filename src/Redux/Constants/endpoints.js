@@ -8,6 +8,7 @@ export const API_ENDPOINTS = Object.freeze({
   VERIFY_TOKEN: "password/verify-token",
   RESET_PASSWORD: "password/reset",
   LOGOUT: "auth/logout",
+  CONTACT_US: "contact-us",
 
   UPDATE_PROFILE: "user/update/profile",
   GET_PROFILE: "user",
@@ -46,6 +47,7 @@ export const API_ENDPOINTS = Object.freeze({
   GET_CART_COUNT: "cart/count",
 
   SUBMIT_CHECKOUT: "checkout/process",
+  CALCULATE_TAX: "checkout/calculate-tax",
   GET_ORDER_SUMMARY: "checkout/summary",
 
   SAVE_MEASUREMENTS: (category) => `measurements/store/${category}`,

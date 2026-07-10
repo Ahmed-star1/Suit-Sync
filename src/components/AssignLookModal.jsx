@@ -161,6 +161,9 @@ const AssignLookModal = ({ isOpen, onClose, order }) => {
     return null;
   };
 
+  const getCurrentProductColor = () =>
+    selectedProductForLook?.color || order?.color || "";
+
   const handleAssignClick = () => {
     const productId = getCurrentProductId();
     if (!selectedEventId || !productId) {
@@ -184,6 +187,7 @@ const AssignLookModal = ({ isOpen, onClose, order }) => {
         assignLookToEvent({
           eventId: selectedEventId,
           productId,
+          color: getCurrentProductColor(),
         }),
       ).unwrap();
 

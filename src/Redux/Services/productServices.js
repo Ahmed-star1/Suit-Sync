@@ -249,6 +249,22 @@ export const getCartRelatedProductsService = async () => {
 };
 
 // Checkout Service
+export const calculateTaxService = async (taxData) => {
+  try {
+    const response = await fetchApi({
+      method: "POST",
+      endPoint: API_ENDPOINTS.CALCULATE_TAX,
+      token: true,
+      data: taxData,
+    });
+
+    return response;
+  } catch (error) {
+    console.error("calculateTaxService error", error);
+    throw error;
+  }
+};
+
 export const submitCheckoutService = async (formData) => {
   try {
     const response = await fetchApi({

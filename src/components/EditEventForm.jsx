@@ -15,6 +15,7 @@ const EditEventForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const dateInputRef = useRef(null);
   const dispatch = useDispatch();
 
   const [currentEventId, setCurrentEventId] = useState(null);
@@ -158,6 +159,15 @@ const EditEventForm = () => {
     setActiveDropdown(null);
   };
 
+  const openDatePicker = () => {
+    const dateInput = dateInputRef.current;
+    if (dateInput?.showPicker) {
+      dateInput.showPicker();
+    } else {
+      dateInput?.focus();
+    }
+  };
+
   const handleNext = async (values, { setSubmitting, setErrors }) => {
     const hasNewImageFile = eventImageFile instanceof File;
 
@@ -272,9 +282,10 @@ const EditEventForm = () => {
               </div>
 
               <div className="row">
-                <div className="input-group">
+                <div className="input-group" onClick={openDatePicker}>
                   <label>Event Date</label>
                   <input
+                    ref={dateInputRef}
                     className="input"
                     type="date"
                     value={values.date}

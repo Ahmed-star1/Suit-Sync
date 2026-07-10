@@ -83,7 +83,12 @@ const EventDetails = () => {
 
   const handleLookClick = (look) => {
     if (look.id) {
-      navigate(`/shop/product/${look.id}`);
+      const lookColor = look.color || look.product?.color || "";
+      const colorParam = lookColor
+        ? `?color=${encodeURIComponent(lookColor)}`
+        : "";
+
+      navigate(`/shop/product/${look.id}${colorParam}`);
     }
   };
 
@@ -188,7 +193,7 @@ const EventDetails = () => {
                           <h4>{member.name}</h4>
                           <p>{member.role}</p>
                         </div>
-                        {!isInvitedEvent && (member.status === "invited" || member.status === "declined") && (
+                        {!isInvitedEvent && member.status === "invited" && (
                           <button 
                             className="designBtn" 
                             onClick={(e) => handleResendInvite(member.id, member.email, e)}

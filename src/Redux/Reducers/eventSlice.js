@@ -156,11 +156,12 @@ export const deleteEvent = createAsyncThunk(
 // Assign Look to Event Thunk
 export const assignLookToEvent = createAsyncThunk(
   "events/assignLookToEvent",
-  async ({ eventId, productId }, { rejectWithValue }) => {
+  async ({ eventId, productId, color }, { rejectWithValue }) => {
     try {
       const response = await assignLookToEventService({
         event_id: eventId,
-        product_id: productId
+        product_id: productId,
+        color
       });
       return { response, eventId, productId };
     } catch (error) {
@@ -570,7 +571,6 @@ const eventSlice = createSlice({
       })
       .addCase(resendInvite.fulfilled, (state, action) => {
         state.loading = false;
-        console.log("Invitation resent successfully:", action.payload);
       })
       .addCase(resendInvite.rejected, (state, action) => {
         state.loading = false;

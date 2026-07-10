@@ -106,7 +106,7 @@ const LoginForm = () => {
                   )}
                 </div>
 
-                <div className="row">
+                <div className="row row2">
                   <div className="checkbox">
                     <input
                       type="checkbox"

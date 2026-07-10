@@ -55,6 +55,26 @@ const ShopProducts = ({
 
   const apiFiltersKey = JSON.stringify(apiFilters);
 
+  const selectedCategoryClass = useMemo(() => {
+    const selectedCategory = selectedFilters.category?.[0];
+    if (!selectedCategory) return "";
+
+    const matchedCategory = filters?.categories?.find(
+      (category) =>
+        String(category.id) === String(selectedCategory) ||
+        (category.name || "").toLowerCase() ===
+          String(selectedCategory).toLowerCase(),
+    );
+
+    const categoryName = matchedCategory?.name || selectedCategory;
+    return categoryName
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }, [selectedFilters.category, filters?.categories]);
+
   useEffect(() => {
     if (!loading && products.length > 0) {
       setIsFilterChanging(true);
@@ -177,7 +197,7 @@ const ShopProducts = ({
 
   return (
     <>
-      <div className="products-grid">
+      <div className={`products-grid ${selectedCategoryClass}`.trim()}>
         {products.length === 0 && !loading ? (
           <p className="no-products">No products found.</p>
         ) : (

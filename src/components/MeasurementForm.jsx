@@ -25,13 +25,22 @@ const MeasurementForm = ({
         return ["Standard"];
         
       case "complex":
-        if (field === "coat_size" || field === "pant_size") {
+        if (field === "pant_waist_measurement" || field === "pant_outseam_measurement") {
+          const pantsCategory = data?.categories?.find(c => c.name === "pants");
+          const fallbackName = field.replace(/^pant_/, "");
+          const measurement = pantsCategory?.measurements?.find(
+            (item) => item.name === field || item.name === fallbackName
+          );
+          return measurement?.values || [];
+        }
+
+        if (field === "coat_size" || field === "waist_measurement") {
           const category = field === "coat_size" ? "coat" : "pants";
           const categoryData = data?.categories?.find(c => c.name === category);
           return categoryData?.types?.map(t => t.name) || [];
-        } else if (field === "coat_fit" || field === "pant_fit") {
+        } else if (field === "coat_fit" || field === "outseam_measurement") {
           const category = field === "coat_fit" ? "coat" : "pants";
-          const sizeField = field === "coat_fit" ? "coat_size" : "pant_size";
+          const sizeField = field === "coat_fit" ? "coat_size" : "waist_measurement";
           const selectedSize = selectedValues[sizeField];
           if (!selectedSize) return [];
           const categoryData = data?.categories?.find(c => c.name === category);
@@ -70,8 +79,8 @@ const MeasurementForm = ({
   const getFieldLabel = (field) => {
     const labels = {
       shirt_size: "Shirt Size",
-      pant_fit: "Pant Fit",
-      pant_size: "Pant Size",
+      pant_outseam_measurement: "Pant Outseam Measurement",
+      pant_waist_measurement: "Pant Waist Measurement",
       coat_fit: "Coat Fit",
       coat_size: "Coat Size",
       shoe_size: "Shoes Size",
@@ -83,12 +92,12 @@ const MeasurementForm = ({
 
   // Check if field is dependent on another field (for complex categories)
   const isDependentField = (field) => {
-    return field === "coat_fit" || field === "pant_fit";
+    return field === "coat_fit";
   };
 
   const getParentField = (field) => {
     if (field === "coat_fit") return "coat_size";
-    if (field === "pant_fit") return "pant_size";
+    if (field === "pant_outseam_measurement") return "pant_waist_measurement";
     return "";
   };
 

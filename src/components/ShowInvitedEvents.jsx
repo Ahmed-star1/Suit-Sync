@@ -157,8 +157,19 @@ const ShowInvitedEvents = () => {
           className={`rent-modal-overlay accept-invite ${
             animateModal ? "show" : ""
           }`}
+          onClick={closeModal}
         >
-          <div className={`rent-modal ${animateModal ? "show" : ""}`}>
+          <div
+            className={`rent-modal ${animateModal ? "show" : ""}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={closeModal}
+            >
+              ×
+            </button>
             <h3>You’ve been invited</h3>
 
             <p>

@@ -80,6 +80,16 @@ export const logoutService = async () => {
   });
 };
 
+// Contact Us
+export const contactUsService = async (payload) => {
+  return await fetchApi({
+    method: "POST",
+    endPoint: API_ENDPOINTS.CONTACT_US,
+    token: false,
+    data: payload,
+  });
+};
+
 // GET USER PROFILE
 export const getProfileService = async () => {
   return await fetchApi({

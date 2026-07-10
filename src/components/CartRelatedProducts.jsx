@@ -71,7 +71,7 @@ const CartRelatedProducts = ({ products = [], loading = false }) => {
             return (
               <SwiperSlide key={productId}>
                 <div
-                  className="trending-card"
+                  className={`trending-card ${(item.category?.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`.trim()}
                   onClick={() => handleProductClick(productId)}
                   style={{ cursor: "pointer" }}
                 >

@@ -249,13 +249,18 @@ const CartPage = () => {
         ? item
         : null;
 
-    if (!pantItem?.waist_measurement && !pantItem?.outseam_measurement) {
+    const waistMeasurement =
+      pantItem?.waist_measurement || pantItem?.waist_measurement;
+    const outseamMeasurement =
+      pantItem?.outseam_measurement || pantItem?.outseam_measurement;
+
+    if (!waistMeasurement && !outseamMeasurement) {
       return "";
     }
 
     return [
-      pantItem.waist_measurement && `Waist: ${pantItem.waist_measurement}`,
-      pantItem.outseam_measurement && `Outseam: ${pantItem.outseam_measurement}`,
+      waistMeasurement && `Waist: ${waistMeasurement}`,
+      outseamMeasurement && `Outseam: ${outseamMeasurement}`,
     ]
       .filter(Boolean)
       .join(" | ");
