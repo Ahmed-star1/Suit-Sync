@@ -82,13 +82,15 @@ const EventDetails = () => {
   };
 
   const handleLookClick = (look) => {
-    if (look.id) {
+    const productId = look.product_id || look.product?.id || look.id;
+
+    if (productId) {
       const lookColor = look.color || look.product?.color || "";
       const colorParam = lookColor
         ? `?color=${encodeURIComponent(lookColor)}`
         : "";
 
-      navigate(`/shop/product/${look.id}${colorParam}`);
+      navigate(`/shop/product/${productId}${colorParam}`);
     }
   };
 

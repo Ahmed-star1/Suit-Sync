@@ -104,6 +104,7 @@ const MyOrdersTab = () => {
     const productData = {
       product_id: item.product_id,
       category_id: item.category_id,
+      color: item.color || item.color_name || "",
     };
     
     dispatch(setSelectedProductForLook(productData));

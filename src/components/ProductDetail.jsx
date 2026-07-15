@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -15,7 +15,10 @@ import Swal from "sweetalert2";
 
 const ProductDetail = ({ product }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
+  const assignedLookColor = searchParams.get("color") || "";
+  const appliedAssignedLookColorRef = useRef("");
 
   const { measurements: savedMeasurements, wishlistLoading } = useSelector((state) => state.products || {});
   const { events = [], loading: eventsLoading } = useSelector((state) => state.events || {});
@@ -584,13 +587,50 @@ const ProductDetail = ({ product }) => {
       return;
     }
 
+    const normalizedAssignedLookColor = assignedLookColor
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+    const assignedLookSelection = `${product?.id || ""}:${normalizedAssignedLookColor}`;
+    const shouldApplyAssignedLookColor =
+      normalizedAssignedLookColor &&
+      appliedAssignedLookColorRef.current !== assignedLookSelection;
+    const assignedColorIndex = shouldApplyAssignedLookColor
+      ? productColors.findIndex((color) => {
+          const colorName = color?.color
+            ?.toString()
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+
+          return colorName && colorName === normalizedAssignedLookColor;
+        })
+      : -1;
+
+    if (assignedColorIndex !== -1) {
+      const assignedColorKey = getColorKey(
+        productColors[assignedColorIndex],
+        assignedColorIndex,
+      );
+      appliedAssignedLookColorRef.current = assignedLookSelection;
+
+      if (selectedColorKey !== assignedColorKey) {
+        setSelectedColorKey(assignedColorKey);
+      }
+      return;
+    }
+
     const hasSelectedColor = productColors.some(
       (color, index) => getColorKey(color, index) === selectedColorKey,
     );
     if (!hasSelectedColor) {
       setSelectedColorKey(getColorKey(productColors[0], 0));
     }
-  }, [product, selectedPriceType, productColors, selectedColorKey]);
+  }, [
+    product,
+    selectedPriceType,
+    productColors,
+    selectedColorKey,
+    assignedLookColor,
+  ]);
 
   useEffect(() => {
     if (!selectedColor && !product?.variants?.length) return;
@@ -1414,6 +1454,7 @@ const ProductDetail = ({ product }) => {
     const orderData = {
       product_id: product.id,
       category_id: product.category.id,
+      color: selectedColor?.color || "",
     };
     
     dispatch(setSelectedProductForLook(orderData));
